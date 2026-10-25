@@ -13,8 +13,8 @@
 | presentacion/ | Presentacion-Vivaldi.pdf | 9 diapositivas 16:9 para la reunión |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf + contrato-editable.html | Modelo de contrato (revisar con abogado antes de firmar) |
 
-## Herramienta de ventas: 12 módulos
-Inventario de lotes · Proforma (PDF, imagen, Excel) · Constancia de separación · Cobranza · Panel comercial y metas · Reporte gerencial · Registro de proformas · Mis clientes · Mensajes · Objeciones · Análisis de competencia · Datos y respaldo.
+## Herramienta de ventas: 13 módulos
+Agenda "Hoy" (clientes, cuotas y firmas pendientes) · Inventario de lotes · Proforma (PDF, imagen, Excel) · Constancia de separación · Cobranza · Panel comercial y metas · Reporte gerencial · Registro de proformas · Mis clientes · Mensajes · Objeciones · Análisis de competencia · Datos y respaldo.
 
 ## Web
 Asistente Vivaldi · plano de lotes · simulador · comparador · fichas descargables · formulario a WhatsApp con origen del cliente · visita al calendario · Libro de Reclamaciones · accesibilidad sin errores (axe-core).

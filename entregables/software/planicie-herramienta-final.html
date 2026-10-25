@@ -297,6 +297,18 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .stg{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--line);color:var(--muted);white-space:nowrap}
 .stg.s1{background:var(--sea-soft);color:var(--sea)}.stg.s2{background:var(--sun-soft);color:var(--warn)}.stg.s3{background:var(--good);color:var(--surface)}.stg.s4{background:var(--deep);color:#fff}.stg.s5{background:var(--line);color:var(--muted)}
 .crm-acts{display:flex;flex-wrap:wrap;gap:6px}
+nav.top .nb[hidden]{display:none}
+nav.top .nb{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:var(--bad);color:#fff;font-size:.68rem;font-weight:800;vertical-align:1px}
+.hoy-kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-bottom:14px}
+.hoy-kp div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:2px}
+.hoy-kp b{font-size:1.5rem}.hoy-kp span{font-size:.8rem;color:var(--muted)}.hoy-kp .hl b{color:var(--bad)}
+.hoy-g{margin:0 0 6px;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hoy-g:not(:first-child){margin-top:18px}
+.hoy-it{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:11px 0;border-top:1px solid var(--line)}
+.hoy-it .tx{flex:1 1 220px;min-width:0}.hoy-it .tx b{display:block;overflow-wrap:anywhere}.hoy-it .tx span{font-size:.84rem;color:var(--muted)}
+.hoy-it .tg{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--sun-soft);color:var(--warn)}
+.hoy-it .tg.late{background:#FBE3DF;color:#9E2A20}
+.hoy-ok{padding:26px 10px;text-align:center;color:var(--muted)}
 .crm-acts button,.crm-acts a{font:inherit;font-size:.8rem;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none}
 .crm-acts .w{background:#14853F;border-color:#14853F;color:#fff}
 .crm-acts .x{color:var(--bad)}
@@ -458,6 +470,7 @@ details.fold[open] > summary{margin-bottom:16px}
 <nav class="top" aria-label="Secciones">
   <div class="wrap">
     <div class="brand">Planicie <span>de Asia</span></div>
+    <a href="#hoy">Hoy<span class="nb" id="hoyNb" hidden></span></a>
     <a href="#proforma">Proforma</a>
     <a href="#inventario">Lotes</a>
     <a href="#panel">Panel</a>
@@ -525,6 +538,17 @@ details.fold[open] > summary{margin-bottom:16px}
     <div class="sum"><b class="num">S/ 29,000</b><p>Un lote de 200 m² al contado, en soles. Sin intereses si se paga en cuotas directas con Vivaldi.</p></div>
     <div class="sum"><b class="num">2.5 km</b><p id="sumNear">Es la distancia a Asia 109, donde el m² cuesta casi 10 veces más. Mismo tramo, otro precio.</p></div>
   </div>
+</section>
+
+<!-- HOY -->
+<section id="hoy">
+  <div class="sec-head">
+    <div class="eyebrow">Herramienta · Agenda</div>
+    <h2>Tu día <em>en una lista</em></h2>
+    <p class="lead">Lo que pide acción hoy: clientes por contactar, cuotas vencidas o por vencer y separaciones cuyo plazo de firma se acaba. Resuelve cada punto desde aquí.</p>
+  </div>
+  <div class="hoy-kp" id="hoyKp"></div>
+  <div class="panel hoy"><div id="hoyList" aria-live="polite"></div></div>
 </section>
 
 <!-- PROFORMA -->
@@ -1661,7 +1685,7 @@ function renderCrm(){
       <div class="crm-acts">${c.phone ? `<button type="button" class="w" data-a="wa">WhatsApp</button>` : ""}<button type="button" data-a="next">${isActive(c) ? "Avanzar etapa" : "Reabrir"}</button><button type="button" data-a="pf">Proforma</button><button type="button" data-a="edit">Editar</button><button type="button" class="x" data-a="del">Eliminar</button></div>
     </div>`; }).join("")
     : `<div class="crm-empty">${CLIENTS.length ? "No hay clientes en este filtro." : "Aún no tienes clientes. Agrega el primero con el formulario o desde la Proforma."}</div>`;
-  fillTplClients(); if (typeof renderPanel === "function") renderPanel();
+  fillTplClients(); if (typeof renderPanel === "function") renderPanel(); if (window.hoyReady) renderHoy();
 }
 $("crmList").addEventListener("click", e => {
   const b = e.target.closest("button[data-a]"); if (!b) return;
@@ -1867,7 +1891,7 @@ function renderSep(){
 function sepIssue(){
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return null; }
   if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(n).padStart(4, "0")}`;
-    SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name, adv: c.r.adv || pf("Adv").value.trim()}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {}
+    SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name, adv: c.r.adv || pf("Adv").value.trim()}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {} if (window.hoyReady) renderHoy();
     lotMark(c.r.projName, c.r.mz, c.r.lt, "Separado", c.r.name);
     const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
     if (cl && cl.stage !== "Vendido"){ cl.stage = "Separado"; cl.stageAt = todayIso(); cl.notes = (cl.notes ? cl.notes + "\n" : "") + `Separación ${sepIssued}: ${fmt(c.amt)} (${c.pay}). Firmar hasta ${dNum(c.lim)}.`; crmSave(); renderCrm(); }
@@ -1910,6 +1934,7 @@ function renderCob(){
     <td><span class="st ${r.state}">${lab[r.state]}${r.paid ? " · " + dNum(new Date(r.paid + "T12:00")) : ""}</span></td>
     <td><div class="acts2">${r.paid ? `<button type="button" data-undo="${r.k.id}:${r.s.i}">Deshacer</button>` : `${r.k.phone ? `<button type="button" class="w" data-rem="${r.k.id}:${r.s.i}">Recordar</button>` : ""}<button type="button" data-pay="${r.k.id}:${r.s.i}">Registrar pago</button>`}</div></td></tr>`).join("")
     : `<tr><td colspan="6" class="note" style="text-align:center;padding:20px">${COB.length ? "No hay cuotas en este filtro." : "Aún no hay ventas en cobranza. Registra una desde la constancia de separación."}</td></tr>`;
+  if (window.hoyReady) renderHoy();
 }
 $("cobFilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; cobF = b.dataset.v; $("cobFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderCob(); });
 $("cobBody").addEventListener("click", e => {
@@ -1930,6 +1955,47 @@ $("cobX").addEventListener("click", async () => {
   await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
 });
 renderSep(); renderCob(); window.sepReady = true; renderRank();
+
+/* ---------- hoy: agenda del día ---------- */
+function hoyItems(){
+  const t = todayIso(), in3 = iso(new Date(Date.now() + 3 * 864e5));
+  const cl = CLIENTS.filter(c => isActive(c) && c.next && c.next <= t).sort((a, b) => a.next.localeCompare(b.next))
+    .map(c => ({kind: "cl", late: c.next < t, id: c.id, title: c.name, sub: `${c.stage} · ${c.proj}${c.phone ? " · " + c.phone : ""}`, tag: c.next < t ? "Atrasado desde " + fmtDay(c.next) : "Contactar hoy", c}));
+  const cu = cobRows().filter(r => !r.paid && r.s.d <= in3)
+    .map(r => ({kind: "cu", late: r.s.d < t, id: r.k.id + ":" + r.s.i, title: r.k.name || "—", sub: `Cuota ${r.s.i} de ${r.k.sched.length} · ${fmt(r.s.amt)} · ${r.k.projName}${r.k.lot ? " · " + r.k.lot : ""}`, tag: (r.s.d < t ? "Venció " : r.s.d === t ? "Vence hoy " : "Vence ") + fmtDay(r.s.d), r}));
+  const se = SEPS.filter(x => x.lim && x.lim <= in3 && !COB.some(k => k.pf === x.pf))
+    .map(x => ({kind: "se", late: x.lim < t, id: x.no, title: x.name || "—", sub: `${x.no} · separación ${fmt(x.amt)}`, tag: (x.lim < t ? "Firma vencida el " : "Firma hasta el ") + fmtDay(x.lim), x}));
+  return {cl, cu, se, n: cl.length + cu.length + se.length, late: [...cl, ...cu, ...se].filter(i => i.late).length};
+}
+function renderHoy(){
+  const h = hoyItems(), sum = h.cu.reduce((a, i) => a + i.r.s.amt, 0);
+  $("hoyNb").hidden = !h.n; $("hoyNb").textContent = h.n; $("hoyNb").setAttribute("aria-label", h.n + " pendientes");
+  $("hoyKp").innerHTML = [["Pendientes", h.n, h.late], ["Atrasados", h.late, h.late], ["Clientes por contactar", h.cl.length], ["Por cobrar (3 días)", fmt(sum), h.cu.some(i => i.late)], ["Firmas por vencer", h.se.length, h.se.some(i => i.late)]]
+    .map(([l, v, hl]) => `<div class="${hl ? "hl" : ""}"><b class="num">${v}</b><span>${l}</span></div>`).join("");
+  const it = i => {
+    const acts = i.kind === "cl" ? `${i.c.phone ? `<button type="button" class="w" data-h="wa">WhatsApp</button>` : ""}<button type="button" data-h="later">Mañana</button><button type="button" data-h="go">Ver ficha</button>`
+      : i.kind === "cu" ? `${i.r.k.phone ? `<button type="button" class="w" data-h="rem">Recordar</button>` : ""}<button type="button" data-h="pay">Registrar pago</button>`
+      : `<button type="button" data-h="sep">Ir a separaciones</button>`;
+    return `<div class="hoy-it" data-k="${i.kind}" data-id="${esc(i.id)}"><div class="tx"><b>${esc(i.title)}</b><span>${esc(i.sub)}</span></div><span class="tg ${i.late ? "late" : ""}">${i.tag}</span><div class="crm-acts">${acts}</div></div>`;
+  };
+  const grp = (t, a) => a.length ? `<h3 class="hoy-g">${t} (${a.length})</h3>` + a.map(it).join("") : "";
+  $("hoyList").innerHTML = h.n ? grp("Cobranza", h.cu) + grp("Separaciones por firmar", h.se) + grp("Clientes por contactar", h.cl)
+    : `<div class="hoy-ok"><b>Todo al día.</b><br>Cuando un cliente tenga fecha de contacto, una cuota venza o una separación esté por caducar, aparecerá aquí.</div>`;
+}
+$("hoyList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-h]"); if (!b) return;
+  const row = b.closest("[data-id]"), k = row.dataset.k, id = row.dataset.id, a = b.dataset.h;
+  if (k === "cl"){ const c = CLIENTS.find(x => x.id === id); if (!c) return;
+    if (a === "wa") sendWa(`Hola ${c.name.split(" ")[0]}, te saluda ${pf("Adv").value.trim() || "tu asesor"} de Vivaldi Inmobiliaria. ¿Pudiste revisar la información de ${c.proj}? Si quieres, coordinamos una visita al proyecto.`, c.phone);
+    if (a === "later"){ const n = new Date(Date.now() + 864e5); c.next = iso(n); crmSave(); renderCrm(); toast(`${c.name}: contactar ${fmtDay(c.next)}`); }
+    if (a === "go"){ crmF = "hoy"; $("crmFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === "hoy")); renderCrm(); $("clientes").scrollIntoView({behavior:"smooth"}); }
+  }
+  if (k === "cu"){ const [kid, i] = id.split(":"), btn = $("cobBody").querySelector(`[data-${a === "rem" ? "rem" : "pay"}="${kid}:${i}"]`);
+    if (!btn){ cobF = "all"; $("cobFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === "all")); renderCob(); }
+    $("cobBody").querySelector(`[data-${a === "rem" ? "rem" : "pay"}="${kid}:${i}"]`)?.click(); }
+  if (k === "se") $("cobranza").scrollIntoView({behavior:"smooth"});
+});
+renderHoy(); window.hoyReady = true;
 
 /* ---------- inventario de lotes ---------- */
 const INV_KEY = "vivaldi-lotes-v1", LST = ["Disponible", "Separado", "Vendido", "Bloqueado"];
