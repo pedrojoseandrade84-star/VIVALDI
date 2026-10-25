@@ -850,6 +850,7 @@ footer.site a,.linkbtn{display:inline-flex;align-items:center;min-height:44px}
 .h-lg em,.expand-copy .h-xl em,.collage-title .h-lg em,.band-row em{font-style:normal}
 .enter,.band,.blinds,.route-bigkm,#lwEmbers{display:none!important}
 .lw-title .pk-o{color:inherit}
+main img:not([src^="data:image/svg"]):not(.lw-bg):not(section.lw img):not([alt*="ogo"]):not([class*="logo"]):not([class*="qr"]),.hero img{filter:saturate(.8) contrast(1.03) sepia(.06)}
 h2 em,h3 em,.fit-title em{font-style:normal}.route-card .km,.rl-body .km,.route-hint .count{font-family:var(--f-body);font-weight:700;letter-spacing:.04em}
 </style></head>
 <body>
@@ -934,7 +935,7 @@ h2 em,h3 em,.fit-title em{font-style:normal}.route-card .km,.rl-body .km,.route-
   <div class="wrap lw-inner">
     <div style="display:grid;gap:22px">
       <span class="lw-kicker reveal">Campaña de octubre · Tour inmobiliario</span>
-      <h2 class="lw-title reveal" id="lwTitle" aria-label="Loteween"><span aria-hidden="true">Lote</span><span class="pk-o" aria-hidden="true">o</span><span aria-hidden="true">ween</span></h2>
+      <h2 class="lw-title reveal" id="lwTitle" aria-label="Loteween"><span aria-hidden="true">Lote</span><span aria-hidden="true">ween</span></h2>
       <p class="lw-sub reveal">Compra tu lote, participa y gana.</p>
       <p class="lw-lead reveal">Agenda tu visita a <b>Las Terrazas de Cerro Azul</b> esta temporada, separa tu lote y entra al sorteo de premios de Vivaldi.</p>
       <div class="lw-offer reveal"><small>Lotes de 200 m²</small><b>desde S/ 25,000</b><span>al contado · Las Terrazas de Cerro Azul, km 117.5</span></div>
@@ -1591,7 +1592,7 @@ document.querySelectorAll("#navLinks a").forEach(a => a.addEventListener("click"
       const p1 = Math.min(1, p / .3), a1 = 1 - Math.pow(1 - p1, 3), p3 = Math.max(0, Math.min(1, (p - .4) / .25));
       colImgs.forEach((im, i) => { const c = COL[i], out = p3 * (c.x < 50 ? -1 : 1);
         im.style.opacity = String(a1 * (1 - p3));
-        im.style.transform = `translate(${(1 - a1) * c.dx + out * 60}vw, ${(1 - a1) * c.dy}vh) rotate(${c.r * (1 - a1 * .6)}deg) scale(${.85 + a1 * .15})`; });
+        im.style.transform = `translate(${(1 - a1) * c.dx + out * 60}vw, ${(1 - a1) * c.dy}vh) scale(${.85 + a1 * .15})`; });
       colTitle.style.opacity = String(1 - p3); colTitle.style.transform = `translateY(${-p3 * 30}px)`;
       const p2 = Math.max(0, Math.min(1, (p - .38) / .32)), e2 = p2 < .5 ? 4 * p2 * p2 * p2 : 1 - Math.pow(-2 * p2 + 2, 3) / 2, k = 1 - e2;
       exImg.style.clipPath = `inset(${30 * k}% ${33 * k}% ${32 * k}% ${33 * k}% round ${k * 18}px)`;
@@ -2237,7 +2238,7 @@ async function projectCard(p, g, photoEl){
       // critically-damped-ish lerp toward the target: has momentum without overshooting
       rx += (tx - rx) * .14; ry += (ty - ry) * .14;
       if (card.classList.contains("pre")){ raf = 0; return; }
-      card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(${over ? -4 : 0}px)`;
+      card.style.transform = `translateY(${over ? -4 : 0}px)`;
       if (Math.abs(tx - rx) > .01 || Math.abs(ty - ry) > .01) raf = requestAnimationFrame(tick);
       else { raf = 0; if (!over){ card.style.transform = ""; card.style.transition = ""; } }
     };
