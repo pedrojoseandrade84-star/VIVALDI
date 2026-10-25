@@ -258,6 +258,9 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .goal-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sea),var(--good));border-radius:8px;transition:width 700ms cubic-bezier(.23,1,.32,1)}
 .goal-txt{font-weight:700}
 .pflog table{min-width:720px}
+.rk table{min-width:640px}
+.rk tbody tr:first-child td{font-weight:800}
+.rk .medal{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sun);color:#1F1604;font-size:.72rem;font-weight:800;margin-right:8px}
 .pflog td{vertical-align:middle}
 .pflog button{font:inherit;font-size:.8rem;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 @media (max-width:860px){.kp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -624,6 +627,11 @@ details.fold[open] > summary{margin-bottom:16px}
     </div>
   </div>
   <div class="panel">
+    <div class="crm-top"><h3>Ranking por asesor</h3><div class="seg" id="rkPer" role="group" aria-label="Periodo del ranking"><button type="button" data-v="mes" aria-pressed="true">Este mes</button><button type="button" data-v="todo" aria-pressed="false">Todo</button></div></div>
+    <div class="tbl rk" tabindex="0" role="region" aria-label="Ranking por asesor"><table><thead><tr><th>Asesor</th><th class="r">Proformas</th><th class="r">Monto cotizado</th><th class="r">Separaciones</th><th class="r">Ventas</th><th class="r">Cobrado</th><th class="r">Conversión</th></tr></thead><tbody id="rkBody"></tbody></table></div>
+    <p class="note">Para ver a todo el equipo, la jefatura combina los respaldos de cada asesor en <a href="#datos">Datos → Consolidar equipo</a>.</p>
+  </div>
+  <div class="panel">
     <div class="crm-top"><h3>Registro de proformas</h3><input class="crm-search" id="pfLogQ" type="search" placeholder="Buscar por cliente, N° o proyecto" aria-label="Buscar proforma"></div>
     <div class="tbl pflog" tabindex="0" role="region" aria-label="Registro de proformas"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Proyecto / lote</th><th class="r">Precio final</th><th>Pago</th><th><span class="sr">Acciones</span></th></tr></thead><tbody id="pfLogBody"></tbody></table></div>
     <div class="acts"><button class="btn pri sm" type="button" id="repX">Reporte gerencial (Excel)</button><button class="btn ghost sm" type="button" id="pfLogX">Exportar registro a Excel</button></div>
@@ -988,6 +996,9 @@ details.fold[open] > summary{margin-bottom:16px}
     <h3>Respaldo completo</h3>
     <p class="note">Guarda en un solo archivo todo lo de esta herramienta: proformas, separaciones, cobranza, clientes, lotes, metas y precios. Úsalo para pasar la información a otra computadora o guardar una copia semanal.</p>
     <div class="acts"><button class="btn pri sm" type="button" id="bkAll">Descargar respaldo completo</button><button class="btn ghost sm" type="button" id="bkLoad">Restaurar respaldo</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+    <h3 class="mt" style="margin-top:12px">Consolidar equipo (jefatura)</h3>
+    <p class="note">Selecciona a la vez los respaldos de varios asesores. Se suman a los datos de este equipo sin duplicar proformas, separaciones, ventas ni clientes; los lotes quedan con el estado más avanzado.</p>
+    <div class="acts"><button class="btn ghost sm" type="button" id="bkTeam">Consolidar respaldos del equipo</button><input type="file" id="bkTeamFile" accept=".json,application/json" multiple hidden></div>
     <input type="file" id="dFile" accept="application/json,.json" hidden>
   </div>
   <p class="note" id="dState"></p>
@@ -1274,6 +1285,7 @@ pf("Proj").addEventListener("change", () => { pfProjSet(); pfDirty(); });
 pf("Start").value = iso(addMonths(today, 1));
 try { pf("Adv").value = localStorage.getItem("vivaldi-asesor") || ""; pf("AdvPh").value = localStorage.getItem("vivaldi-asesor-cel") || ""; } catch {}
 pf("Adv").addEventListener("change", () => { try { localStorage.setItem("vivaldi-asesor", pf("Adv").value.trim()); } catch {} });
+pf("Adv").addEventListener("input", () => { if (!pfIssued) renderPf(); });
 pf("AdvPh").addEventListener("change", () => { try { localStorage.setItem("vivaldi-asesor-cel", pf("AdvPh").value.trim()); } catch {} });
 
 // numbering: PF-2026-0001… The number is used when the proforma is sent, printed or saved; editing afterwards starts the next one
@@ -1281,7 +1293,8 @@ let pfIssued = null, PFLOG = [];
 try { PFLOG = JSON.parse(localStorage.getItem("vivaldi-proformas-v1")) || []; } catch {}
 const pfLogSave = () => { try { localStorage.setItem("vivaldi-proformas-v1", JSON.stringify(PFLOG.slice(0, 2000))); } catch {} };
 const pfSeq = () => { try { return +localStorage.getItem("vivaldi-pf-seq") || 0; } catch { return 0; } };
-const pfFmtNo = n => `PF-${today.getFullYear()}-${String(n).padStart(4, "0")}`;
+const advIni = () => (pf("Adv").value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/\b[A-Za-z]/g) || []).slice(0, 2).join("").toUpperCase();
+const pfFmtNo = n => `PF-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(n).padStart(4, "0")}`;
 const pfNo = () => pfIssued || pfFmtNo(pfSeq() + 1);
 function pfIssue(){
   if (!pfIssued){ const n = pfSeq() + 1; try { localStorage.setItem("vivaldi-pf-seq", n); } catch {} pfIssued = pfFmtNo(n);
@@ -1735,8 +1748,27 @@ function renderPanel(){
       options:{...baseOpts(), indexAxis:"y", plugins:{...baseOpts().plugins, legend:{display:false}, tooltip:{...baseOpts().plugins.tooltip, callbacks:{label:c => c.raw + " clientes"}}},
         scales:{x:{grid:{color:C.line}, ticks:{precision:0}, beginAtZero:true}, y:{grid:{display:false}, ticks:{color:C.ink}}}}}); }
   }
-  renderPfLog();
+  renderPfLog(); if (window.sepReady) renderRank();
 }
+
+/* ---------- ranking por asesor ---------- */
+let rkPer = "mes";
+function advStats(period){
+  const ym = iso(new Date()).slice(0, 7), inP = d => period === "todo" || (d || "").slice(0, 7) === ym, pfAdv = no => PFLOG.find(r => r.no === no)?.adv || "";
+  const M = new Map(), g = n => { const k = (n || "").trim() || "Sin asesor"; if (!M.has(k)) M.set(k, {adv: k, pf: 0, amt: 0, sep: 0, sale: 0, paid: 0}); return M.get(k); };
+  PFLOG.filter(r => inP(r.at)).forEach(r => { const s = g(r.adv); s.pf++; s.amt += r.net || 0; });
+  SEPS.filter(x => inP(x.at)).forEach(x => g(x.adv || pfAdv(x.pf)).sep++);
+  COB.forEach(k => { const s = g(k.adv || pfAdv(k.pf)), sold = k.at || SEPS.find(x => x.pf === k.pf)?.at || PFLOG.find(r => r.no === k.pf)?.at;
+    if (inP(sold)) s.sale++;
+    Object.entries(k.paid).forEach(([i, d]) => { if (inP(d)) s.paid += k.sched.find(x => x.i === +i)?.amt || 0; }); });
+  return [...M.values()].map(s => ({...s, conv: s.pf ? Math.round(s.sale / s.pf * 100) : 0})).sort((a, b) => b.sale - a.sale || b.sep - a.sep || b.amt - a.amt);
+}
+function renderRank(){
+  const st = advStats(rkPer);
+  $("rkBody").innerHTML = st.length ? st.map((s, i) => `<tr><td>${i < 3 && (s.sale || s.sep || s.pf) ? `<span class="medal">${i + 1}</span>` : ""}${esc(s.adv)}</td><td class="r num">${s.pf}</td><td class="r num">${fmt(s.amt)}</td><td class="r num">${s.sep}</td><td class="r num">${s.sale}</td><td class="r num">${fmt(s.paid)}</td><td class="r num">${s.pf ? s.conv + "%" : "—"}</td></tr>`).join("")
+    : `<tr><td colspan="7" class="note" style="text-align:center;padding:18px">Sin actividad en este periodo.</td></tr>`;
+}
+$("rkPer").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; rkPer = b.dataset.v; $("rkPer").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderRank(); });
 function renderPfLog(){
   const q = norm2($("pfLogQ").value);
   const rows = PFLOG.filter(r => !q || norm2(`${r.no} ${r.name} ${r.projName} ${r.mz} ${r.lt}`).includes(q)).slice(0, 200);
@@ -1783,7 +1815,7 @@ const SEP_KEY = "vivaldi-separaciones-v1";
 let SEPS = []; try { SEPS = JSON.parse(localStorage.getItem(SEP_KEY)) || []; } catch {}
 let sepIssued = null;
 const sepSeq = () => { try { return +localStorage.getItem("vivaldi-sep-seq") || 0; } catch { return 0; } };
-const sepNo = () => sepIssued || `SEP-${today.getFullYear()}-${String(sepSeq() + 1).padStart(4, "0")}`;
+const sepNo = () => sepIssued || `SEP-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(sepSeq() + 1).padStart(4, "0")}`;
 $("sepDate").value = iso(new Date());
 function fillSepPf(){
   const sel = $("sepPf"), cur = sel.value;
@@ -1834,8 +1866,8 @@ function renderSep(){
 }
 function sepIssue(){
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return null; }
-  if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${String(n).padStart(4, "0")}`;
-    SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {}
+  if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(n).padStart(4, "0")}`;
+    SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name, adv: c.r.adv || pf("Adv").value.trim()}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {}
     lotMark(c.r.projName, c.r.mz, c.r.lt, "Separado", c.r.name);
     const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
     if (cl && cl.stage !== "Vendido"){ cl.stage = "Separado"; cl.stageAt = todayIso(); cl.notes = (cl.notes ? cl.notes + "\n" : "") + `Separación ${sepIssued}: ${fmt(c.amt)} (${c.pay}). Firmar hasta ${dNum(c.lim)}.`; crmSave(); renderCrm(); }
@@ -1857,7 +1889,7 @@ $("sepSale").addEventListener("click", () => {
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return; }
   if (!c.plan.term){ toast("Venta al contado: no genera cuotas"); return; }
   if (COB.some(x => x.pf === c.r.no) && !confirm("Esta proforma ya tiene un cronograma en cobranza. ¿Registrarla otra vez?")) return;
-  COB.unshift({id: Date.now().toString(36), pf: c.r.no, sep: sepIssued, name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "), sched: c.plan.sched, paid: {}});
+  COB.unshift({id: Date.now().toString(36), at: todayIso(), pf: c.r.no, sep: sepIssued, adv: c.r.adv || pf("Adv").value.trim(), name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "), sched: c.plan.sched, paid: {}});
   cobSave(); lotMark(c.r.projName, c.r.mz, c.r.lt, "Vendido", c.r.name);
   const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
   if (cl){ cl.stage = "Vendido"; cl.stageAt = todayIso(); crmSave(); renderCrm(); }
@@ -1897,7 +1929,7 @@ $("cobX").addEventListener("click", async () => {
   ws.autoFilter = {from:{row:top, column:1}, to:{row:Math.max(top, r - 2), column:8}};
   await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
 });
-renderSep(); renderCob(); window.sepReady = true;
+renderSep(); renderCob(); window.sepReady = true; renderRank();
 
 /* ---------- inventario de lotes ---------- */
 const INV_KEY = "vivaldi-lotes-v1", LST = ["Disponible", "Separado", "Vendido", "Bloqueado"];
@@ -2017,11 +2049,33 @@ $("repX").addEventListener("click", async () => {
     rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.s.i, x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; return row; }));
   sheet("Clientes", "CARTERA DE CLIENTES", [{h:"Nombre", w:24}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:14, fmt:XL.money}, {h:"Notas", w:46, wrap:true}],
     CLIENTS.map(c => [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes]));
+  sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión %", w:13, fmt:"0"}],
+    advStats("todo").map(s => [s.adv, s.pf, s.amt, s.sep, s.sale, s.paid, s.conv]));
   sheet("Inventario", "INVENTARIO DE LOTES", [{h:"Proyecto", w:28}, {h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:12}, {h:"Cliente", w:26}],
     INV.map(l => [l.proj, l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]));
   await xlSave(wb, `reporte-gerencial-vivaldi-${iso(now)}.xlsx`);
 });
 
+
+/* ---------- consolidar equipo ---------- */
+$("bkTeam").addEventListener("click", () => $("bkTeamFile").click());
+$("bkTeamFile").addEventListener("change", async e => {
+  const files = [...e.target.files]; e.target.value = ""; if (!files.length) return;
+  const rank = {Disponible: 0, Bloqueado: 1, Separado: 2, Vendido: 3}; let n = {pf: 0, sep: 0, cob: 0, cl: 0, lot: 0}, bad = 0;
+  for (const f of files){
+    try { const j = JSON.parse(await f.text()); if (j.tipo !== "respaldo-vivaldi") throw 0; const d = j.datos, get = k => { try { return JSON.parse(d[k] || "[]"); } catch { return []; } };
+      get("vivaldi-proformas-v1").forEach(r => { if (!PFLOG.some(x => x.no === r.no && (x.adv || "") === (r.adv || ""))){ PFLOG.push(r); n.pf++; } });
+      get("vivaldi-separaciones-v1").forEach(r => { if (!SEPS.some(x => x.no === r.no)){ SEPS.push(r); n.sep++; } });
+      get("vivaldi-cobranza-v1").forEach(r => { const ex = COB.find(x => x.id === r.id || (x.pf === r.pf && (x.adv || "") === (r.adv || ""))); if (!ex){ COB.push(r); n.cob++; } else Object.assign(ex.paid, r.paid); });
+      get("vivaldi-clientes-v1").forEach(r => { if (!CLIENTS.some(x => x.id === r.id)){ CLIENTS.push(r); n.cl++; } });
+      get("vivaldi-lotes-v1").forEach(r => { const ex = findLot(r.proj, r.mz, r.lt); if (!ex){ INV.push(r); n.lot++; } else if ((rank[r.st] || 0) > (rank[ex.st] || 0)){ ex.st = r.st; ex.client = r.client || ex.client; } });
+    } catch { bad++; }
+  }
+  PFLOG.sort((a, b) => b.at.localeCompare(a.at)); SEPS.sort((a, b) => b.at.localeCompare(a.at));
+  pfLogSave(); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {} cobSave(); crmSave(); invSave();
+  renderCrm(); renderSep(); renderCob(); renderInv(); renderPanel();
+  toast(`Consolidado: ${n.pf} proformas, ${n.sep} separaciones, ${n.cob} ventas, ${n.cl} clientes, ${n.lot} lotes nuevos${bad ? ` · ${bad} archivos no válidos` : ""}`);
+});
 /* ---------- respaldo completo ---------- */
 const BK_KEYS = k => /^(vivaldi-|vv-)/.test(k);
 $("bkAll").addEventListener("click", () => {
