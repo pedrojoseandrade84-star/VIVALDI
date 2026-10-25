@@ -492,7 +492,14 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{m
 nav.top a{display:inline-flex;align-items:center;min-height:48px;padding-left:14px;padding-right:14px}th button{min-height:40px;padding-top:10px;padding-bottom:10px}
 button{min-height:44px}
 }
-html,body{overscroll-behavior-y:contain}</style></head>
+html,body{overscroll-behavior-y:contain}</style><style id="human-fix">
+.sec-head .eyebrow{display:none}
+.sec-head h2{font-family:var(--f-body);font-weight:800;font-size:clamp(1.45rem,2.3vw,1.85rem);letter-spacing:-.015em;color:var(--ink)}
+h2 em,.hero h1 em{font-style:normal}
+.eyebrow,.feat .k,th,.sev,.phone,.mode .upd,.vis-when,.mx td:first-child,.pf-grid .panel h3{font-family:var(--f-body)}
+th{letter-spacing:.04em}
+td.r,th.r{white-space:nowrap}
+</style></head>
 <body>
 <noscript><div style="background:#E8A93A;color:#1F1604;padding:12px 16px;font:600 15px/1.4 system-ui,sans-serif;text-align:center">Vista previa limitada: la vista previa de WhatsApp en iPhone no ejecuta esta herramienta. Ábrela en <b>Chrome</b> (Android o computadora) o desde su enlace.</div></noscript>
 
@@ -574,7 +581,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="hoy">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Agenda</div>
-    <h2>Tu día <em>en una lista</em></h2>
+    <h2>Agenda de hoy</h2>
     <p class="lead">Lo que pide acción hoy: visitas de hoy y mañana, clientes por contactar, cuotas vencidas o por vencer y separaciones cuyo plazo de firma se acaba. Resuelve cada punto desde aquí.</p>
   </div>
   <div class="hoy-kp" id="hoyKp"></div>
@@ -585,7 +592,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="proforma">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Proforma</div>
-    <h2>Arma la proforma <em>con el cliente al frente</em></h2>
+    <h2>Proforma</h2>
     <p class="lead">Llena los datos y la proforma se arma al lado, tal como se imprime. Envíala como imagen por WhatsApp, guárdala en PDF o descarga el cronograma en Excel. Plazo e inicial se confirman con la jefatura comercial.</p>
   </div>
   <div class="pf-grid">
@@ -642,7 +649,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="inventario">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Inventario de lotes</div>
-    <h2>Qué lote está libre, <em>en tiempo real</em></h2>
+    <h2>Inventario de lotes</h2>
     <p class="lead">Carga los lotes de cada proyecto (o importa tu Excel). Desde aquí se cotiza con un clic, y al separar o vender el estado cambia solo. La proforma avisa si un lote ya no está disponible.</p>
   </div>
   <div class="inv-top">
@@ -671,7 +678,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="panel">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Panel comercial</div>
-    <h2>Tu mes <em>en un vistazo</em></h2>
+    <h2>Panel comercial</h2>
     <p class="lead">Indicadores calculados con tus proformas y tu cartera de clientes. Fija la meta del mes y sigue el avance; el registro guarda cada proforma emitida para reabrirla o reportarla.</p>
   </div>
   <div class="kp-grid" id="kpGrid"></div>
@@ -701,7 +708,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="cobranza">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Separación y cobranza</div>
-    <h2>Del sí del cliente <em>a la cuota pagada</em></h2>
+    <h2>Separación y cobranza</h2>
     <p class="lead">Emite la constancia de separación a partir de una proforma, registra la venta y sigue cada cuota: vencidas, próximas y pagadas, con recordatorio por WhatsApp.</p>
   </div>
   <div class="pf-grid">
@@ -739,7 +746,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="clientes">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Mis clientes</div>
-    <h2>Tu cartera de prospectos, <em>con seguimiento</em></h2>
+    <h2>Mis clientes</h2>
     <p class="lead">Registra a cada interesado, marca en qué etapa está y la fecha del próximo contacto. Los que toca llamar hoy aparecen primero. Se guarda en este navegador; exporta a Excel cuando quieras reportar.</p>
   </div>
   <div class="crm-stats" id="crmStats"></div>
@@ -772,7 +779,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="visitas">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Visitas guiadas</div>
-    <h2>Agenda de tours <em>al proyecto</em></h2>
+    <h2>Visitas guiadas</h2>
     <p class="lead">El cliente que visita el proyecto compra mucho más. Agenda el tour, confírmalo por WhatsApp, recuérdaselo la víspera y registra si asistió.</p>
   </div>
   <div class="crm-stats" id="visStats"></div>
@@ -803,7 +810,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="plantillas">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Mensajes</div>
-    <h2>Plantillas de WhatsApp <em>en un toque</em></h2>
+    <h2>Mensajes de WhatsApp</h2>
     <p class="lead">Elige el cliente (opcional) y el mensaje se completa con su nombre y proyecto. Revísalo y envíalo.</p>
   </div>
   <div class="field-row"><label for="tplClient">Cliente</label><select id="tplClient"></select></div>
@@ -814,7 +821,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="objeciones">
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Objeciones</div>
-    <h2>Respuestas listas para <em>las dudas de siempre</em></h2>
+    <h2>Respuestas a objeciones</h2>
     <p class="lead">Respuestas cortas y con datos para copiar o mandar por WhatsApp. Las cifras se actualizan solas cuando cambias los precios en <a href="#datos">Datos</a>.</p>
   </div>
   <div class="obj" id="objList"></div>
@@ -1066,7 +1073,7 @@ html,body{overscroll-behavior-y:contain}</style></head>
 <section id="datos">
   <div class="sec-head">
     <div class="eyebrow">Administración · Datos</div>
-    <h2>Actualiza precios <em>sin tocar código</em></h2>
+    <h2>Precios y datos</h2>
     <p class="lead">Cambia precios, tipo de cambio o agrega competidores. Todo el análisis (gráficos, tabla, objeciones y proforma) se recalcula al instante. Los cambios se guardan en este navegador; usa <b>Exportar</b> para compartirlos con el equipo y <b>Importar</b> para cargarlos en otro equipo.</p>
   </div>
   <div class="form" style="max-width:640px">
