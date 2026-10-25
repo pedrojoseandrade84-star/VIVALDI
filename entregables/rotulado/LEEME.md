@@ -1,5 +1,7 @@
 # Rotulado vehicular Vivaldi · 25 diseños
 
+- **Vivaldi-Rotulado-5-Disenos.pdf**: presentación principal (portada + 1 diseño por proyecto, con su arte plano para imprenta).
+
 - **Rotulado-Vehicular-Vivaldi.pdf**: catálogo de 9 páginas (portada, los 5 mensajes, una página por proyecto con sus 5 diseños, especificaciones y medición).
 - **vistas-25-disenos/**: los 25 diseños aplicados sobre fotos reales de una Toyota Hilux 2024 y un Toyota Yaris/Vios, recortadas sobre fondo blanco de estudio con placa en blanco (simulación).
 - **artes-planos-svg/**: 40 artes planos en vector (laterales y portalones) con el logo oficial de Vivaldi, para la imprenta.
