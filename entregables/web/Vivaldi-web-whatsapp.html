@@ -517,6 +517,7 @@ footer.site{background:#06191D;color:#9DB6B7;padding-block:64px 96px;font-size:.
 .foot-grid a,.linkbtn{color:#C9DBDB;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;text-align:left}
 @media (hover:hover){.foot-grid a:hover,.foot-grid .linkbtn:hover{color:#fff;text-decoration:underline}}
 .libro{display:inline-flex;gap:10px;align-items:center;box-shadow:inset 0 0 0 1.5px #3B5A5F;border-radius:12px;padding:10px 14px;margin-top:14px;color:#fff!important;font-weight:700}
+.foot-bottom .social a{color:#C9DBDB}
 .foot-bottom{border-top:1px solid #1B3438;margin-top:40px;padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.8rem}
 @media (max-width:860px){.foot-grid{grid-template-columns:1fr 1fr}}
 
@@ -537,6 +538,8 @@ footer.site{background:#06191D;color:#9DB6B7;padding-block:64px 96px;font-size:.
 .lw-bar{position:relative;z-index:59;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:9px var(--gutR) 9px var(--gut);font-size:.86rem;font-weight:600;color:#FFE9C7;text-decoration:none;
   background:linear-gradient(90deg,#2A0F2E,#5A1E1A 50%,#2A0F2E);background-size:200% 100%;animation:lwBar 8s linear infinite}
 .lw-bar b{color:#FFB547}
+.lw-short{display:none}
+@media (max-width:760px){.lw-long{display:none}.lw-short{display:inline}}
 .lw-bar .go{display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:underline;text-underline-offset:3px}
 @keyframes lwBar{to{background-position:-200% 0}}
 .lw{position:relative;overflow:hidden;color:#FFF3E2;background:#140A1A;isolation:isolate}
@@ -775,8 +778,20 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
 .ai-in input:focus{outline:none;border-color:var(--sea)}
 .ai-in button{width:44px;height:44px;border-radius:50%;border:0;background:var(--sea);color:#fff;font-size:1.05rem;cursor:pointer;flex:none}
 @media (max-width:760px){
-  .ai-fab{bottom:calc(84px + env(safe-area-inset-bottom,0px));right:12px;padding:10px 14px 10px 10px;font-size:.84rem}
+  .ai-fab{display:none!important}
+  .mbar{gap:8px}
+  .mbar .btn{white-space:nowrap;height:50px;padding:0 12px;font-size:.92rem}
+  .mbar .ai-b,.mbar .call-b{width:50px;height:50px;padding:0}
+  .mbar .ai-b{flex:0 0 auto;justify-content:center;background:var(--sun);color:#1F1604;font-family:var(--f-display);font-size:1.35rem;position:relative}
+  .mbar .ai-b::after{content:"";position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;background:#1FA855;box-shadow:0 0 0 2px #fff}
   .ai{right:0;left:0;bottom:0;width:100%;height:min(88svh,680px);border-radius:22px 22px 0 0}
+}
+/* computers: a compact round button that opens its label on hover, so it never covers page buttons */
+@media (min-width:761px){
+  .ai-fab{padding:9px;gap:0}
+  .ai-fab .dot{width:36px;height:36px}
+  .ai-fab .lbl{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width 300ms var(--ease-out), margin 300ms var(--ease-out)}
+  .ai-fab:hover .lbl,.ai-fab:focus-visible .lbl{max-width:200px;margin:0 8px 0 10px}
 }
 @media (prefers-reduced-motion:reduce){.ai,.ai-m{transition:none;animation:none}}
 @media (prefers-reduced-motion:reduce){
@@ -798,7 +813,7 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
 <a class="skip" href="#ruta">Saltar al contenido</a>
 
 <div class="ribbon">Prototipo de rediseño para <b>Vivaldi Inmobiliaria</b><span class="rb-more"> · </span><span class="rb-more">Demo conceptual con fotos de vivaldiinmobiliaria.com, no es el sitio oficial</span></div>
-<a class="lw-bar" href="#loteween"><span>🎃 <b>Loteween</b> · Compra tu lote y participa por una <b>Land Cruiser Prado 0 km</b></span><span class="go">Ver premios →</span></a>
+<a class="lw-bar" href="#loteween"><span>🎃 <b>Loteween</b><span class="lw-long"> · Compra tu lote y participa por una <b>Land Cruiser Prado 0 km</b></span><span class="lw-short"> · Gana una <b>Land Cruiser 0 km</b></span></span><span class="go">Ver premios →</span></a>
 
 <header class="site" id="hdr">
   <div class="wrap nav">
@@ -1199,7 +1214,7 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
         <li><button type="button" class="linkbtn" id="cookieReopen">Preferencias de cookies</button></li>
       </ul></div>
     </div>
-    <div class="foot-bottom"><span>© 2026 Vivaldi Inmobiliaria</span><span>Facebook · Instagram · TikTok · YouTube · LinkedIn</span><a class="to-top" href="#inicio">Volver arriba ↑</a></div>
+    <div class="foot-bottom"><span>© 2026 Vivaldi Inmobiliaria</span><span class="social"><a href="https://www.facebook.com/Vivaldiinmobiliaria/" target="_blank" rel="noopener">Facebook</a> · <a href="https://www.tiktok.com/@vivaldiinmobiliaria" target="_blank" rel="noopener">TikTok</a></span><a class="to-top" href="#inicio">Volver arriba ↑</a></div>
   </div>
 </footer>
 
@@ -1216,12 +1231,13 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
 
 <nav class="mbar" id="mbar" aria-label="Acciones rápidas">
   <a class="btn btn-deep" href="#contacto">Cotizar lote</a>
+  <button class="btn ai-b" type="button" id="aiBar" aria-label="Abrir el Asistente Vivaldi">V</button>
   <a class="btn call-b" href="tel:+51922549723" aria-label="Llamar a Vivaldi"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></a>
   <a class="btn wa-b" href="https://wa.me/51922549723?text=Hola%20Vivaldi%2C%20quiero%20informaci%C3%B3n%20de%20sus%20lotes%20de%20playa." target="_blank" rel="noopener">WhatsApp</a>
 </nav>
 
 
-<button class="ai-fab" id="aiFab" type="button" aria-expanded="false" aria-controls="ai"><span class="dot" aria-hidden="true">V</span>¿Dudas? Pregúntame</button>
+<button class="ai-fab" id="aiFab" type="button" aria-expanded="false" aria-controls="ai" aria-label="Asistente Vivaldi: pregúntame tus dudas"><span class="dot" aria-hidden="true">V</span><span class="lbl">¿Dudas? Pregúntame</span></button>
 <section class="ai" id="ai" role="dialog" aria-label="Asistente Vivaldi" hidden>
   <header><span class="av" aria-hidden="true">V</span><div><b>Asistente Vivaldi</b><small>Responde al instante · un asesor te sigue por WhatsApp</small></div><button type="button" id="aiX" aria-label="Cerrar asistente">✕</button></header>
   <div class="ai-log" id="aiLog" aria-live="polite"></div>
@@ -2125,8 +2141,8 @@ const bars = $("#whyBars"); if (io){ bars.classList.add("pre"); io.observe(bars)
   function open(){ box.hidden = false; fab.setAttribute("aria-expanded", "true");
     if (!greeted){ greeted = true; add(`¡Hola! 👋 Soy el asistente de <b>Vivaldi Inmobiliaria</b>. Te ayudo con precios, cuotas sin intereses, ubicación y visitas. Elige una opción o escríbeme.`, "bot"); }
     setTimeout(() => (matchMedia("(pointer: fine)").matches ? q : $("#aiX")).focus(), 50); }
-  function close(){ box.hidden = true; fab.setAttribute("aria-expanded", "false"); fab.focus({preventScroll:true}); }
-  fab.addEventListener("click", open); $("#aiX").addEventListener("click", close);
+  function close(){ box.hidden = true; fab.setAttribute("aria-expanded", "false"); (getComputedStyle(fab).display === "none" ? $("#aiBar") : fab).focus({preventScroll:true}); }
+  fab.addEventListener("click", open); $("#aiBar").addEventListener("click", open); $("#aiX").addEventListener("click", close);
   box.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
   log.addEventListener("click", e => { const a = e.target.closest("[data-close-ai]"); if (a) setTimeout(close, 60); });
   // the button waits until the visitor has seen the cover, and steps aside for the cookie notice
