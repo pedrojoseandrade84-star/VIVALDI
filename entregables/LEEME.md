@@ -13,6 +13,7 @@
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso para asesores y jefatura |
 | presentacion/ | Presentacion-Vivaldi.pdf | 9 diapositivas 16:9 para la reunión |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf + contrato-editable.html | Modelo de contrato (revisar con abogado antes de firmar) |
+| rotulado/ | Rotulado-Vehicular-Vivaldi.pdf + archivos SVG para imprenta | Diseños de adhesivos para camionetas, sedanes e imantados de asesores |
 
 ## Herramienta de ventas: 14 módulos
 Agenda "Hoy" (visitas, clientes, cuotas y firmas pendientes) · Visitas guiadas (agenda de tours con confirmación, recordatorio y asistencia) · Inventario de lotes · Proforma (PDF, imagen, Excel, QR, comparador de planes) · Constancia de separación · Cobranza · Panel comercial y metas · Reporte gerencial · Registro de proformas · Mis clientes · Mensajes · Objeciones · Análisis de competencia · Datos y respaldo.
