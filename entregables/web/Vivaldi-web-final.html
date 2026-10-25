@@ -373,6 +373,30 @@ header.solid .menu-btn{color:var(--ink)}
 @media (max-width:860px){.why-grid{grid-template-columns:1fr}.why-big{grid-row:auto}.bar{grid-template-columns:100px 1fr auto}}
 
 /* simulator */
+.fit{background:var(--paper);border-radius:28px;padding:clamp(22px,4vw,44px);box-shadow:inset 0 0 0 1px var(--line);display:grid;gap:24px}
+.fit-in{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(18px,4vw,48px);align-items:end}
+.fit-title{font-family:var(--f-display);font-size:clamp(2rem,4vw,3rem);line-height:1;font-weight:400}
+.fit-title em{color:var(--sea)}
+.fit-lead{color:var(--muted);max-width:52ch}
+.fit-form{display:grid;gap:20px}
+.fit-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.fit-card{border-radius:20px;padding:18px;display:grid;gap:8px;align-content:start;background:var(--mist);box-shadow:inset 0 0 0 1px var(--line)}
+.fit-card.ok{background:#fff;box-shadow:inset 0 0 0 2px var(--ok)}
+.fit-card .tg{justify-self:start;font-size:.72rem;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:999px;background:var(--line);color:var(--ink)}
+.fit-card.ok .tg{background:#DDF1E5;color:#14653A}
+.fit-card h4{font-family:var(--f-display);font-size:1.5rem;font-weight:400;line-height:1.05}
+.fit-card .meta{font-size:.85rem;color:var(--muted)}
+.fit-card>*{margin:0}
+.fit-card .plan{display:grid;gap:2px}.fit-card .plan span{font-size:.84rem;font-weight:600;color:var(--muted)}
+.fit-card .plan b{font-family:var(--f-mono);font-size:1.12rem;color:var(--sea);white-space:nowrap}
+.fit-card .gap{font-size:.86rem;color:var(--muted)}
+.fit-card .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.fit-card .acts a,.fit-card .acts button{font:inherit;font-size:.82rem;font-weight:700;padding:8px 12px;border-radius:999px;border:0;cursor:pointer;text-decoration:none}
+.fit-card .acts .w{background:#14853F;color:#fff}.fit-card .acts .v{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink)}
+@media (max-width:760px){.fit-in{grid-template-columns:minmax(0,1fr)}}
+.lead-dlg .dlg{gap:16px}.lead-dlg h3{font-size:clamp(1.7rem,6vw,2.2rem);line-height:1.05}
+.lead-dlg .lead-acts{display:flex;flex-wrap:wrap;gap:10px}
+.lead-dlg .lead-photo{width:100%;aspect-ratio:16/7;object-fit:cover;border-radius:16px;max-width:none}
 .sim{display:grid;grid-template-columns:1fr 1fr;gap:28px;background:var(--paper);border-radius:28px;padding:clamp(22px,4vw,44px);box-shadow:inset 0 0 0 1px var(--line)}
 .field{display:grid;gap:8px}
 .field label,.field .lbl{font-weight:700;font-size:.92rem;display:flex;justify-content:space-between;gap:10px}
@@ -1116,6 +1140,21 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
         <p class="sim-note">Simulación referencial. Plazos e inicial sujetos a evaluación del asesor.</p>
       </div>
     </div>
+    <div class="fit reveal" id="fit">
+      <div class="fit-in">
+        <div style="display:grid;gap:10px">
+          <div class="eyebrow">Buscador por presupuesto</div>
+          <h3 class="fit-title">¿Qué lote <em>me alcanza?</em></h3>
+          <p class="fit-lead">Dinos cuánto puedes pagar al mes y cuánto tienes para la inicial. Te mostramos qué proyectos encajan y con qué plazo, sin intereses.</p>
+        </div>
+        <div class="fit-form">
+          <div class="field"><label for="fitQ">Puedo pagar al mes <output id="oFitQ"></output></label><input type="range" id="fitQ" min="300" max="4000" step="50" value="900"></div>
+          <div class="field"><label for="fitD">Tengo para la inicial <output id="oFitD"></output></label><input type="range" id="fitD" min="1000" max="40000" step="500" value="6000"></div>
+        </div>
+      </div>
+      <div class="fit-list" id="fitList" aria-live="polite"></div>
+      <p class="sim-note" style="color:var(--muted)">Referencial: cuotas sin intereses en 12, 24 o 36 meses con una inicial mínima del 10%. El asesor confirma el plan y la disponibilidad.</p>
+    </div>
   </div>
 </section>
 
@@ -1735,6 +1774,62 @@ function sim(){
   const si = $("#simImg"); if (si.dataset.p !== p.id){ si.src = UP + p.photo; si.dataset.p = p.id; }
 }
 sProj.addEventListener("change", sim); sIni.addEventListener("input", sim);
+
+/* ---------- ¿qué lote me alcanza? ---------- */
+(function fit(){
+  const q = $("#fitQ"), d = $("#fitD"), list = $("#fitList"); if (!q) return;
+  function run(){
+    const Q = +q.value, Dn = +d.value;
+    $("#oFitQ").textContent = fmt(Q); $("#oFitD").textContent = fmt(Dn);
+    const rows = PROJ.filter(p => p.price && p.st !== "sold").map(p => {
+      const down = Math.max(Dn, Math.ceil(p.price * .10 / 100) * 100);
+      if (Dn >= p.price) return {p, ok:true, cash:true};
+      const fin = p.price - Math.min(down, p.price), term = [12, 24, 36].find(t => fin / t <= Q);
+      return term ? {p, ok:true, down, term, cuota: fin / term} : {p, ok:false, down, need36: fin / 36, needDown: Math.max(0, p.price - Q * 36)};
+    }).sort((a, b) => (b.ok - a.ok) || a.p.price - b.p.price);
+    list.innerHTML = rows.map(r => {
+      const p = r.p, msg = r.ok ? (r.cash ? `Hola Vivaldi, me interesa ${p.name} al contado (${fmt(p.price)}). ¿Qué lotes tienen disponibles?`
+        : `Hola Vivaldi, me interesa ${p.name}: inicial de ${fmt(r.down)} y ${r.term} cuotas de ${fmt(r.cuota)} sin intereses. ¿Qué lotes tienen disponibles?`)
+        : `Hola Vivaldi, me interesa ${p.name}. Puedo pagar ${fmt(Q)} al mes y tengo ${fmt(Dn)} para la inicial. ¿Qué opciones me dan?`;
+      const plan = r.ok ? (r.cash ? `<p class="plan"><span>Con tu inicial</span><b>Te alcanza al contado</b></p>` : `<p class="plan"><span>Inicial ${fmt(r.down)} y luego</span><b>${r.term} cuotas de ${fmt(r.cuota)}</b></p>`)
+        : `<p class="gap">En 36 meses la cuota sería ${fmt(r.need36)}.${r.needDown && r.needDown < p.price ? ` Con una inicial de ${fmt(r.needDown)} entraría en tu cuota.` : ""}</p>`;
+      return `<article class="fit-card ${r.ok ? "ok" : ""}"><span class="tg">${r.ok ? "TE ALCANZA" : "CASI"}</span><h4>${p.name}</h4><p class="meta">${p.m2 ? p.m2 + " m² · " : ""}${fmt(p.price)} · ${p.stL}</p>${plan}
+        <div class="acts"><a class="w" href="${waUrl(msg)}" target="_blank" rel="noopener">Consultar por WhatsApp</a><button type="button" class="v" data-sheet="${p.id}">Ver proyecto</button></div></article>`;
+    }).join("");
+  }
+  q.addEventListener("input", run); d.addEventListener("input", run); run();
+})();
+
+/* ---------- lista de precios: una invitación, como máximo una vez por semana ---------- */
+(function leadAsk(){
+  const KEY = "vv-lead-ask", WEEK = 7 * 864e5, t0 = Date.now();
+  let shown = false;
+  try { if (Date.now() - (+localStorage.getItem(KEY) || 0) < WEEK) return; } catch { return; }
+  const dlg = document.createElement("dialog"); dlg.className = "lead-dlg"; dlg.setAttribute("aria-labelledby", "leadT");
+  const opts = PROJ.filter(p => p.st !== "sold").map(p => `<option value="${p.id}" ${p.star ? "selected" : ""}>${p.name}${p.price ? " · desde " + fmt(p.price) : ""}</option>`).join("");
+  dlg.innerHTML = `<div class="dlg"><button type="button" class="dlg-close" data-x aria-label="Cerrar">✕</button>
+    <img class="lead-photo" src="${UP}2025/05/lirios-2.webp" alt="Vista aérea real de Lirios del Mar de Asia">
+    <h3 id="leadT">¿Te enviamos la lista de precios?</h3>
+    <p>Precios actualizados, lotes disponibles y planes sin intereses, directo a tu WhatsApp. Sin compromiso.</p>
+    <div class="field"><label for="leadP">Proyecto que te interesa</label><select id="leadP">${opts}</select></div>
+    <div class="lead-acts"><a class="btn btn-deep" id="leadGo" href="#" target="_blank" rel="noopener">Recibir por WhatsApp</a><button type="button" class="btn btn-line" data-x>Ahora no</button></div></div>`;
+  document.body.appendChild(dlg);
+  const go = $("#leadGo"), sel = $("#leadP"), upd = () => { const p = PROJ.find(x => x.id === sel.value); go.href = waUrl(`Hola Vivaldi, quiero la lista de precios y los lotes disponibles de ${p.name}.`); };
+  sel.addEventListener("change", upd); upd();
+  const close = () => dlg.close();
+  dlg.querySelectorAll("[data-x]").forEach(b => b.addEventListener("click", close)); go.addEventListener("click", () => setTimeout(close, 300));
+  dlg.addEventListener("click", e => { if (e.target === dlg) close(); });
+  function ask(){
+    if (shown || Date.now() - t0 < 20000) return;
+    const cookie = document.getElementById("cookie");
+    if ((cookie && !cookie.hidden) || document.querySelector("dialog[open]")) return;
+    shown = true; try { localStorage.setItem(KEY, Date.now()); } catch {}
+    dlg.showModal();
+  }
+  document.addEventListener("mouseout", e => { if (!e.relatedTarget && e.clientY <= 0) ask(); });
+  let deep = false;
+  addEventListener("scroll", () => { if (!deep && scrollY + innerHeight > document.documentElement.scrollHeight * .7 && matchMedia("(pointer: coarse)").matches){ deep = true; setTimeout(ask, 4000); } }, {passive:true});
+})();
 document.querySelectorAll("#sTerm button").forEach(b => b.addEventListener("click", () => { document.querySelectorAll("#sTerm button").forEach(x => x.setAttribute("aria-pressed", x === b)); term = +b.dataset.v; sim(); }));
 sim();
 

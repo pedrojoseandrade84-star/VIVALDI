@@ -312,6 +312,9 @@ nav.top .nb{display:inline-grid;place-items:center;min-width:18px;height:18px;pa
 .crm-acts button,.crm-acts a{font:inherit;font-size:.8rem;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none}
 .crm-acts .w{background:#14853F;border-color:#14853F;color:#fff}
 .crm-acts .x{color:var(--bad)}
+.vis-when{font-family:var(--f-mono);font-weight:700;font-size:.8rem;color:var(--sea)}
+.crm-item.vdone{opacity:.72}
+.stg.v-prog{background:var(--sun-soft);color:var(--warn)}.stg.v-ok{background:#DDF1E5;color:var(--good)}.stg.v-no{background:#FBE3DF;color:#9E2A20}.stg.v-cancel{background:var(--line);color:var(--muted)}
 .crm-empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:.92rem}
 .tpl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;align-content:start}
 .tpl textarea{font:inherit;font-size:.92rem;line-height:1.5;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;resize:vertical;min-height:120px}
@@ -491,6 +494,7 @@ details.fold[open] > summary{margin-bottom:16px}
     <a href="#inventario">Lotes</a>
     <a href="#panel">Panel</a>
     <a href="#cobranza">Cobranza</a>
+    <a href="#visitas">Visitas</a>
     <a href="#clientes">Mis clientes</a>
     <a href="#plantillas">Mensajes</a>
     <a href="#objeciones">Objeciones</a>
@@ -561,7 +565,7 @@ details.fold[open] > summary{margin-bottom:16px}
   <div class="sec-head">
     <div class="eyebrow">Herramienta · Agenda</div>
     <h2>Tu día <em>en una lista</em></h2>
-    <p class="lead">Lo que pide acción hoy: clientes por contactar, cuotas vencidas o por vencer y separaciones cuyo plazo de firma se acaba. Resuelve cada punto desde aquí.</p>
+    <p class="lead">Lo que pide acción hoy: visitas de hoy y mañana, clientes por contactar, cuotas vencidas o por vencer y separaciones cuyo plazo de firma se acaba. Resuelve cada punto desde aquí.</p>
   </div>
   <div class="hoy-kp" id="hoyKp"></div>
   <div class="panel hoy"><div id="hoyList" aria-live="polite"></div></div>
@@ -673,7 +677,7 @@ details.fold[open] > summary{margin-bottom:16px}
   </div>
   <div class="panel">
     <div class="crm-top"><h3>Ranking por asesor</h3><div class="seg" id="rkPer" role="group" aria-label="Periodo del ranking"><button type="button" data-v="mes" aria-pressed="true">Este mes</button><button type="button" data-v="todo" aria-pressed="false">Todo</button></div></div>
-    <div class="tbl rk" tabindex="0" role="region" aria-label="Ranking por asesor"><table><thead><tr><th>Asesor</th><th class="r">Proformas</th><th class="r">Monto cotizado</th><th class="r">Separaciones</th><th class="r">Ventas</th><th class="r">Cobrado</th><th class="r">Conversión</th></tr></thead><tbody id="rkBody"></tbody></table></div>
+    <div class="tbl rk" tabindex="0" role="region" aria-label="Ranking por asesor"><table><thead><tr><th>Asesor</th><th class="r">Visitas</th><th class="r">Proformas</th><th class="r">Monto cotizado</th><th class="r">Separaciones</th><th class="r">Ventas</th><th class="r">Cobrado</th><th class="r">Conversión</th></tr></thead><tbody id="rkBody"></tbody></table></div>
     <p class="note">Para ver a todo el equipo, la jefatura combina los respaldos de cada asesor en <a href="#datos">Datos → Consolidar equipo</a>.</p>
   </div>
   <div class="panel">
@@ -750,6 +754,37 @@ details.fold[open] > summary{margin-bottom:16px}
       </div>
       <div class="crm-list" id="crmList"></div>
       <div class="acts"><button class="btn ghost sm" type="button" id="crmCsv">Exportar a Excel</button><button class="btn ghost sm" type="button" id="crmJson">Respaldo</button><button class="btn ghost sm" type="button" id="crmLoad">Cargar respaldo</button><input type="file" id="crmFile" accept=".json,application/json" hidden></div>
+    </div>
+  </div>
+</section>
+
+<!-- VISITAS -->
+<section id="visitas">
+  <div class="sec-head">
+    <div class="eyebrow">Herramienta · Visitas guiadas</div>
+    <h2>Agenda de tours <em>al proyecto</em></h2>
+    <p class="lead">El cliente que visita el proyecto compra mucho más. Agenda el tour, confírmalo por WhatsApp, recuérdaselo la víspera y registra si asistió.</p>
+  </div>
+  <div class="crm-stats" id="visStats"></div>
+  <div class="g2 crm">
+    <form class="panel" id="visForm" autocomplete="off">
+      <h3>Nueva visita</h3>
+      <div class="form">
+        <label class="inp full">Cliente<input id="vName" required list="visClients" placeholder="Nombre y apellido"><datalist id="visClients"></datalist></label>
+        <label class="inp">Celular<input id="vPhone" type="tel" inputmode="tel" placeholder="9XX XXX XXX"></label>
+        <label class="inp">Proyecto<select id="vProj"></select></label>
+        <label class="inp">Fecha<input id="vDate" type="date" required></label>
+        <label class="inp">Hora<select id="vTime"></select></label>
+        <label class="inp">Punto de encuentro<select id="vMeet"><option>En el proyecto</option><option>Oficina de Surco (Av. El Derby 121)</option><option>Movilidad Vivaldi desde Lima</option></select></label>
+        <label class="inp">Personas<input id="vPeople" type="number" inputmode="numeric" min="1" max="20" value="2"></label>
+        <label class="inp full">Notas<textarea id="vNotes" rows="2" placeholder="Ej. Viene con su esposa; le interesa lote esquina"></textarea></label>
+      </div>
+      <div class="acts"><button class="btn pri" type="submit">Agendar visita</button></div>
+    </form>
+    <div class="panel">
+      <div class="crm-top"><div class="seg" id="visFilter" role="group" aria-label="Filtrar visitas"></div></div>
+      <div class="crm-list" id="visList"></div>
+      <div class="acts"><button class="btn ghost sm" type="button" id="visX">Exportar visitas a Excel</button></div>
     </div>
   </div>
 </section>
@@ -4070,7 +4105,7 @@ function renderCrm(){
       <div class="crm-acts">${c.phone ? `<button type="button" class="w" data-a="wa">WhatsApp</button>` : ""}<button type="button" data-a="next">${isActive(c) ? "Avanzar etapa" : "Reabrir"}</button><button type="button" data-a="pf">Proforma</button><button type="button" data-a="edit">Editar</button><button type="button" class="x" data-a="del">Eliminar</button></div>
     </div>`; }).join("")
     : `<div class="crm-empty">${CLIENTS.length ? "No hay clientes en este filtro." : "Aún no tienes clientes. Agrega el primero con el formulario o desde la Proforma."}</div>`;
-  fillTplClients(); if (typeof renderPanel === "function") renderPanel(); if (window.hoyReady) renderHoy();
+  fillTplClients(); if (typeof renderPanel === "function") renderPanel(); if (window.hoyReady){ renderHoy(); visFillClients(); }
 }
 $("crmList").addEventListener("click", e => {
   const b = e.target.closest("button[data-a]"); if (!b) return;
@@ -4164,18 +4199,19 @@ function renderPanel(){
 let rkPer = "mes";
 function advStats(period){
   const ym = iso(new Date()).slice(0, 7), inP = d => period === "todo" || (d || "").slice(0, 7) === ym, pfAdv = no => PFLOG.find(r => r.no === no)?.adv || "";
-  const M = new Map(), g = n => { const k = (n || "").trim() || "Sin asesor"; if (!M.has(k)) M.set(k, {adv: k, pf: 0, amt: 0, sep: 0, sale: 0, paid: 0}); return M.get(k); };
+  const M = new Map(), g = n => { const k = (n || "").trim() || "Sin asesor"; if (!M.has(k)) M.set(k, {adv: k, vis: 0, pf: 0, amt: 0, sep: 0, sale: 0, paid: 0}); return M.get(k); };
+  (typeof VISITS === "undefined" ? [] : VISITS).filter(v => v.st === "ok" && inP(v.date)).forEach(v => g(v.adv).vis++);
   PFLOG.filter(r => inP(r.at)).forEach(r => { const s = g(r.adv); s.pf++; s.amt += r.net || 0; });
   SEPS.filter(x => inP(x.at)).forEach(x => g(x.adv || pfAdv(x.pf)).sep++);
   COB.forEach(k => { const s = g(k.adv || pfAdv(k.pf)), sold = k.at || SEPS.find(x => x.pf === k.pf)?.at || PFLOG.find(r => r.no === k.pf)?.at;
     if (inP(sold)) s.sale++;
     Object.entries(k.paid).forEach(([i, d]) => { if (inP(d)) s.paid += k.sched.find(x => x.i === +i)?.amt || 0; }); });
-  return [...M.values()].map(s => ({...s, conv: s.pf ? Math.round(s.sale / s.pf * 100) : 0})).sort((a, b) => b.sale - a.sale || b.sep - a.sep || b.amt - a.amt);
+  return [...M.values()].map(s => ({...s, conv: s.pf ? Math.round(s.sale / s.pf * 100) : 0})).sort((a, b) => b.sale - a.sale || b.sep - a.sep || b.vis - a.vis || b.amt - a.amt);
 }
 function renderRank(){
   const st = advStats(rkPer);
-  $("rkBody").innerHTML = st.length ? st.map((s, i) => `<tr><td>${i < 3 && (s.sale || s.sep || s.pf) ? `<span class="medal">${i + 1}</span>` : ""}${esc(s.adv)}</td><td class="r num">${s.pf}</td><td class="r num">${fmt(s.amt)}</td><td class="r num">${s.sep}</td><td class="r num">${s.sale}</td><td class="r num">${fmt(s.paid)}</td><td class="r num">${s.pf ? s.conv + "%" : "—"}</td></tr>`).join("")
-    : `<tr><td colspan="7" class="note" style="text-align:center;padding:18px">Sin actividad en este periodo.</td></tr>`;
+  $("rkBody").innerHTML = st.length ? st.map((s, i) => `<tr><td>${i < 3 && (s.sale || s.sep || s.pf || s.vis) ? `<span class="medal">${i + 1}</span>` : ""}${esc(s.adv)}</td><td class="r num">${s.vis}</td><td class="r num">${s.pf}</td><td class="r num">${fmt(s.amt)}</td><td class="r num">${s.sep}</td><td class="r num">${s.sale}</td><td class="r num">${fmt(s.paid)}</td><td class="r num">${s.pf ? s.conv + "%" : "—"}</td></tr>`).join("")
+    : `<tr><td colspan="8" class="note" style="text-align:center;padding:18px">Sin actividad en este periodo.</td></tr>`;
 }
 $("rkPer").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; rkPer = b.dataset.v; $("rkPer").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderRank(); });
 function renderPfLog(){
@@ -4363,21 +4399,25 @@ function hoyItems(){
     .map(r => ({kind: "cu", late: r.s.d < t, id: r.k.id + ":" + r.s.i, title: r.k.name || "—", sub: `${cuotaLbl(r.k, r.s)} · ${fmt(r.s.amt)} · ${r.k.projName}${r.k.lot ? " · " + r.k.lot : ""}`, tag: (r.s.d < t ? "Venció " : r.s.d === t ? "Vence hoy " : "Vence ") + fmtDay(r.s.d), r}));
   const se = SEPS.filter(x => x.lim && x.lim <= in3 && !COB.some(k => k.pf === x.pf))
     .map(x => ({kind: "se", late: x.lim < t, id: x.no, title: x.name || "—", sub: `${x.no} · separación ${fmt(x.amt)}`, tag: (x.lim < t ? "Firma vencida el " : "Firma hasta el ") + fmtDay(x.lim), x}));
-  return {cl, cu, se, n: cl.length + cu.length + se.length, late: [...cl, ...cu, ...se].filter(i => i.late).length};
+  const tm = iso(new Date(Date.now() + 864e5)), VV = typeof VISITS === "undefined" ? [] : VISITS;
+  const vi = VV.filter(v => v.st === "prog" && v.date <= tm).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+    .map(v => ({kind: "vi", late: v.date < t, id: v.id, title: v.name, sub: `${v.proj} · ${v.time} · ${v.meet}`, tag: v.date < t ? "Registrar resultado" : v.date === t ? "Visita hoy " + v.time : "Mañana " + v.time + " · recordar", v}));
+  return {cl, cu, se, vi, n: cl.length + cu.length + se.length + vi.length, late: [...cl, ...cu, ...se, ...vi].filter(i => i.late).length};
 }
 function renderHoy(){
   const h = hoyItems(), sum = h.cu.reduce((a, i) => a + i.r.s.amt, 0);
   $("hoyNb").hidden = !h.n; $("hoyNb").textContent = h.n; $("hoyNb").setAttribute("aria-label", h.n + " pendientes");
-  $("hoyKp").innerHTML = [["Pendientes", h.n, h.late], ["Atrasados", h.late, h.late], ["Clientes por contactar", h.cl.length], ["Por cobrar (3 días)", fmt(sum), h.cu.some(i => i.late)], ["Firmas por vencer", h.se.length, h.se.some(i => i.late)]]
+  $("hoyKp").innerHTML = [["Pendientes", h.n, h.late], ["Atrasados", h.late, h.late], ["Clientes por contactar", h.cl.length], ["Por cobrar (3 días)", fmt(sum), h.cu.some(i => i.late)], ["Visitas", h.vi.length, h.vi.some(i => i.late)], ["Firmas por vencer", h.se.length, h.se.some(i => i.late)]]
     .map(([l, v, hl]) => `<div class="${hl ? "hl" : ""}"><b class="num">${v}</b><span>${l}</span></div>`).join("");
   const it = i => {
     const acts = i.kind === "cl" ? `${i.c.phone ? `<button type="button" class="w" data-h="wa">WhatsApp</button>` : ""}<button type="button" data-h="later">Mañana</button><button type="button" data-h="go">Ver ficha</button>`
       : i.kind === "cu" ? `${i.r.k.phone ? `<button type="button" class="w" data-h="rem">Recordar</button>` : ""}<button type="button" data-h="pay">Registrar pago</button>`
+      : i.kind === "vi" ? (i.late ? `<button type="button" data-h="vok">Asistió</button><button type="button" data-h="vno">No asistió</button>` : `${i.v.phone ? `<button type="button" class="w" data-h="vrem">${i.v.date === todayIso() ? "Confirmar" : "Recordar"}</button>` : ""}<button type="button" data-h="vgo">Ver visita</button>`)
       : `<button type="button" data-h="sep">Ir a separaciones</button>`;
     return `<div class="hoy-it" data-k="${i.kind}" data-id="${esc(i.id)}"><div class="tx"><b>${esc(i.title)}</b><span>${esc(i.sub)}</span></div><span class="tg ${i.late ? "late" : ""}">${i.tag}</span><div class="crm-acts">${acts}</div></div>`;
   };
   const grp = (t, a) => a.length ? `<h3 class="hoy-g">${t} (${a.length})</h3>` + a.map(it).join("") : "";
-  $("hoyList").innerHTML = h.n ? grp("Cobranza", h.cu) + grp("Separaciones por firmar", h.se) + grp("Clientes por contactar", h.cl)
+  $("hoyList").innerHTML = h.n ? grp("Visitas", h.vi) + grp("Cobranza", h.cu) + grp("Separaciones por firmar", h.se) + grp("Clientes por contactar", h.cl)
     : `<div class="hoy-ok"><b>Todo al día.</b><br>Cuando un cliente tenga fecha de contacto, una cuota venza o una separación esté por caducar, aparecerá aquí.</div>`;
 }
 $("hoyList").addEventListener("click", e => {
@@ -4392,8 +4432,107 @@ $("hoyList").addEventListener("click", e => {
     if (!btn){ cobF = "all"; $("cobFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === "all")); renderCob(); }
     $("cobBody").querySelector(`[data-${a === "rem" ? "rem" : "pay"}="${kid}:${i}"]`)?.click(); }
   if (k === "se") $("cobranza").scrollIntoView({behavior:"smooth"});
+  if (k === "vi"){ const v = VISITS.find(x => x.id === id); if (!v) return;
+    if (a === "vrem") sendWa(visMsg(v, v.date === todayIso() ? "conf" : "rem"), v.phone);
+    if (a === "vgo"){ visF = "prox"; $("visFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === "prox")); renderVis(); $("visitas").scrollIntoView({behavior:"smooth"}); }
+    if (a === "vok" || a === "vno") visResult(v, a.slice(1)); }
 });
 renderHoy(); window.hoyReady = true;
+
+/* ---------- visitas guiadas ---------- */
+const VIS_KEY = "vivaldi-visitas-v1", VST = {prog:"Programada", ok:"Asistió", no:"No asistió", cancel:"Cancelada"};
+var VISITS = []; let visF = "prox";  // var: "Hoy" and the ranking read it before this point
+try { VISITS = JSON.parse(localStorage.getItem(VIS_KEY)) || []; } catch {}
+const visSave = () => { try { localStorage.setItem(VIS_KEY, JSON.stringify(VISITS)); } catch {} };
+$("vProj").innerHTML = VIV.map(v => `<option>${v.name}</option>`).join("");
+$("vTime").innerHTML = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"].map(t => `<option ${t === "10:00" ? "selected" : ""}>${t}</option>`).join("");
+const visDay = s => { const d = new Date(s + "T12:00"); return d.toLocaleDateString("es-PE", {weekday:"long", day:"numeric", month:"long"}); };
+function visDefaults(){ const d = new Date(); d.setDate(d.getDate() + (d.getDay() === 5 ? 1 : d.getDay() === 6 ? 7 : 6 - d.getDay())); $("vDate").value = iso(d); }
+$("visClients").innerHTML = ""; const visFillClients = () => { $("visClients").innerHTML = CLIENTS.filter(isActive).map(c => `<option value="${esc(c.name)}">`).join(""); };
+$("vName").addEventListener("change", () => { const c = CLIENTS.find(x => x.name.toLowerCase() === $("vName").value.trim().toLowerCase()); if (c){ if (c.phone) $("vPhone").value = c.phone; if (VIV.some(v => v.name === c.proj)) $("vProj").value = c.proj; } });
+$("visForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = {id: Date.now().toString(36), name: $("vName").value.trim(), phone: $("vPhone").value.trim(), proj: $("vProj").value, date: $("vDate").value, time: $("vTime").value,
+    meet: $("vMeet").value, people: Math.max(1, +$("vPeople").value || 1), notes: $("vNotes").value.trim(), st: "prog", adv: pf("Adv").value.trim(), at: todayIso()};
+  if (!v.name || !v.date){ toast("Escribe el cliente y la fecha"); return; }
+  if (v.date < todayIso()){ $("vDate").focus(); toast("La fecha de la visita ya pasó"); return; }
+  VISITS.push(v); visSave();
+  // the client moves to "Visita agendada" (or is created) with the visit as next contact
+  let c = CLIENTS.find(x => x.name.toLowerCase() === v.name.toLowerCase());
+  if (!c){ c = {id: Date.now().toString(36) + "c", created: todayIso(), name: v.name, phone: v.phone, proj: v.proj, budget: 0, notes: ""}; CLIENTS.unshift(c); }
+  if (isActive(c) && STAGES.indexOf(c.stage || "Nuevo") < 2){ c.stage = "Visita agendada"; c.stageAt = todayIso(); }
+  c.next = v.date; if (!c.phone && v.phone) c.phone = v.phone;
+  c.notes = (c.notes ? c.notes + "\n" : "") + `Visita ${visDay(v.date)} ${v.time} (${v.meet}).`;
+  crmSave(); renderCrm();
+  $("visForm").reset(); visDefaults(); renderVis(); toast(`Visita agendada: ${v.name}, ${visDay(v.date)} ${v.time}`);
+});
+const visMsg = (v, kind) => {
+  const first = v.name.split(" ")[0], adv = pf("Adv").value.trim(), when = `*${visDay(v.date)}* a las *${v.time}*`;
+  return kind === "rem"
+    ? `Hola ${first}, te saluda ${adv || "tu asesor"} de Vivaldi Inmobiliaria. Te recuerdo tu visita a *${v.proj}* mañana ${visDay(v.date).split(" ")[0]} a las *${v.time}* (${v.meet}). Lleva protector solar y ropa cómoda. ¿Confirmas tu asistencia?`
+    : kind === "after"
+    ? `Hola ${first}, gracias por visitar *${v.proj}*. ¿Qué te pareció? Si te gustó algún lote, te preparo la proforma con el precio y el cronograma sin intereses.`
+    : `Hola ${first}, te saluda ${adv || "tu asesor"} de Vivaldi Inmobiliaria. Tu visita a *${v.proj}* quedó agendada para el ${when}.\nPunto de encuentro: ${v.meet}.\n${v.people > 1 ? `Personas: ${v.people}.\n` : ""}Te espero. Cualquier cambio me avisas por aquí.`;
+};
+function visIcs(v){
+  const [h, m] = v.time.split(":").map(Number), d = v.date.replace(/-/g, ""), pad = n => String(n).padStart(2, "0");
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Vivaldi Inmobiliaria//Visitas//ES","BEGIN:VEVENT",`UID:${v.id}@vivaldi`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`,
+    `DTSTART:${d}T${pad(h)}${pad(m)}00`,`DTEND:${d}T${pad(h + 2)}${pad(m)}00`,`SUMMARY:Visita ${v.proj} · ${v.name}`,`LOCATION:${v.meet}`,
+    `DESCRIPTION:Cliente: ${v.name}${v.phone ? " · " + v.phone : ""}. Personas: ${v.people}.${v.notes ? " " + v.notes.replace(/\n/g, " ") : ""}`,"BEGIN:VALARM","TRIGGER:-PT2H","ACTION:DISPLAY","DESCRIPTION:Visita Vivaldi","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+  download(`visita-${v.date}-${v.name.split(" ")[0].toLowerCase()}.ics`, ics, "text/calendar");
+}
+// result of a visit: the client gets the next follow-up (tomorrow after a visit, in two days after a no-show)
+function visResult(v, a){
+  v.st = a; v.res = todayIso();
+  const cl = CLIENTS.find(x => x.name.toLowerCase() === v.name.toLowerCase());
+  if (cl && isActive(cl)){ const n = new Date(); n.setDate(n.getDate() + (a === "ok" ? 1 : 2)); cl.next = iso(n);
+    cl.notes = (cl.notes ? cl.notes + "\n" : "") + (a === "ok" ? `Visitó ${v.proj} el ${dNum(new Date(v.date + "T12:00"))}.` : `No asistió a la visita del ${dNum(new Date(v.date + "T12:00"))}.`); crmSave(); renderCrm(); }
+  visSave(); renderVis();
+  toast(a === "ok" ? "Visita registrada: toca enviar la proforma" : "Registrado: no asistió. Reprograma desde Mis clientes");
+}
+const VFILTERS = [["prox","Próximas"],["hoy","Hoy"],["pend","Sin resultado"],["todas","Todas"]];
+$("visFilter").innerHTML = VFILTERS.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === visF}">${l}</button>`).join("");
+$("visFilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; visF = b.dataset.v; $("visFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderVis(); });
+function renderVis(){
+  const t = todayIso(), ym = t.slice(0, 7), mine = VISITS.filter(v => v.date.slice(0, 7) === ym);
+  const done = mine.filter(v => v.st === "ok").length, closed = mine.filter(v => v.st === "ok" || v.st === "no").length;
+  $("visStats").innerHTML = [["Hoy", VISITS.filter(v => v.date === t && v.st === "prog").length, "due"], ["Próximas", VISITS.filter(v => v.date > t && v.st === "prog").length], ["Sin resultado", VISITS.filter(v => v.date < t && v.st === "prog").length],
+    ["Asistieron (mes)", done], ["Asistencia", closed ? Math.round(done / closed * 100) + "%" : "—"]].map(([l, n, cls]) => `<div class="${cls || ""}"><b class="num">${n}</b><span>${l}</span></div>`).join("");
+  let list = VISITS.filter(v => visF === "todas" ? true : visF === "hoy" ? v.date === t : visF === "pend" ? v.date < t && v.st === "prog" : v.date >= t && v.st === "prog");
+  list.sort((a, b) => visF === "todas" ? (b.date + b.time).localeCompare(a.date + a.time) : (a.date + a.time).localeCompare(b.date + b.time));
+  $("visList").innerHTML = list.length ? list.map(v => { const past = v.date < t, today = v.date === t;
+    return `<div class="crm-item ${v.st !== "prog" ? "vdone" : past ? "late" : today ? "due" : ""}" data-id="${v.id}">
+      <div class="crm-row"><b>${esc(v.name)}</b><span class="stg v-${v.st}">${VST[v.st]}</span></div>
+      <div class="vis-when">${today ? "HOY · " : ""}${visDay(v.date).toUpperCase()} · ${v.time}</div>
+      <div class="crm-meta">${esc(v.proj)} · ${esc(v.meet)} · ${v.people} ${v.people === 1 ? "persona" : "personas"}${v.phone ? " · " + esc(v.phone) : ""}${v.adv ? " · Asesor: " + esc(v.adv) : ""}</div>
+      ${v.notes ? `<div class="crm-notes">${esc(v.notes)}</div>` : ""}
+      <div class="crm-acts">${v.st === "prog" ? `${v.phone ? `<button type="button" class="w" data-v="conf">Confirmar</button><button type="button" class="w" data-v="rem">Recordar</button>` : ""}<button type="button" data-v="ics">Calendario</button><button type="button" data-v="ok">Asistió</button><button type="button" data-v="no">No asistió</button><button type="button" data-v="move">Reprogramar</button><button type="button" class="x" data-v="cancel">Cancelar</button>`
+        : `${v.st === "ok" && v.phone ? `<button type="button" class="w" data-v="after">Seguimiento</button><button type="button" data-v="pf">Proforma</button>` : ""}<button type="button" data-v="undo">Deshacer</button>`}</div>
+    </div>`; }).join("")
+    : `<div class="crm-empty">${VISITS.length ? "No hay visitas en este filtro." : "Aún no hay visitas. Agenda la primera con el formulario."}</div>`;
+  if (window.hoyReady) renderHoy(); if (window.sepReady) renderRank();
+}
+$("visList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  const v = VISITS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!v) return; const a = b.dataset.v;
+  const cl = CLIENTS.find(x => x.name.toLowerCase() === v.name.toLowerCase());
+  if (a === "conf" || a === "rem" || a === "after") sendWa(visMsg(v, a), v.phone);
+  if (a === "ics") visIcs(v);
+  if (a === "ok" || a === "no") visResult(v, a);
+  if (a === "cancel" && confirm(`¿Cancelar la visita de ${v.name}?`)) v.st = "cancel";
+  if (a === "undo"){ v.st = "prog"; delete v.res; }
+  if (a === "move"){ const nd = prompt("Nueva fecha (AAAA-MM-DD)", v.date); if (nd && /^\d{4}-\d{2}-\d{2}$/.test(nd) && nd >= todayIso()){ v.date = nd; if (cl){ cl.next = nd; crmSave(); renderCrm(); } toast("Visita reprogramada"); } else if (nd) toast("Fecha no válida"); }
+  if (a === "pf"){ pf("Name").value = v.name; pf("Phone").value = v.phone; const i = VIV.findIndex(x => x.name === v.proj); if (i >= 0){ pf("Proj").value = i; pfProjSet(); } pfDirty(); $("proforma").scrollIntoView({behavior:"smooth"}); }
+  visSave(); renderVis();
+});
+$("visX").addEventListener("click", async () => {
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Visitas", {properties:{tabColor:{argb:XL.bl}}});
+  const r = xlHead(wb, ws, 9, "AGENDA DE VISITAS GUIADAS", `${pf("Adv").value.trim() ? "Asesor: " + pf("Adv").value.trim() + " · " : ""}Al ${dNum(new Date())} · ${VISITS.length} visitas`);
+  xlTable(ws, r, [{h:"Fecha", w:12, fmt:XL.date, al:"center"}, {h:"Hora", w:8, al:"center"}, {h:"Cliente", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:24}, {h:"Punto de encuentro", w:30}, {h:"Personas", w:10, al:"center"}, {h:"Estado", w:14}, {h:"Asesor", w:20}],
+    VISITS.slice().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(v => { const row = [new Date(v.date + "T12:00"), v.time, v.name, v.phone, v.proj, v.meet, v.people, VST[v.st], v.adv]; if (v.st === "ok") row.tint = "FFE6F4EA"; if (v.st === "no") row.tint = "FFFBE3DF"; return row; }), {freeze:true});
+  await xlSave(wb, `visitas-vivaldi-${iso(new Date())}.xlsx`);
+});
+visDefaults(); visFillClients(); renderVis();
 
 /* ---------- inventario de lotes ---------- */
 const INV_KEY = "vivaldi-lotes-v1", LST = ["Disponible", "Separado", "Vendido", "Bloqueado"];
@@ -4523,6 +4662,7 @@ $("repX").addEventListener("click", async () => {
     Object.assign(["Cuotas vencidas", rows.filter(x => x.state === "late").length, sum(rows.filter(x => x.state === "late")), "Prioridad de cobro"], rows.some(x => x.state === "late") ? {tint:"FFFBE3DF"} : {}),
     ["Por cobrar en 30 días", rows.filter(x => x.state === "soon").length, sum(rows.filter(x => x.state === "soon")), ""],
     ["Cobrado este mes", rows.filter(x => x.paid && x.paid.slice(0, 7) === ym).length, sum(rows.filter(x => x.paid && x.paid.slice(0, 7) === ym)), ""],
+    ["Visitas guiadas este mes", VISITS.filter(v => v.date.slice(0, 7) === ym).length, null, `${VISITS.filter(v => v.date.slice(0, 7) === ym && v.st === "ok").length} asistieron`],
     S("CLIENTES"),
     ...STAGES.map(s => [`Clientes en etapa: ${s}`, CLIENTS.filter(c => c.stage === s).length, CLIENTS.filter(c => c.stage === s).reduce((a, c) => a + (+c.budget || 0), 0), "Presupuesto declarado"]),
     Object.assign(["Clientes con contacto atrasado", CLIENTS.filter(c => isActive(c) && c.next && c.next < t).length, null, "Llamar hoy"], CLIENTS.some(c => isActive(c) && c.next && c.next < t) ? {tint:"FFFBE3DF"} : {}),
@@ -4540,8 +4680,10 @@ $("repX").addEventListener("click", async () => {
     rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, cuotaLbl(x.k, x.s, 1), x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }), {label:"TOTAL", sum:[5]});
   sheet("Clientes", "CARTERA DE CLIENTES", [{h:"Nombre", w:24}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:14, fmt:XL.money}, {h:"Notas", w:46, wrap:true}],
     CLIENTS.map(c => [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes]));
-  sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión", w:13, fmt:XL.pct}],
-    advStats("todo").map(s => [s.adv, s.pf, s.amt, s.sep, s.sale, s.paid, s.pf ? s.sale / s.pf : null]), {label:"TOTAL EQUIPO", sum:[1, 2, 3, 4, 5]});
+  sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Visitas", w:10, fmt:"0"}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión", w:13, fmt:XL.pct}],
+    advStats("todo").map(s => [s.adv, s.vis, s.pf, s.amt, s.sep, s.sale, s.paid, s.pf ? s.sale / s.pf : null]), {label:"TOTAL EQUIPO", sum:[1, 2, 3, 4, 5, 6]});
+  sheet("Visitas", "VISITAS GUIADAS", [{h:"Fecha", w:12, fmt:XL.date, al:"center"}, {h:"Hora", w:8, al:"center"}, {h:"Cliente", w:26}, {h:"Proyecto", w:24}, {h:"Punto de encuentro", w:28}, {h:"Estado", w:13}, {h:"Asesor", w:20}],
+    VISITS.slice().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(v => { const row = [new Date(v.date + "T12:00"), v.time, v.name, v.proj, v.meet, VST[v.st], v.adv]; if (v.st === "ok") row.tint = "FFE6F4EA"; if (v.st === "no") row.tint = "FFFBE3DF"; return row; }));
   sheet("Inventario", "INVENTARIO DE LOTES", [{h:"Proyecto", w:28}, {h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:12}, {h:"Cliente", w:26}],
     INV.map(l => { const row = [l.proj, l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client], tn = {Separado:"FFFBEFD3", Vendido:"FFE6ECEC", Bloqueado:"FFFBE3DF"}[l.st]; if (tn) row.tint = tn; return row; }));
   await xlSave(wb, `reporte-gerencial-vivaldi-${iso(now)}.xlsx`);
@@ -4559,12 +4701,13 @@ $("bkTeamFile").addEventListener("change", async e => {
       get("vivaldi-separaciones-v1").forEach(r => { if (!SEPS.some(x => x.no === r.no)){ SEPS.push(r); n.sep++; } });
       get("vivaldi-cobranza-v1").forEach(r => { const ex = COB.find(x => x.id === r.id || (x.pf === r.pf && (x.adv || "") === (r.adv || ""))); if (!ex){ COB.push(r); n.cob++; } else Object.assign(ex.paid, r.paid); });
       get("vivaldi-clientes-v1").forEach(r => { if (!CLIENTS.some(x => x.id === r.id)){ CLIENTS.push(r); n.cl++; } });
+      get("vivaldi-visitas-v1").forEach(r => { if (!VISITS.some(x => x.id === r.id)) VISITS.push(r); });
       get("vivaldi-lotes-v1").forEach(r => { const ex = findLot(r.proj, r.mz, r.lt); if (!ex){ INV.push(r); n.lot++; } else if ((rank[r.st] || 0) > (rank[ex.st] || 0)){ ex.st = r.st; ex.client = r.client || ex.client; } });
     } catch { bad++; }
   }
   PFLOG.sort((a, b) => b.at.localeCompare(a.at)); SEPS.sort((a, b) => b.at.localeCompare(a.at));
-  pfLogSave(); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {} cobSave(); crmSave(); invSave();
-  renderCrm(); renderSep(); renderCob(); renderInv(); renderPanel();
+  pfLogSave(); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {} cobSave(); crmSave(); invSave(); visSave();
+  renderCrm(); renderSep(); renderCob(); renderInv(); renderPanel(); renderVis();
   toast(`Consolidado: ${n.pf} proformas, ${n.sep} separaciones, ${n.cob} ventas, ${n.cl} clientes, ${n.lot} lotes nuevos${bad ? ` · ${bad} archivos no válidos` : ""}`);
 });
 /* ---------- respaldo completo ---------- */
