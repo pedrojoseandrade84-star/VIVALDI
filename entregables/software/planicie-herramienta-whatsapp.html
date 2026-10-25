@@ -13,7 +13,7 @@
 :root{
   --bg:#EDF2F1; --surface:#FFFFFF; --ink:#0E2226; --muted:#53686C; --line:#D3DFDD;
   --sea:#14707A; --sea-soft:#D7ECEC; --sun:#E8A93A; --sun-soft:#FBEFD3; --deep:#0A2B31;
-  --good:#1E8A50; --warn:#A86E12; --bad:#C0392B; --comp:#9AA9AB;
+  --good:#1A7A45; --warn:#8A5A0B; --bad:#C0392B; --comp:#9AA9AB;
   --f-display:"Instrument Serif", "Times New Roman", Georgia, serif;
   --f-body:"Manrope", "Segoe UI", system-ui, sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -40,7 +40,7 @@ p{margin:0}
 .eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);font-weight:700}
 .lead{color:var(--muted);max-width:65ch;font-size:1.05rem}
 .num{font-variant-numeric:tabular-nums}
-section{padding-block:56px;border-top:1px solid var(--line);display:grid;gap:28px}
+section{padding-block:56px;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
 .sec-head{display:grid;gap:10px}
 a{color:var(--sea)}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:4px}
@@ -52,7 +52,7 @@ nav.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:v
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 nav.top .wrap{display:flex;align-items:center;gap:18px;padding-block:12px;overflow-x:auto;scrollbar-width:none}
 nav.top .brand{font-family:var(--f-display);font-size:1.25rem;white-space:nowrap}
-nav.top .brand span{color:var(--sun)}
+nav.top .brand span{color:var(--warn)}
 nav.top a{color:var(--muted);text-decoration:none;font-size:.9rem;white-space:nowrap;font-weight:500}
 nav.top a:hover{color:var(--ink)}
 nav.top .cta{margin-left:auto;background:var(--sea);color:var(--bg);padding:7px 14px;border-radius:999px;font-weight:600}
@@ -95,7 +95,7 @@ nav.top .cta:hover{color:var(--bg);filter:brightness(1.1)}
 /* grid utils */
 .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0;display:grid;gap:14px;align-content:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-content:start}
 .feat{display:grid;gap:6px;padding:18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
 .feat .k{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
 .feat .v{font-family:var(--f-display);font-size:1.7rem;font-weight:400;line-height:1.05}
@@ -107,7 +107,7 @@ nav.top .cta:hover{color:var(--bg);filter:brightness(1.1)}
 /* table */
 /* sortable headers */
 th .sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
-th .sort:hover,th .sort[aria-sort]{color:var(--sea)}
+th .sort:hover,th[aria-sort] .sort{color:var(--sea)}
 th .sort:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
 tbody tr{transition:background-color 200ms ease}
 tbody tr.in{animation:rowIn 380ms cubic-bezier(.23,1,.32,1) both}
@@ -130,7 +130,7 @@ tbody tr.in{animation:rowIn 380ms cubic-bezier(.23,1,.32,1) both}
 .duel-bar.me{background:var(--sea)}
 .duel-card .v{font-family:var(--f-display);font-size:1.8rem;font-weight:700}
 @media (max-width:860px){.duel{grid-template-columns:1fr}.duel-mid{order:-1}}
-.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);position:relative}
 table{border-collapse:collapse;width:100%;min-width:760px;font-size:.9rem}
 th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--bg)}
@@ -186,7 +186,7 @@ footer a{overflow-wrap:anywhere}
 
 @media (max-width:860px){
   .hero{grid-template-columns:1fr}
-  .g2,.g3{grid-template-columns:1fr}
+  .g2,.g3{grid-template-columns:minmax(0,1fr)}
   .kpis{grid-template-columns:1fr 1fr}
   .chartbox.tall{min-height:520px}
 }
@@ -210,7 +210,7 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .inp input,.inp select,.inp textarea{font:inherit;font-size:16px;font-weight:500;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;min-width:0}
 .inp input:focus,.inp select:focus,.inp textarea:focus{outline:none;border-color:var(--sea);box-shadow:0 0 0 3px var(--sea-soft)}
 .acts{display:flex;flex-wrap:wrap;gap:10px}
-.btn.wa{background:#1FA855;color:#fff}
+.btn.wa{background:#14853F;color:#fff}
 .btn.sm{padding:8px 14px;font-size:.85rem}
 .btn:active{transform:scale(.97)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,calc(100% + 40px));opacity:0;background:var(--deep);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:.9rem;z-index:50;transition:transform 300ms cubic-bezier(.23,1,.32,1), opacity 200ms ease;pointer-events:none}
@@ -243,7 +243,19 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .pflog table{min-width:720px}
 .pflog td{vertical-align:middle}
 .pflog button{font:inherit;font-size:.8rem;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-@media (max-width:860px){.kp-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:860px){.kp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* cobranza */
+.cob table{min-width:720px}
+.cob td{vertical-align:middle}
+.cob .st{font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.cob .st.late{background:#FBE3DF;color:#9E2A20}.cob .st.soon{background:var(--sun-soft);color:var(--warn)}.cob .st.ok{background:#DDF1E5;color:var(--good)}.cob .st.fut{background:var(--line);color:var(--muted)}
+.cob .acts2{display:flex;gap:6px;flex-wrap:wrap}
+.cob .acts2 button{font:inherit;font-size:.78rem;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.cob .acts2 .w{background:#14853F;border-color:#14853F;color:#fff}
+.doc .amt{font-size:13px;color:var(--nv)}
+.doc .amt b{font-size:22px;display:block;font-weight:800}
+.doc .words{font-style:italic;color:var(--mu)}
 
 /* clients (CRM-lite) */
 .crm-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
@@ -252,7 +264,7 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .crm-stats span{font-size:.78rem;color:var(--muted);font-weight:600}
 .crm-stats .due{background:var(--sun-soft);border-color:transparent}
 .crm-stats .due b{color:var(--warn)}
-.crm-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.crm-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;min-width:0}
 .crm-search{font:inherit;font-size:16px;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0;flex:1 1 200px}
 .crm-list{display:grid;gap:8px;max-height:560px;overflow:auto;padding-right:2px}
 .crm-item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:6px;background:var(--bg)}
@@ -266,7 +278,7 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .stg.s1{background:var(--sea-soft);color:var(--sea)}.stg.s2{background:var(--sun-soft);color:var(--warn)}.stg.s3{background:var(--good);color:var(--surface)}.stg.s4{background:var(--deep);color:#fff}.stg.s5{background:var(--line);color:var(--muted)}
 .crm-acts{display:flex;flex-wrap:wrap;gap:6px}
 .crm-acts button,.crm-acts a{font:inherit;font-size:.8rem;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none}
-.crm-acts .w{background:#1FA855;border-color:#1FA855;color:#fff}
+.crm-acts .w{background:#14853F;border-color:#14853F;color:#fff}
 .crm-acts .x{color:var(--bad)}
 .crm-empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:.92rem}
 .tpl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;align-content:start}
@@ -297,6 +309,7 @@ details.fold > summary::-webkit-details-marker{display:none}
 details.fold > summary::after{content:"Ver";font-family:var(--f-mono);font-size:.75rem;color:var(--sea)}
 details.fold[open] > summary::after{content:"Ocultar"}
 details.fold[open] > summary{margin-bottom:16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .scroll-hint{display:none;font-size:.78rem;color:var(--muted);margin-top:-18px}
 
 /* ===== phones ===== */
@@ -346,7 +359,7 @@ details.fold[open] > summary{margin-bottom:16px}
 .pf-side{display:grid;gap:14px;position:sticky;top:64px}
 .pf-paper{background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 18px 40px rgba(10,56,86,.14);overflow:hidden}
 .pf-acts .btn{flex:1 1 auto;justify-content:center}
-.doc{--nv:#0A3856;--bl:#2A85C5;--gr:#3C3C3A;--mu:#6B7A86;--ln:#DCE5EC;--bg:#F3F7FA;
+.doc{--nv:#0A3856;--bl:#2A85C5;--blt:#1F6FA8;--gr:#3C3C3A;--mu:#5B6872;--ln:#DCE5EC;--bg:#F3F7FA;
   color:var(--gr);background:#fff;font-family:var(--f-body);font-size:12.5px;line-height:1.45;padding:34px 38px 28px;display:grid;gap:16px}
 .doc *{color:inherit}
 .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
@@ -355,7 +368,7 @@ details.fold[open] > summary{margin-bottom:16px}
 .doc-id b{font-size:22px;letter-spacing:.14em;color:var(--nv);font-weight:800}
 .doc-id .no{font-family:var(--f-mono);font-size:13px;color:var(--gr);font-weight:700;white-space:nowrap}
 .doc-bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--nv),var(--bl))}
-.doc h4{margin:0 0 6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--bl);font-weight:800}
+.doc h4{margin:0 0 6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blt);font-weight:800}
 .doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .doc-box{background:var(--bg);border-radius:8px;padding:12px 14px}
 .doc-box p{margin:0}
@@ -372,6 +385,7 @@ details.fold[open] > summary{margin-bottom:16px}
 .doc tr.tot td{font-weight:800;color:var(--nv);border-bottom:2px solid var(--nv)}
 .doc tr.neg td.r{color:#B3261E}
 .doc-hl{display:grid;grid-template-columns:1.3fr 1fr;border-radius:10px;overflow:hidden;background:linear-gradient(110deg,var(--nv),#0F4C78 55%,var(--bl))}
+.doc-hl{background-color:var(--nv)}
 .doc-hl > div{padding:14px 18px;color:#fff;display:grid;gap:2px;align-content:center}
 .doc-hl span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;font-weight:700}
 .doc-hl b{font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
@@ -389,10 +403,11 @@ details.fold[open] > summary{margin-bottom:16px}
 .doc-foot{margin-top:4px;padding-top:10px;border-top:3px solid var(--nv);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:10.5px;color:var(--mu)}
 .doc-foot b{color:var(--nv)}
 .doc .muted{color:var(--mu)}
-@media (max-width:980px){.pf-grid{grid-template-columns:1fr}.pf-side{position:static}}
+@media (max-width:980px){.pf-grid{grid-template-columns:minmax(0,1fr)}.pf-side{position:static}}
 @media (max-width:560px){
   .doc{padding:20px 16px;font-size:11.5px;gap:12px}
-  .doc-logo{height:28px}.doc-id b{font-size:17px}.doc-id .no{font-size:10.5px}
+  .doc-head{flex-wrap:wrap}.doc-id{min-width:0}
+  .doc-logo{height:28px}.doc-id b{font-size:15px;overflow-wrap:anywhere}.doc-id .no{font-size:10.5px}
   .doc-parties{grid-template-columns:1fr}
   .doc-lot{grid-template-columns:1fr 1fr}.doc-lot div:nth-child(2){border-right:0}.doc-lot div:nth-child(-n+2){border-bottom:1px solid var(--ln)}
   .doc-hl{grid-template-columns:1fr}.doc-hl b{font-size:26px}
@@ -404,8 +419,10 @@ details.fold[open] > summary{margin-bottom:16px}
 @media print{
   @page{size:A4;margin:10mm}
   html,body{background:#fff!important;padding:0!important;margin:0}
-  body::before,nav.top,.toast,.mode,noscript,.wrap > :not(#proforma),#proforma > .sec-head,.pf-grid > .panel,.pf-acts,#pfNoNote{display:none!important}
-  #proforma{border:0;padding:0;display:block}
+  body::before,nav.top,.toast,.mode,noscript,.pf-grid > .panel,.pf-acts,#pfNoNote{display:none!important}
+  body:not(.print-sep) .wrap > :not(#proforma),body:not(.print-sep) #proforma > .sec-head{display:none!important}
+  body.print-sep .wrap > :not(#cobranza),body.print-sep #cobranza > :not(.pf-grid){display:none!important}
+  #proforma,#cobranza{border:0;padding:0;display:block}
   .pf-grid{display:block}.pf-side{position:static;display:block}
   .pf-paper{box-shadow:none;border-radius:0}
   .doc{padding:0;font-size:11.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -423,6 +440,7 @@ details.fold[open] > summary{margin-bottom:16px}
     <div class="brand">Planicie <span>de Asia</span></div>
     <a href="#proforma">Proforma</a>
     <a href="#panel">Panel</a>
+    <a href="#cobranza">Cobranza</a>
     <a href="#clientes">Mis clientes</a>
     <a href="#plantillas">Mensajes</a>
     <a href="#objeciones">Objeciones</a>
@@ -439,7 +457,7 @@ details.fold[open] > summary{margin-bottom:16px}
   </div>
 </nav>
 
-<div class="wrap">
+<main class="wrap">
 
 <div class="mode" id="noStore" role="alert" hidden style="background:#FBE3DF"><span><b style="color:var(--bad)">Este visor no guarda datos.</b> Los clientes y cambios se perderán al cerrar. Abre el archivo en Chrome o Safari para guardarlos.</span></div>
 <div class="mode" role="note"><span><b>Uso interno</b> · Herramienta de ventas para asesores Vivaldi. Arma la proforma, compara con la competencia y envía todo por WhatsApp.</span><span class="upd" id="updLbl">Datos: octubre 2026</span></div>
@@ -472,7 +490,7 @@ details.fold[open] > summary{margin-bottom:16px}
 </div>
 
 <div class="ruler" aria-label="Ubicación de los proyectos sobre la Panamericana Sur por kilómetro">
-  <svg id="ruler" role="img"></svg>
+  <svg id="ruler" role="img" aria-label="Proyectos sobre la Panamericana Sur entre el km 97 y el 133; Planicie de Asia en el km 111.5"></svg>
 </div>
 
 <!-- RESUMEN -->
@@ -559,8 +577,46 @@ details.fold[open] > summary{margin-bottom:16px}
   </div>
   <div class="panel">
     <div class="crm-top"><h3>Registro de proformas</h3><input class="crm-search" id="pfLogQ" type="search" placeholder="Buscar por cliente, N° o proyecto" aria-label="Buscar proforma"></div>
-    <div class="tbl pflog"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Proyecto / lote</th><th class="r">Precio final</th><th>Pago</th><th></th></tr></thead><tbody id="pfLogBody"></tbody></table></div>
+    <div class="tbl pflog" tabindex="0" role="region" aria-label="Registro de proformas"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Proyecto / lote</th><th class="r">Precio final</th><th>Pago</th><th><span class="sr">Acciones</span></th></tr></thead><tbody id="pfLogBody"></tbody></table></div>
     <div class="acts"><button class="btn ghost sm" type="button" id="pfLogX">Exportar registro a Excel</button></div>
+  </div>
+</section>
+
+<!-- SEPARACION Y COBRANZA -->
+<section id="cobranza">
+  <div class="sec-head">
+    <div class="eyebrow">Herramienta · Separación y cobranza</div>
+    <h2>Del sí del cliente <em>a la cuota pagada</em></h2>
+    <p class="lead">Emite la constancia de separación a partir de una proforma, registra la venta y sigue cada cuota: vencidas, próximas y pagadas, con recordatorio por WhatsApp.</p>
+  </div>
+  <div class="pf-grid">
+    <div class="panel">
+      <h3>Constancia de separación</h3>
+      <div class="form">
+        <label class="inp full">Proforma<select id="sepPf"></select></label>
+        <label class="inp">Monto de separación (S/)<input id="sepAmt" type="number" inputmode="numeric" min="0" step="100" value="1000"></label>
+        <label class="inp">Fecha<input id="sepDate" type="date"></label>
+        <label class="inp">Medio de pago<select id="sepPay"><option>Transferencia bancaria</option><option>Depósito en cuenta</option><option>Yape</option><option>Plin</option><option>Efectivo en oficina</option></select></label>
+        <label class="inp">N° de operación<input id="sepOp" autocomplete="off" placeholder="Opcional"></label>
+        <label class="inp">Días para firmar contrato<input id="sepDays" type="number" inputmode="numeric" min="1" max="60" value="7"></label>
+        <label class="inp full">Observaciones<textarea id="sepObs" rows="2" placeholder="Opcional"></textarea></label>
+      </div>
+      <p class="note" id="sepHint"></p>
+    </div>
+    <div class="pf-side">
+      <div class="pf-paper"><article class="doc" id="sepDoc" aria-label="Vista previa de la constancia"></article></div>
+      <div class="acts pf-acts">
+        <button class="btn pri" type="button" id="sepPrint">Guardar PDF / Imprimir</button>
+        <button class="btn wa" type="button" id="sepWa">Enviar resumen por WhatsApp</button>
+        <button class="btn ghost" type="button" id="sepSale">Registrar venta y cronograma</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="crm-top"><h3>Cobranza</h3><div class="seg" id="cobFilter" role="group" aria-label="Filtrar cuotas"><button type="button" data-v="pend" aria-pressed="true">Vencidas y próximas</button><button type="button" data-v="all" aria-pressed="false">Todas</button><button type="button" data-v="paid" aria-pressed="false">Pagadas</button></div></div>
+    <div class="kp-grid" id="cobKp"></div>
+    <div class="tbl cob" tabindex="0" role="region" aria-label="Cuotas por cobrar"><table><thead><tr><th>Vence</th><th>Cliente</th><th>Proyecto / lote</th><th class="r">Cuota</th><th>Estado</th><th><span class="sr">Acciones</span></th></tr></thead><tbody id="cobBody"></tbody></table></div>
+    <div class="acts"><button class="btn ghost sm" type="button" id="cobX">Exportar cobranza a Excel</button></div>
   </div>
 </section>
 
@@ -661,9 +717,9 @@ details.fold[open] > summary{margin-bottom:16px}
     </div>
   </div>
   <p class="scroll-hint">Desliza la tabla hacia la derecha para ver todas las columnas →</p>
-  <div class="tbl">
+  <div class="tbl" tabindex="0" role="region" aria-label="Tabla de precios">
     <table>
-      <thead><tr><th>Proyecto</th><th>Zona</th><th class="r"><button class="sort" data-k="km">Km</button></th><th>Posición</th><th class="r"><button class="sort" data-k="m2">Lote</button></th><th class="r"><button class="sort" data-k="total">Precio publicado</button></th><th class="r"><button class="sort" data-k="perM2" aria-sort="ascending">S/ por m² ↑</button></th><th class="r">200 m² equivalen a</th><th>Fuente</th></tr></thead>
+      <thead><tr><th>Proyecto</th><th>Zona</th><th class="r"><button class="sort" data-k="km">Km</button></th><th>Posición</th><th class="r"><button class="sort" data-k="m2">Lote</button></th><th class="r"><button class="sort" data-k="total">Precio publicado</button></th><th class="r" aria-sort="ascending"><button class="sort" data-k="perM2">S/ por m² ↑</button></th><th class="r">200 m² equivalen a</th><th>Fuente</th></tr></thead>
       <tbody id="tblBody"></tbody>
     </table>
   </div>
@@ -811,7 +867,7 @@ details.fold[open] > summary{margin-bottom:16px}
     <h2>Frente a frente con las alternativas</h2>
     <p class="lead">Las dos alternativas reales que tiene un comprador en la misma Panamericana Sur: ir hacia el norte, a los condominios de Asia, o hacia el sur, a Cerro Azul.</p>
   </div>
-  <div class="tbl">
+  <div class="tbl" tabindex="0" role="region" aria-label="Comparación con alternativas">
     <table class="mx">
       <thead><tr><th>Criterio</th><th>Vivaldi · Planicie de Asia (km 111.5)</th><th>Antes: condominios de Asia (km 99–109)</th><th>Después: Cerro Azul (km 120–131)</th></tr></thead>
       <tbody id="mxBody">
@@ -872,7 +928,7 @@ details.fold[open] > summary{margin-bottom:16px}
     <label class="inp">Fecha de los datos<input id="dDate" placeholder="Ej. octubre 2026"></label>
   </div>
   <p class="scroll-hint">Desliza la tabla hacia la derecha para ver todas las columnas →</p>
-  <div class="tbl ed-tbl"><table><thead><tr><th>Proyecto</th><th>Desarrollador / fuente</th><th>Zona</th><th class="r">Km</th><th class="r">Lote m²</th><th>Moneda</th><th class="r">Precio</th><th>Tipo</th><th></th></tr></thead><tbody id="edBody"></tbody></table></div>
+  <div class="tbl ed-tbl" tabindex="0" role="region" aria-label="Editor de datos"><table><thead><tr><th>Proyecto</th><th>Desarrollador / fuente</th><th>Zona</th><th class="r">Km</th><th class="r">Lote m²</th><th>Moneda</th><th class="r">Precio</th><th>Tipo</th><th><span class="sr">Eliminar</span></th></tr></thead><tbody id="edBody"></tbody></table></div>
   <div class="acts">
     <button class="btn pri" type="button" id="dAdd">+ Agregar competidor</button>
     <button class="btn ghost" type="button" id="dExport">Exportar datos</button>
@@ -913,7 +969,7 @@ details.fold[open] > summary{margin-bottom:16px}
   </ol>
   <p>Análisis comercial elaborado con información pública. Los precios de terceros son de oferta y no fueron verificados con cada vendedor. Las proyecciones de plusvalía son escenarios ilustrativos.</p>
 </footer>
-</div>
+</main>
 
 <script>/* ExcelJS 4.4.0 embebido (MIT): Excel con formato sin internet */
 /*! ExcelJS 19-10-2023 */
@@ -1092,8 +1148,8 @@ function renderTable(){
 }
 document.querySelectorAll("th .sort").forEach(b => b.addEventListener("click", () => {
   const k = b.dataset.k; SORT = {k, dir: SORT.k === k ? -SORT.dir : 1};
-  document.querySelectorAll("th .sort").forEach(x => { x.removeAttribute("aria-sort"); x.textContent = x.textContent.replace(/ [↑↓]$/, ""); });
-  b.setAttribute("aria-sort", SORT.dir > 0 ? "ascending" : "descending"); b.textContent += SORT.dir > 0 ? " ↑" : " ↓";
+  document.querySelectorAll("th .sort").forEach(x => { x.parentElement.removeAttribute("aria-sort"); x.textContent = x.textContent.replace(/ [↑↓]$/, ""); });
+  b.parentElement.setAttribute("aria-sort", SORT.dir > 0 ? "ascending" : "descending"); b.textContent += SORT.dir > 0 ? " ↑" : " ↓";
   renderTable();
 }));
 document.querySelectorAll("#viewSeg button").forEach(b => b.addEventListener("click", () => {
@@ -1179,7 +1235,7 @@ function pfIssue(){
     const c = pfCalc();
     PFLOG.unshift({no: pfIssued, at: iso(new Date()), name: c.name, dni: c.dni, phone: c.phone, proj: +pf("Proj").value, projName: c.v.name, mz: pf("Mz").value.trim(), lt: pf("Lt").value.trim(),
       area: c.area, price: c.price, disc: c.disc, ini: +pf("Ini").value, term: c.term, start: pf("Start").value, net: c.net, q: c.q, adv: c.adv});
-    pfLogSave(); renderPf(); if (typeof renderPanel === "function") renderPanel(); }
+    pfLogSave(); renderPf(); if (typeof renderPanel === "function") renderPanel(); if (typeof renderSep === "function" && window.sepReady) renderSep(); }
   return pfIssued;
 }
 function pfDirty(){ pfIssued = null; renderPf(); }
@@ -1654,6 +1710,140 @@ $("pfLogX").addEventListener("click", async () => {
   await xlSave(wb, `registro-proformas-${iso(new Date())}.xlsx`);
 });
 renderPanel();
+
+/* ---------- separación (constancia) ---------- */
+// amount in Spanish words, as used on receipts: "Mil quinientos y 00/100 soles"
+function numWords(n){
+  const U = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco", "veintiséis", "veintisiete", "veintiocho", "veintinueve"];
+  const D = ["", "", "", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+  const C = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+  const h = x => x < 30 ? U[x] : D[Math.floor(x / 10)] + (x % 10 ? " y " + U[x % 10] : "");
+  const t = x => x === 100 ? "cien" : (C[Math.floor(x / 100)] + (x % 100 ? " " + h(x % 100) : "")).trim();
+  const w = x => { if (x === 0) return "cero"; const m = Math.floor(x / 1e6), k = Math.floor(x % 1e6 / 1000), r = x % 1000; let s = "";
+    if (m) s += m === 1 ? "un millón " : t(m).replace(/veintiuno$/, "veintiún").replace(/uno$/, "un") + " millones ";
+    if (k) s += k === 1 ? "mil " : t(k).replace(/veintiuno$/, "veintiún").replace(/uno$/, "un") + " mil ";
+    if (r) s += t(r); return s.trim(); };
+  const ent = Math.floor(n), cts = Math.round((n - ent) * 100), txt = w(ent);
+  return txt.charAt(0).toUpperCase() + txt.slice(1) + ` y ${String(cts).padStart(2, "0")}/100 soles`;
+}
+const SEP_KEY = "vivaldi-separaciones-v1";
+let SEPS = []; try { SEPS = JSON.parse(localStorage.getItem(SEP_KEY)) || []; } catch {}
+let sepIssued = null;
+const sepSeq = () => { try { return +localStorage.getItem("vivaldi-sep-seq") || 0; } catch { return 0; } };
+const sepNo = () => sepIssued || `SEP-${today.getFullYear()}-${String(sepSeq() + 1).padStart(4, "0")}`;
+$("sepDate").value = iso(new Date());
+function fillSepPf(){
+  const sel = $("sepPf"), cur = sel.value;
+  sel.innerHTML = PFLOG.length ? PFLOG.map(r => `<option value="${esc(r.no)}">${esc(r.no)} · ${esc(r.name || "Sin nombre")} · ${esc(r.projName)}${r.mz || r.lt ? " Mz " + esc(r.mz) + " Lt " + esc(r.lt) : ""}</option>`).join("") : `<option value="">Primero emite una proforma</option>`;
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+// rebuild the payment plan of a stored proforma with the same rules as the proforma itself
+function planOf(r){
+  const term = +r.term || 0, net = r.net, down = term ? Math.round(net * (r.ini ?? 20) / 100) : net, fin = net - down;
+  const q = term ? Math.round(fin / term) : 0, last = term ? fin - q * (term - 1) : 0, start = r.start ? new Date(r.start + "T12:00") : addMonths(new Date(r.at + "T12:00"), 1);
+  return {down, fin, q, term, sched: Array.from({length: term}, (_, k) => ({i: k + 1, d: iso(addMonths(start, k)), amt: k === term - 1 ? last : q}))};
+}
+function sepCalc(){
+  const r = PFLOG.find(x => x.no === $("sepPf").value), amt = Math.max(0, Math.round(+$("sepAmt").value || 0)), d = $("sepDate").value ? new Date($("sepDate").value + "T12:00") : new Date();
+  const lim = new Date(d); lim.setDate(lim.getDate() + Math.max(1, +$("sepDays").value || 7));
+  return {r, amt, d, lim, pay: $("sepPay").value, op: $("sepOp").value.trim(), obs: $("sepObs").value.trim(), no: sepNo(), plan: r ? planOf(r) : null};
+}
+function renderSep(){
+  fillSepPf();
+  const c = sepCalc(), r = c.r;
+  $("sepHint").textContent = r ? (sepIssued ? `Constancia ${sepIssued} emitida.` : `Se numerará como ${c.no} al imprimirla o enviarla.`) : "Emite una proforma (Guardar, PDF, imagen o WhatsApp) para poder separarla.";
+  if (!r){ $("sepDoc").innerHTML = `<p class="muted" style="padding:40px;text-align:center">La constancia aparecerá aquí.</p>`; return; }
+  const lot = [r.mz && "Mz " + r.mz, r.lt && "Lote " + r.lt].filter(Boolean).join(" · ") || "Por asignar";
+  $("sepDoc").innerHTML = `
+    <header class="doc-head"><img class="doc-logo" src="${LOGO}" alt="Vivaldi Inmobiliaria">
+      <div class="doc-id"><b>CONSTANCIA DE SEPARACIÓN</b><span class="no">N° ${c.no}${sepIssued ? "" : " · borrador"}</span><span>Fecha: ${dNum(c.d)}</span><span>Ref. proforma ${esc(r.no)}</span></div></header>
+    <div class="doc-bar"></div>
+    <div class="doc-parties">
+      <div class="doc-box"><h4>Cliente</h4><p class="nm">${esc(r.name) || "—"}</p><p>${r.dni ? "DNI/CE " + esc(r.dni) : ""}${r.dni && r.phone ? " · " : ""}${r.phone ? "Cel. " + esc(r.phone) : ""}</p></div>
+      <div class="doc-box"><h4>Monto recibido</h4><p class="amt"><b>${fmt(c.amt)}</b><span class="words">${numWords(c.amt)}</span></p><p>${esc(c.pay)}${c.op ? " · Op. " + esc(c.op) : ""}</p></div>
+    </div>
+    <div><h4>Lote separado</h4><div class="doc-lot">
+      <div><span>Proyecto</span><b>${esc(r.projName)}</b></div><div><span>Manzana / Lote</span><b>${esc(lot)}</b></div>
+      <div><span>Área</span><b>${r.area} m²</b></div><div><span>Precio final</span><b>${fmt(r.net)}</b></div></div></div>
+    <div><h4>Resumen de pago</h4><table><thead><tr><th>Concepto</th><th class="r">Importe</th></tr></thead><tbody>
+      <tr><td>Precio final del lote</td><td class="r">${fmt(r.net)}</td></tr>
+      <tr class="neg"><td>Separación recibida (a cuenta de la ${c.plan.term ? "cuota inicial" : "compra"})</td><td class="r">− ${fmt(c.amt)}</td></tr>
+      ${c.plan.term ? `<tr><td>Saldo de la cuota inicial a la firma</td><td class="r">${fmt(Math.max(0, c.plan.down - c.amt))}</td></tr><tr><td>Financiamiento directo: ${c.plan.term} cuotas sin intereses</td><td class="r">${fmt(c.plan.fin)}</td></tr>` : `<tr><td>Saldo a pagar a la firma</td><td class="r">${fmt(Math.max(0, r.net - c.amt))}</td></tr>`}
+      <tr class="tot"><td>Saldo pendiente total</td><td class="r">${fmt(Math.max(0, r.net - c.amt))}</td></tr></tbody></table></div>
+    <div class="doc-hl"><div><span>Firma de contrato hasta</span><b>${dShort(c.lim)}</b><small>El lote queda reservado a nombre del cliente hasta esa fecha.</small></div><div><span>Separación</span><b>${fmt(c.amt)}</b><small>a cuenta del precio</small></div></div>
+    <div><h4>Condiciones</h4><ol>
+      <li>La separación reserva el lote indicado a nombre del cliente hasta el ${dLong(c.lim)} y se descuenta del precio final al firmar el contrato.</li>
+      <li>Si el contrato no se firma en ese plazo por causa del cliente, el lote vuelve a quedar disponible; la devolución o aplicación del monto se rige por las políticas de la empresa que el asesor explica antes del pago.</li>
+      <li>Pagos solo en cuentas a nombre de ${CO.name}. Precios en soles.</li>
+      ${c.obs ? `<li>${esc(c.obs)}</li>` : ""}</ol></div>
+    <div class="doc-sign"><div><b>${esc(r.adv) || "&nbsp;"}</b>Asesor comercial · Vivaldi</div><div><b>${esc(r.name) || "&nbsp;"}</b>Cliente${r.dni ? " · DNI/CE " + esc(r.dni) : ""}</div></div>
+    <footer class="doc-foot"><span><b>${CO.name}</b> · RUC ${CO.ruc}</span><span>${CO.addr}</span><span>${CO.tel} · ${CO.mail}</span></footer>`;
+}
+function sepIssue(){
+  const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return null; }
+  if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${String(n).padStart(4, "0")}`;
+    SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {}
+    const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
+    if (cl && cl.stage !== "Vendido"){ cl.stage = "Separado"; cl.stageAt = todayIso(); cl.notes = (cl.notes ? cl.notes + "\n" : "") + `Separación ${sepIssued}: ${fmt(c.amt)} (${c.pay}). Firmar hasta ${dNum(c.lim)}.`; crmSave(); renderCrm(); }
+    renderSep(); }
+  return sepIssued;
+}
+["sepPf","sepAmt","sepDate","sepPay","sepOp","sepDays","sepObs"].forEach(id => $(id).addEventListener("input", () => { sepIssued = null; renderSep(); }));
+$("sepPrint").addEventListener("click", () => { if (!sepIssue()) return; document.body.classList.add("print-sep"); const t = document.title; document.title = `constancia-${sepIssued}`; print(); setTimeout(() => { document.body.classList.remove("print-sep"); document.title = t; }, 600); });
+addEventListener("afterprint", () => document.body.classList.remove("print-sep"));
+$("sepWa").addEventListener("click", () => { if (!sepIssue()) return; const c = sepCalc(), r = c.r;
+  sendWa(`🏖️ *Constancia de separación ${sepIssued} · Vivaldi Inmobiliaria*\n\nCliente: ${r.name}\n📍 ${r.projName}${r.mz || r.lt ? ` · Mz ${r.mz} Lt ${r.lt}` : ""}\n💰 Separación recibida: *${fmt(c.amt)}* (${c.pay}${c.op ? ", op. " + c.op : ""})\nPrecio final: ${fmt(r.net)} · Saldo: ${fmt(Math.max(0, r.net - c.amt))}\n🗓️ Firma de contrato hasta el *${dLong(c.lim)}*\n\nGracias por confiar en Vivaldi.`, r.phone); });
+
+/* ---------- cobranza ---------- */
+const COB_KEY = "vivaldi-cobranza-v1";
+let COB = []; try { COB = JSON.parse(localStorage.getItem(COB_KEY)) || []; } catch {}
+const cobSave = () => { try { localStorage.setItem(COB_KEY, JSON.stringify(COB)); } catch {} };
+let cobF = "pend";
+$("sepSale").addEventListener("click", () => {
+  const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return; }
+  if (!c.plan.term){ toast("Venta al contado: no genera cuotas"); return; }
+  if (COB.some(x => x.pf === c.r.no) && !confirm("Esta proforma ya tiene un cronograma en cobranza. ¿Registrarla otra vez?")) return;
+  COB.unshift({id: Date.now().toString(36), pf: c.r.no, sep: sepIssued, name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "), sched: c.plan.sched, paid: {}});
+  cobSave();
+  const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
+  if (cl){ cl.stage = "Vendido"; cl.stageAt = todayIso(); crmSave(); renderCrm(); }
+  renderCob(); toast(`Venta registrada: ${c.plan.term} cuotas en cobranza`); $("cobBody").scrollIntoView({behavior:"smooth", block:"center"});
+});
+function cobRows(){
+  const t = todayIso(), lim = iso(new Date(Date.now() + 30 * 864e5));
+  return COB.flatMap(k => k.sched.map(s => ({k, s, paid: k.paid[s.i], state: k.paid[s.i] ? "ok" : s.d < t ? "late" : s.d <= lim ? "soon" : "fut"}))).sort((a, b) => a.s.d.localeCompare(b.s.d));
+}
+function renderCob(){
+  const rows = cobRows(), ym = iso(new Date()).slice(0, 7), sum = a => a.reduce((x, r) => x + r.s.amt, 0);
+  const late = rows.filter(r => r.state === "late"), soon = rows.filter(r => r.state === "soon"), paidM = rows.filter(r => r.paid && r.paid.slice(0, 7) === ym);
+  $("cobKp").innerHTML = [["Vencido", fmt(sum(late)), `${late.length} cuotas atrasadas`, 1], ["Por cobrar 30 días", fmt(sum(soon)), `${soon.length} cuotas`], ["Cobrado este mes", fmt(sum(paidM)), `${paidM.length} pagos registrados`], ["Ventas en cobranza", COB.length, `${rows.filter(r => !r.paid).length} cuotas pendientes`]]
+    .map(([k, v, s, hl]) => `<div class="kp ${hl && late.length ? "hl" : ""}"><span>${k}</span><b>${v}</b><small>${s}</small></div>`).join("");
+  const list = rows.filter(r => cobF === "all" || (cobF === "paid" ? r.paid : (r.state === "late" || r.state === "soon"))).slice(0, 300);
+  const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
+  $("cobBody").innerHTML = list.length ? list.map(r => `<tr><td class="num">${dNum(new Date(r.s.d + "T12:00"))}</td><td><b>${esc(r.k.name) || "—"}</b><br><span class="note">Cuota ${r.s.i} de ${r.k.sched.length}</span></td><td>${esc(r.k.projName)}${r.k.lot ? " · " + esc(r.k.lot) : ""}</td><td class="r num">${fmt(r.s.amt)}</td>
+    <td><span class="st ${r.state}">${lab[r.state]}${r.paid ? " · " + dNum(new Date(r.paid + "T12:00")) : ""}</span></td>
+    <td><div class="acts2">${r.paid ? `<button type="button" data-undo="${r.k.id}:${r.s.i}">Deshacer</button>` : `${r.k.phone ? `<button type="button" class="w" data-rem="${r.k.id}:${r.s.i}">Recordar</button>` : ""}<button type="button" data-pay="${r.k.id}:${r.s.i}">Registrar pago</button>`}</div></td></tr>`).join("")
+    : `<tr><td colspan="6" class="note" style="text-align:center;padding:20px">${COB.length ? "No hay cuotas en este filtro." : "Aún no hay ventas en cobranza. Registra una desde la constancia de separación."}</td></tr>`;
+}
+$("cobFilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; cobF = b.dataset.v; $("cobFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderCob(); });
+$("cobBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const [id, i] = (b.dataset.pay || b.dataset.rem || b.dataset.undo).split(":"), k = COB.find(x => x.id === id), s = k?.sched.find(x => x.i === +i); if (!s) return;
+  if (b.dataset.pay){ k.paid[s.i] = todayIso(); cobSave(); renderCob(); toast(`Cuota ${s.i} de ${k.name} registrada`); }
+  if (b.dataset.undo){ delete k.paid[s.i]; cobSave(); renderCob(); }
+  if (b.dataset.rem){ const late = s.d < todayIso();
+    sendWa(`Hola ${(k.name || "").split(" ")[0]}, te saluda Vivaldi Inmobiliaria. ${late ? "Te recordamos que tu cuota" : "Te recordamos que tu próxima cuota"} *${s.i} de ${k.sched.length}* de ${k.projName}${k.lot ? " (" + k.lot + ")" : ""} por *${fmt(s.amt)}* ${late ? "venció el" : "vence el"} *${dLong(new Date(s.d + "T12:00"))}*. Puedes pagar en soles en las cuentas de la empresa; si ya pagaste, envíanos tu constancia por aquí. ¡Gracias!`, k.phone); }
+});
+$("cobX").addEventListener("click", async () => {
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Cobranza", {properties:{tabColor:{argb:XL.nv}}});
+  let r = xlHead(wb, ws, 8, "CONTROL DE COBRANZA", `Al ${dNum(new Date())} · ${COB.length} ventas`);
+  const lab = {late:"Vencida", soon:"Próxima (30 días)", ok:"Pagada", fut:"Programada"}, top = r;
+  r = xlTable(ws, r, [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Lote", w:12}, {h:"Cuota", w:10, fmt:"0"}, {h:"Importe", w:14, fmt:XL.money}, {h:"Estado", w:22}],
+    cobRows().map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.k.lot, x.s.i, x.s.amt, lab[x.state] + (x.paid ? " · " + dNum(new Date(x.paid + "T12:00")) : "")]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }),
+    {total:{label:"TOTAL CARTERA", sum:[6]}});
+  ws.autoFilter = {from:{row:top, column:1}, to:{row:Math.max(top, r - 2), column:8}};
+  await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
+});
+renderSep(); renderCob(); window.sepReady = true;
 
 
 // nav: highlight the section on screen

@@ -786,6 +786,12 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
   .mbar .ai-b::after{content:"";position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;background:#14853F;box-shadow:0 0 0 2px #fff}
   .ai{right:0;left:0;bottom:0;width:100%;height:min(88svh,680px);border-radius:22px 22px 0 0}
 }
+/* very small phones (320 px): the four actions still fit on one row */
+@media (max-width:359px){
+  .mbar{gap:6px;padding-left:10px;padding-right:10px}
+  .mbar .btn{font-size:.82rem;padding:0 10px}
+  .mbar .ai-b,.mbar .call-b{width:44px}
+}
 /* computers: a compact round button that opens its label on hover, so it never covers page buttons */
 @media (min-width:761px){
   .ai-fab{padding:9px;gap:0}
