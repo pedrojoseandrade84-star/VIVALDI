@@ -1,14 +1,17 @@
-# Rotulado vehicular Vivaldi · "Ruta al mar"
+# Rotulado vehicular Vivaldi · 25 diseños
 
-- **Rotulado-Vehicular-Vivaldi.pdf**: catálogo de 12 páginas (concepto, flota, cada proyecto, sedanes, imantados, especificaciones y medición).
-- **archivos-imprenta-svg/**: archivos vectoriales a escala 1:1 para la imprenta (no pierden calidad al ampliarse).
-  - `camioneta-<proyecto>-lado-derecho.svg` / `-lado-izquierdo.svg`: gráfica lateral de cada camioneta (doble cabina, referencia 5.33 m).
-  - `camioneta-<proyecto>-portalon.svg`: portalón trasero con QR de seguimiento.
-  - `sedan-lado-derecho.svg` / `-lado-izquierdo.svg`: rotulado parcial del sedán (los 5 proyectos).
-  - `luna-trasera-camioneta.svg`, `luna-trasera-sedan.svg`: vinilo microperforado.
-  - `imantado-asesor-<proyecto>.svg`: lámina magnética de 60 × 40 cm para los carros de los asesores.
-- **mockups-png/**: vistas de cada vehículo en alta resolución para presentar o publicar.
+- **Rotulado-Vehicular-Vivaldi.pdf**: catálogo de 9 páginas (portada, los 5 mensajes, una página por proyecto con sus 5 diseños, especificaciones y medición).
+- **vistas-25-disenos/**: los 25 diseños aplicados sobre fotos reales de una Toyota Hilux 2024 y un Toyota Yaris/Vios (simulación).
+- **artes-planos-svg/**: 40 artes planos en vector (laterales y portalones) con el logo oficial de Vivaldi, para la imprenta.
 
-Tipografías: Manrope e Instrument Serif (Google Fonts, gratuitas). La imprenta debe ajustar las gráficas sobre la plantilla del modelo exacto de vehículo y entregar una prueba de color antes del tiraje.
-Cada QR abre WhatsApp con un código (CAM-, SED-, IMA- + proyecto) para medir qué vehículo trae cada cliente.
-Confirmar precios, número de WhatsApp y la normativa municipal/MTC aplicable antes de imprimir.
+## Los 5 mensajes (para cada proyecto)
+1. "Tu nuevo lote te espera" (Toyota Hilux, lateral + portalón con QR)
+2. "Tu casa de playa empieza aquí" (Toyota Hilux, lateral + portalón con QR)
+3. "Este verano, estrena tu lote" (Toyota Yaris)
+4. "Síguenos a tu lote" con el kilómetro del proyecto (Toyota Hilux, lateral + portalón con QR)
+5. "Invierte hoy, disfruta siempre" (Toyota Yaris)
+
+Cada QR abre WhatsApp con un código (CAM1/CAM2/CAM4 + proyecto) para medir qué diseño trae más clientes.
+La imprenta debe ajustar los artes sobre la plantilla exacta del año y versión de cada vehículo y entregar una prueba de color.
+Confirmar precios, número de WhatsApp y normativa municipal/MTC antes de imprimir.
+Fotos base: Toyota Hilux 2024 y Toyota Vios/Yaris, Ethan Llamas, CC BY-SA 4.0 (Wikimedia Commons).
