@@ -230,6 +230,23 @@ nav.top a.on{color:var(--ink);font-weight:700}
 .sched table{min-width:0;font-size:.85rem}
 .sched th{position:sticky;top:0}
 
+/* inventario */
+.inv-top{display:flex;flex-wrap:wrap;gap:14px;align-items:end;justify-content:space-between}
+.inv-top .inp{min-width:240px;flex:0 1 320px}
+.inv-counts{display:flex;flex-wrap:wrap;gap:6px}
+.inv-counts button{font:inherit;font-size:.82rem;font-weight:700;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.inv-counts button[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+.inv-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+.inv table{min-width:760px}
+.inv td{vertical-align:middle}
+.inv select{font:inherit;font-size:.85rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.inv .lst-Disponible{color:var(--good);font-weight:700}.inv .lst-Separado{color:var(--warn);font-weight:700}.inv .lst-Vendido{color:var(--muted);font-weight:700}.inv .lst-Bloqueado{color:var(--bad);font-weight:700}
+.inv .acts2{display:flex;gap:6px}
+.inv .acts2 button{font:inherit;font-size:.78rem;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.inv .acts2 .go{background:var(--sea);border-color:var(--sea);color:var(--bg)}
+.pf-warn{background:#FBE3DF;color:#9E2A20;border-radius:10px;padding:10px 12px;font-weight:600;font-size:.88rem}
+@media (max-width:700px){.inv-form{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-top .inp{min-width:0;flex:1 1 100%}}
+
 /* panel */
 .kp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .kp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:4px;align-content:start}
@@ -439,6 +456,7 @@ details.fold[open] > summary{margin-bottom:16px}
   <div class="wrap">
     <div class="brand">Planicie <span>de Asia</span></div>
     <a href="#proforma">Proforma</a>
+    <a href="#inventario">Lotes</a>
     <a href="#panel">Panel</a>
     <a href="#cobranza">Cobranza</a>
     <a href="#clientes">Mis clientes</a>
@@ -552,9 +570,39 @@ details.fold[open] > summary{margin-bottom:16px}
         <button class="btn ghost" type="button" id="pfCopy">Copiar texto</button>
         <button class="btn ghost" type="button" id="pfSave">Guardar en Mis clientes</button>
       </div>
+      <p class="pf-warn" id="pfLotWarn" hidden></p>
       <p class="note" id="pfNoNote"></p>
     </div>
   </div>
+</section>
+
+<!-- INVENTARIO -->
+<section id="inventario">
+  <div class="sec-head">
+    <div class="eyebrow">Herramienta · Inventario de lotes</div>
+    <h2>Qué lote está libre, <em>en tiempo real</em></h2>
+    <p class="lead">Carga los lotes de cada proyecto (o importa tu Excel). Desde aquí se cotiza con un clic, y al separar o vender el estado cambia solo. La proforma avisa si un lote ya no está disponible.</p>
+  </div>
+  <div class="inv-top">
+    <label class="inp">Proyecto<select id="invProj"></select></label>
+    <div class="inv-counts" id="invCounts" role="group" aria-label="Filtrar por estado"></div>
+  </div>
+  <details class="fold" id="invGen"><summary>Crear lotes en bloque</summary>
+    <div class="panel">
+      <div class="form inv-form">
+        <label class="inp">Manzana<input id="igMz" placeholder="Ej. B" autocomplete="off"></label>
+        <label class="inp">Del lote N°<input id="igFrom" type="number" inputmode="numeric" min="1" value="1"></label>
+        <label class="inp">Al lote N°<input id="igTo" type="number" inputmode="numeric" min="1" value="20"></label>
+        <label class="inp">Área (m²)<input id="igArea" type="number" inputmode="decimal" min="1"></label>
+        <label class="inp">Precio (S/)<input id="igPrice" type="number" inputmode="numeric" min="0" step="100"></label>
+        <label class="inp">Ubicación<select id="igLoc"><option>Interior</option><option>Frente al parque</option><option>Esquina</option></select></label>
+      </div>
+      <div class="acts"><button class="btn pri" type="button" id="igAdd">Crear lotes</button><button class="btn ghost" type="button" id="invImp">Importar Excel</button><button class="btn ghost" type="button" id="invTpl">Descargar plantilla Excel</button><input type="file" id="invFile" accept=".xlsx" hidden></div>
+      <p class="note">La plantilla tiene las columnas: Proyecto, Manzana, Lote, Área, Precio, Ubicación, Estado, Cliente. Si un lote ya existe se actualiza.</p>
+    </div>
+  </details>
+  <div class="tbl inv" tabindex="0" role="region" aria-label="Lotes del proyecto"><table><thead><tr><th>Mz</th><th>Lote</th><th class="r">Área</th><th class="r">Precio</th><th>Ubicación</th><th>Estado</th><th>Cliente</th><th><span class="sr">Acciones</span></th></tr></thead><tbody id="invBody"></tbody></table></div>
+  <div class="acts"><button class="btn ghost sm" type="button" id="invX">Exportar inventario a Excel</button></div>
 </section>
 
 <!-- PANEL -->
@@ -578,7 +626,7 @@ details.fold[open] > summary{margin-bottom:16px}
   <div class="panel">
     <div class="crm-top"><h3>Registro de proformas</h3><input class="crm-search" id="pfLogQ" type="search" placeholder="Buscar por cliente, N° o proyecto" aria-label="Buscar proforma"></div>
     <div class="tbl pflog" tabindex="0" role="region" aria-label="Registro de proformas"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Proyecto / lote</th><th class="r">Precio final</th><th>Pago</th><th><span class="sr">Acciones</span></th></tr></thead><tbody id="pfLogBody"></tbody></table></div>
-    <div class="acts"><button class="btn ghost sm" type="button" id="pfLogX">Exportar registro a Excel</button></div>
+    <div class="acts"><button class="btn pri sm" type="button" id="repX">Reporte gerencial (Excel)</button><button class="btn ghost sm" type="button" id="pfLogX">Exportar registro a Excel</button></div>
   </div>
 </section>
 
@@ -935,6 +983,11 @@ details.fold[open] > summary{margin-bottom:16px}
     <button class="btn ghost" type="button" id="dImport">Importar datos</button>
     <button class="btn ghost" type="button" id="dCsv">Descargar comparativo en Excel</button>
     <button class="btn ghost" type="button" id="dReset" style="color:var(--bad)">Restaurar datos originales</button>
+  </div>
+  <div class="panel" style="margin-top:6px">
+    <h3>Respaldo completo</h3>
+    <p class="note">Guarda en un solo archivo todo lo de esta herramienta: proformas, separaciones, cobranza, clientes, lotes, metas y precios. Úsalo para pasar la información a otra computadora o guardar una copia semanal.</p>
+    <div class="acts"><button class="btn pri sm" type="button" id="bkAll">Descargar respaldo completo</button><button class="btn ghost sm" type="button" id="bkLoad">Restaurar respaldo</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
     <input type="file" id="dFile" accept="application/json,.json" hidden>
   </div>
   <p class="note" id="dState"></p>
@@ -1783,6 +1836,7 @@ function sepIssue(){
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return null; }
   if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${String(n).padStart(4, "0")}`;
     SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {}
+    lotMark(c.r.projName, c.r.mz, c.r.lt, "Separado", c.r.name);
     const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
     if (cl && cl.stage !== "Vendido"){ cl.stage = "Separado"; cl.stageAt = todayIso(); cl.notes = (cl.notes ? cl.notes + "\n" : "") + `Separación ${sepIssued}: ${fmt(c.amt)} (${c.pay}). Firmar hasta ${dNum(c.lim)}.`; crmSave(); renderCrm(); }
     renderSep(); }
@@ -1804,7 +1858,7 @@ $("sepSale").addEventListener("click", () => {
   if (!c.plan.term){ toast("Venta al contado: no genera cuotas"); return; }
   if (COB.some(x => x.pf === c.r.no) && !confirm("Esta proforma ya tiene un cronograma en cobranza. ¿Registrarla otra vez?")) return;
   COB.unshift({id: Date.now().toString(36), pf: c.r.no, sep: sepIssued, name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "), sched: c.plan.sched, paid: {}});
-  cobSave();
+  cobSave(); lotMark(c.r.projName, c.r.mz, c.r.lt, "Vendido", c.r.name);
   const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
   if (cl){ cl.stage = "Vendido"; cl.stageAt = todayIso(); crmSave(); renderCrm(); }
   renderCob(); toast(`Venta registrada: ${c.plan.term} cuotas en cobranza`); $("cobBody").scrollIntoView({behavior:"smooth", block:"center"});
@@ -1844,6 +1898,146 @@ $("cobX").addEventListener("click", async () => {
   await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
 });
 renderSep(); renderCob(); window.sepReady = true;
+
+/* ---------- inventario de lotes ---------- */
+const INV_KEY = "vivaldi-lotes-v1", LST = ["Disponible", "Separado", "Vendido", "Bloqueado"];
+let INV = []; try { INV = JSON.parse(localStorage.getItem(INV_KEY)) || []; } catch {}
+const invSave = () => { try { localStorage.setItem(INV_KEY, JSON.stringify(INV)); } catch {} };
+let invF = "all";
+const normLot = v => String(v ?? "").trim().replace(/^(mz|lt|lote|manzana)\.?\s*/i, "").toUpperCase();
+const findLot = (proj, mz, lt) => INV.find(l => l.proj === proj && normLot(l.mz) === normLot(mz) && normLot(l.lt) === normLot(lt));
+$("invProj").innerHTML = VIV.map(v => `<option>${v.name}</option>`).join("");
+function igDefaults(){ const v = VIV.find(x => x.name === $("invProj").value) || VIV[0], live = DATA.find(d => d.name === v.name); $("igArea").value = live?.m2 ?? v.m2; $("igPrice").value = Math.round(live?.total ?? v.pen); }
+$("invProj").addEventListener("change", () => { igDefaults(); renderInv(); });
+function renderInv(){
+  const proj = $("invProj").value, mine = INV.filter(l => l.proj === proj);
+  $("invCounts").innerHTML = [["all", `Todos (${mine.length})`], ...LST.map(s => [s, `${s} (${mine.filter(l => l.st === s).length})`])].map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === invF}">${t}</button>`).join("");
+  const list = mine.filter(l => invF === "all" || l.st === invF).sort((a, b) => normLot(a.mz).localeCompare(normLot(b.mz)) || (parseFloat(a.lt) - parseFloat(b.lt)) || String(a.lt).localeCompare(String(b.lt)));
+  $("invBody").innerHTML = list.length ? list.map(l => `<tr data-id="${l.id}"><td><b>${esc(l.mz)}</b></td><td class="num">${esc(l.lt)}</td><td class="r num">${l.area} m²</td><td class="r num">${fmt(l.price)}</td><td>${esc(l.loc || "—")}</td>
+    <td><select data-st aria-label="Estado del lote ${esc(l.mz)}-${esc(l.lt)}" class="lst-${l.st}">${LST.map(s => `<option${s === l.st ? " selected" : ""}>${s}</option>`).join("")}</select></td><td>${esc(l.client || "—")}</td>
+    <td><div class="acts2">${l.st === "Disponible" ? `<button type="button" class="go" data-quote>Cotizar</button>` : ""}<button type="button" data-del aria-label="Eliminar lote">✕</button></div></td></tr>`).join("")
+    : `<tr><td colspan="8" class="note" style="text-align:center;padding:22px">${mine.length ? "No hay lotes con ese estado." : "Aún no hay lotes cargados para este proyecto. Ábrelos en «Crear lotes en bloque» o importa tu Excel."}</td></tr>`;
+}
+$("invCounts").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; invF = b.dataset.v; renderInv(); });
+$("invBody").addEventListener("change", e => { const s = e.target.closest("[data-st]"); if (!s) return; const l = INV.find(x => x.id === s.closest("tr").dataset.id); l.st = s.value; if (l.st === "Disponible") l.client = ""; invSave(); renderInv(); pfLotCheck(); });
+$("invBody").addEventListener("click", e => {
+  const tr = e.target.closest("tr[data-id]"); if (!tr) return; const l = INV.find(x => x.id === tr.dataset.id); if (!l) return;
+  if (e.target.closest("[data-del]") && confirm(`¿Eliminar el lote ${l.mz}-${l.lt}?`)){ INV = INV.filter(x => x !== l); invSave(); renderInv(); }
+  if (e.target.closest("[data-quote]")){ const i = VIV.findIndex(v => v.name === l.proj); if (i >= 0) pf("Proj").value = i;
+    pf("Mz").value = l.mz; pf("Lt").value = l.lt; pf("Area").value = l.area; pf("Price").value = l.price; pfDirty(); $("proforma").scrollIntoView({behavior:"smooth"}); toast(`Lote ${l.mz}-${l.lt} cargado en la proforma`); }
+});
+function upsertLot(o){
+  const ex = findLot(o.proj, o.mz, o.lt), clean = Object.fromEntries(Object.entries(o).filter(([, v]) => v !== "" && v != null));
+  if (ex){ Object.assign(ex, clean); return 0; }
+  INV.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), st: "Disponible", client: "", loc: "Interior", area: 0, price: 0, ...clean}); return 1;
+}
+$("igAdd").addEventListener("click", () => {
+  const mz = $("igMz").value.trim().toUpperCase(), a = Math.max(1, +$("igFrom").value || 1), b = Math.max(a, +$("igTo").value || a), area = +$("igArea").value || 0, price = Math.round(+$("igPrice").value || 0);
+  if (!mz){ $("igMz").focus(); toast("Escribe la manzana"); return; }
+  if (b - a > 300){ toast("Máximo 300 lotes por vez"); return; }
+  let n = 0; for (let k = a; k <= b; k++) n += upsertLot({proj: $("invProj").value, mz, lt: String(k), area, price, loc: $("igLoc").value});
+  invSave(); renderInv(); toast(`${n} lotes creados${n < b - a + 1 ? `, ${b - a + 1 - n} actualizados` : ""}`);
+});
+// keep the inventory in step with the commercial flow
+function lotMark(proj, mz, lt, st, client){ const l = findLot(proj, mz, lt); if (!l) return; if (st === "Separado" && l.st === "Vendido") return; l.st = st; l.client = client || l.client; invSave(); renderInv(); }
+function pfLotCheck(){
+  const v = VIV[+pf("Proj").value], l = v && findLot(v.name, pf("Mz").value, pf("Lt").value), w = $("pfLotWarn");
+  if (l && l.st !== "Disponible"){ w.hidden = false; w.textContent = `⚠ El lote ${l.mz}-${l.lt} figura como ${l.st.toLowerCase()} en el inventario${l.client ? " (" + l.client + ")" : ""}. Verifica antes de enviar.`; }
+  else w.hidden = true;
+}
+["Proj", "Mz", "Lt"].forEach(k => pf(k).addEventListener("input", pfLotCheck)); pf("Proj").addEventListener("change", pfLotCheck);
+// Excel: template, import, export
+$("invTpl").addEventListener("click", async () => {
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Lotes");
+  ws.columns = [{header:"Proyecto", key:"p", width:28}, {header:"Manzana", key:"m", width:10}, {header:"Lote", key:"l", width:8}, {header:"Área", key:"a", width:10}, {header:"Precio", key:"pr", width:12}, {header:"Ubicación", key:"u", width:18}, {header:"Estado", key:"e", width:12}, {header:"Cliente", key:"c", width:26}];
+  ws.getRow(1).eachCell(c => { c.style = {font:{bold:true, color:{argb:XL.wh}}, fill:xlFill(XL.nv)}; });
+  ws.addRow({p: $("invProj").value, m: "B", l: 1, a: 200, pr: 29000, u: "Frente al parque", e: "Disponible", c: ""});
+  ws.addRow({p: $("invProj").value, m: "B", l: 2, a: 200, pr: 29000, u: "Interior", e: "Separado", c: "Nombre del cliente"});
+  await xlSave(wb, "plantilla-lotes-vivaldi.xlsx");
+});
+$("invImp").addEventListener("click", () => $("invFile").click());
+$("invFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  try {
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await f.arrayBuffer()); const ws = wb.worksheets[0];
+    const head = []; ws.getRow(1).eachCell((c, i) => head[i] = norm2(c.text)); const col = name => head.findIndex(h => h && h.startsWith(name));
+    const ci = {p: col("proyecto"), m: col("manzana"), l: col("lote"), a: col("area"), pr: col("precio"), u: col("ubicacion"), e: col("estado"), c: col("cliente")};
+    if (ci.m < 0 || ci.l < 0) throw new Error("Faltan las columnas Manzana y Lote");
+    let add = 0, upd = 0, skip = 0;
+    ws.eachRow((row, r) => { if (r === 1) return; const g = k => ci[k] > 0 ? row.getCell(ci[k]).text.trim() : "";
+      const projTxt = g("p"), proj = projTxt ? (VIV.find(v => norm2(v.name).includes(norm2(projTxt)) || norm2(projTxt).includes(norm2(v.name).replace(/^la |^las /, "")))?.name) : $("invProj").value;
+      if (!proj || !g("m") || !g("l")){ skip++; return; }
+      const st = LST.find(s => norm2(s) === norm2(g("e"))) || "";
+      const n = upsertLot({proj, mz: g("m").toUpperCase(), lt: g("l"), area: +g("a").replace(/[^\d.]/g, "") || undefined, price: +g("pr").replace(/[^\d.]/g, "") || undefined, loc: g("u") || undefined, st: st || undefined, client: g("c") || undefined});
+      n ? add++ : upd++; });
+    invSave(); renderInv(); toast(`Importados: ${add} nuevos, ${upd} actualizados${skip ? `, ${skip} filas omitidas` : ""}`);
+  } catch (err){ alert("No se pudo leer el Excel: " + (err.message || "formato no reconocido") + ". Usa la plantilla."); }
+});
+$("invX").addEventListener("click", async () => {
+  const wb = new ExcelJS.Workbook();
+  for (const v of VIV){ const mine = INV.filter(l => l.proj === v.name); if (!mine.length) continue;
+    const ws = wb.addWorksheet(v.name.replace(/[^\wÁÉÍÓÚÑáéíóúñ ]/g, "").slice(0, 28), {properties:{tabColor:{argb:XL.bl}}});
+    let r = xlHead(wb, ws, 7, `INVENTARIO · ${v.name.toUpperCase()}`, `Al ${dNum(new Date())} · ${mine.filter(l => l.st === "Disponible").length} disponibles de ${mine.length}`);
+    const top = r, tint = {Separado:"FFFBEFD3", Vendido:"FFE6ECEC", Bloqueado:"FFFBE3DF"};
+    r = xlTable(ws, r, [{h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:14}, {h:"Cliente", w:28}],
+      mine.sort((a, b) => normLot(a.mz).localeCompare(normLot(b.mz)) || parseFloat(a.lt) - parseFloat(b.lt)).map(l => { const row = [l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]; if (tint[l.st]) row.tint = tint[l.st]; return row; }));
+    ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:7}};
+  }
+  if (!wb.worksheets.length){ toast("Aún no hay lotes para exportar"); return; }
+  await xlSave(wb, `inventario-lotes-${iso(new Date())}.xlsx`);
+});
+igDefaults(); renderInv();
+
+/* ---------- reporte gerencial ---------- */
+$("repX").addEventListener("click", async () => {
+  const wb = new ExcelJS.Workbook(), now = new Date(), ym = iso(now).slice(0, 7), t = todayIso(), sub = `Al ${dNum(now)}${pf("Adv").value.trim() ? " · Asesor: " + pf("Adv").value.trim() : ""}`;
+  const rows = cobRows(), sum = a => a.reduce((x, r) => x + r.s.amt, 0), monthPf = PFLOG.filter(r => r.at.slice(0, 7) === ym);
+  // 1. summary
+  const ws = wb.addWorksheet("Resumen", {properties:{tabColor:{argb:XL.nv}}}); let r = xlHead(wb, ws, 4, "REPORTE GERENCIAL COMERCIAL", sub);
+  r = xlTable(ws, r, [{h:"Indicador", w:40}, {h:"Valor", w:18, fmt:"#,##0"}, {h:"Monto", w:18, fmt:XL.money}, {h:"Detalle", w:30}], [
+    ["Proformas emitidas este mes", monthPf.length, monthPf.reduce((a, x) => a + x.net, 0), "Monto cotizado"],
+    ["Proformas emitidas (total)", PFLOG.length, PFLOG.reduce((a, x) => a + x.net, 0), ""],
+    ["Separaciones este mes", SEPS.filter(x => x.at.slice(0, 7) === ym).length, SEPS.filter(x => x.at.slice(0, 7) === ym).reduce((a, x) => a + x.amt, 0), "Montos recibidos"],
+    ["Ventas en cobranza", COB.length, COB.reduce((a, k) => a + k.sched.reduce((x, s) => x + s.amt, 0), 0), "Saldo financiado total"],
+    Object.assign(["Cuotas vencidas", rows.filter(x => x.state === "late").length, sum(rows.filter(x => x.state === "late")), "Prioridad de cobro"], rows.some(x => x.state === "late") ? {tint:"FFFBE3DF"} : {}),
+    ["Por cobrar en 30 días", rows.filter(x => x.state === "soon").length, sum(rows.filter(x => x.state === "soon")), ""],
+    ["Cobrado este mes", rows.filter(x => x.paid && x.paid.slice(0, 7) === ym).length, sum(rows.filter(x => x.paid && x.paid.slice(0, 7) === ym)), ""],
+    ...STAGES.map(s => [`Clientes en etapa: ${s}`, CLIENTS.filter(c => c.stage === s).length, CLIENTS.filter(c => c.stage === s).reduce((a, c) => a + (+c.budget || 0), 0), "Presupuesto declarado"]),
+    ["Clientes con contacto atrasado", CLIENTS.filter(c => isActive(c) && c.next && c.next < t).length, null, "Llamar hoy"],
+    ...VIV.map(v => { const m = INV.filter(l => l.proj === v.name); return [`Lotes disponibles · ${v.name}`, m.filter(l => l.st === "Disponible").length, m.filter(l => l.st === "Disponible").reduce((a, l) => a + (+l.price || 0), 0), m.length ? `de ${m.length} cargados` : "sin inventario cargado"]; }),
+  ]);
+  // 2..6 detail sheets
+  const sheet = (name, title, cols, data) => { const w = wb.addWorksheet(name, {properties:{tabColor:{argb:XL.bl}}}); let rr = xlHead(wb, w, cols.length, title, sub); const top = rr; rr = xlTable(w, rr, cols, data); if (data.length) w.autoFilter = {from:{row:top, column:1}, to:{row:rr - 1, column:cols.length}}; };
+  sheet("Proformas", "PROFORMAS EMITIDAS", [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Proyecto", w:26}, {h:"Mz / Lote", w:12}, {h:"Precio final", w:15, fmt:XL.money}, {h:"Pago", w:22}, {h:"Asesor", w:18}],
+    PFLOG.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.projName, [x.mz, x.lt].filter(Boolean).join(" / "), x.net, x.term ? `${x.term} × S/ ${Math.round(x.q).toLocaleString("es-PE")}` : "Contado", x.adv]));
+  sheet("Separaciones", "CONSTANCIAS DE SEPARACIÓN", [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Proforma", w:16}, {h:"Monto", w:13, fmt:XL.money}, {h:"Medio de pago", w:20}, {h:"Operación", w:14}, {h:"Firmar hasta", w:13, fmt:XL.date}],
+    SEPS.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.pf, x.amt, x.pay, x.op, new Date(x.lim + "T12:00")]));
+  const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
+  sheet("Cobranza", "CONTROL DE COBRANZA", [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Cuota", w:8, fmt:"0"}, {h:"Importe", w:13, fmt:XL.money}, {h:"Estado", w:14}, {h:"Pagado el", w:12, fmt:XL.date}],
+    rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.s.i, x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; return row; }));
+  sheet("Clientes", "CARTERA DE CLIENTES", [{h:"Nombre", w:24}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:14, fmt:XL.money}, {h:"Notas", w:46, wrap:true}],
+    CLIENTS.map(c => [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes]));
+  sheet("Inventario", "INVENTARIO DE LOTES", [{h:"Proyecto", w:28}, {h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:12}, {h:"Cliente", w:26}],
+    INV.map(l => [l.proj, l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]));
+  await xlSave(wb, `reporte-gerencial-vivaldi-${iso(now)}.xlsx`);
+});
+
+/* ---------- respaldo completo ---------- */
+const BK_KEYS = k => /^(vivaldi-|vv-)/.test(k);
+$("bkAll").addEventListener("click", () => {
+  const data = {}; try { for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (BK_KEYS(k)) data[k] = localStorage.getItem(k); } } catch {}
+  download(`respaldo-completo-vivaldi-${iso(new Date())}.json`, JSON.stringify({tipo: "respaldo-vivaldi", version: 1, fecha: new Date().toISOString(), datos: data}, null, 1), "application/json");
+  toast(`Respaldo descargado (${Object.keys(data).length} grupos de datos)`);
+});
+$("bkLoad").addEventListener("click", () => $("bkFile").click());
+$("bkFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  try { const j = JSON.parse(await f.text()); if (j.tipo !== "respaldo-vivaldi" || typeof j.datos !== "object") throw 0;
+    if (!confirm(`¿Restaurar el respaldo del ${new Date(j.fecha).toLocaleString("es-PE")}? Reemplaza los datos actuales de esta computadora.`)) return;
+    Object.entries(j.datos).forEach(([k, v]) => { if (BK_KEYS(k)) localStorage.setItem(k, v); });
+    toast("Respaldo restaurado. Recargando…"); setTimeout(() => location.reload(), 800);
+  } catch { alert("El archivo no es un respaldo completo de esta herramienta."); }
+});
 
 
 // nav: highlight the section on screen
