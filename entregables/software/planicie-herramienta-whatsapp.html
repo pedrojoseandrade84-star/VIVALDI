@@ -432,6 +432,16 @@ details.fold[open] > summary{margin-bottom:16px}
 .doc-sign{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:26px}
 .doc-sign div{border-top:1px solid var(--gr);padding-top:6px;text-align:center;font-size:11px;color:var(--mu)}
 .doc-sign b{display:block;color:var(--gr);font-size:12px}
+.pcmp{margin-top:12px;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--bg)}
+.pcmp-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.pcmp-wa{font:inherit;font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:999px;border:0;background:#14853F;color:#fff;cursor:pointer}
+.pcmp table{width:100%;min-width:0;border-collapse:collapse;font-size:.86rem}
+.pcmp th,.pcmp td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}.pcmp .r{text-align:right}
+.pcmp th{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pcmp tbody tr{cursor:pointer}.pcmp tbody tr:hover{background:var(--surface)}
+.pcmp tbody tr.on{background:var(--sun-soft)}.pcmp tbody tr.on td:first-child{font-weight:800}
+@media (max-width:420px){.pcmp{padding:10px}.pcmp th,.pcmp td{padding:7px 3px}.pcmp td{white-space:nowrap}.pcmp td .note{display:block}}
+.pcmp td button{font:inherit;font-weight:inherit;background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}
 .doc-qr{display:flex;align-items:center;gap:12px;margin-top:14px;padding:8px 12px;border:1px solid #D5E3EE;border-radius:8px;background:#F5F9FC;break-inside:avoid}
 .doc-qr svg{width:66px;height:66px;flex:none}
 .doc-qr p{margin:0;font-size:11px;color:var(--mu);line-height:1.45}.doc-qr b{display:block;color:var(--nv);font-size:12px}
@@ -583,6 +593,11 @@ details.fold[open] > summary{margin-bottom:16px}
         <label class="inp">Plazo<select id="pfTerm"><option value="0">Al contado</option><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="36">36 meses</option><option value="48">48 meses</option></select></label>
         <label class="inp">Cuota inicial (%)<input id="pfIni" type="number" inputmode="numeric" min="0" max="100" step="5" value="20"></label>
         <label class="inp">Primera cuota<input id="pfStart" type="date"></label>
+      </div>
+      <div class="pcmp">
+        <div class="pcmp-top"><b>Comparar planes</b><button type="button" class="pcmp-wa" id="pfCmpWa">Enviar opciones por WhatsApp</button></div>
+        <table aria-label="Comparación de planes de pago"><thead><tr><th>Plazo</th><th class="r">Inicial</th><th class="r">Cuota mensual</th></tr></thead><tbody id="pfCmp"></tbody></table>
+        <p class="note" id="pfCmpNote">Toca un plazo para usarlo en la proforma.</p>
       </div>
       <h3>Asesor</h3>
       <div class="form">
@@ -3665,6 +3680,23 @@ function pfQr(c){
   const svg = qrSvg(`https://wa.me/${num}?text=${encodeURIComponent(`Hola${c.adv ? " " + c.adv.split(" ")[0] : ""}, tengo la proforma N° ${c.no} de ${c.v.name} y quiero continuar.`)}`);
   return svg ? `<div class="doc-qr">${svg}<p><b>¿Listo para separar o tienes dudas?</b>Escanea el código con la cámara y escribe ${c.adv ? "a " + esc(c.adv) : "a tu asesor"} por WhatsApp${c.advPh ? " (" + esc(c.advPh) + ")" : ""}: el mensaje ya incluye el N° de esta proforma.</p></div>` : "";
 }
+function pfPlans(){
+  const c = pfCalc(), ini = Math.min(100, Math.max(0, +pf("Ini").value || 0));
+  return [...pf("Term").options].map(o => +o.value).map(term => {
+    const iniP = term ? ini : 100, down = Math.round(c.net * iniP / 100), fin = c.net - down, q = term ? Math.round(fin / term) : 0;
+    return {term, iniP, down, q, last: term ? fin - q * (term - 1) : 0, net: c.net};
+  });
+}
+function pfCmp(c){
+  $("pfCmp").innerHTML = pfPlans().map(x => `<tr class="${x.term === c.term ? "on" : ""}" data-t="${x.term}"><td><button type="button" aria-pressed="${x.term === c.term}">${x.term ? x.term + " meses" : "Al contado"}</button></td><td class="r num">${fmt(x.down)}${x.term ? ` <span class="note">(${x.iniP}%)</span>` : ""}</td><td class="r num">${x.term ? fmt(x.q) : "—"}</td></tr>`).join("");
+  $("pfCmpNote").textContent = `Precio final ${fmt(c.net)} en todos los plazos, sin intereses. Toca un plazo para usarlo en la proforma.`;
+}
+$("pfCmp").addEventListener("click", e => { const tr = e.target.closest("tr[data-t]"); if (!tr) return; pf("Term").value = tr.dataset.t; pfDirty(); });
+$("pfCmpWa").addEventListener("click", () => {
+  const c = pfCalc(); if (!c.net){ pf("Price").focus(); toast("Escribe el precio del lote"); return; }
+  const lines = pfPlans().map(x => x.term ? `• *${x.term} meses:* inicial ${fmt(x.down)} y ${x.term} cuotas de ${fmt(x.q)}${x.last !== x.q ? ` (la última de ${fmt(x.last)})` : ""}` : `• *Al contado:* ${fmt(x.net)}`);
+  sendWa(`Hola${c.name ? " " + c.name.split(" ")[0] : ""}, te comparto las opciones de pago para ${c.v.name}${c.lot ? " (" + c.lot + ")" : ""}${c.area ? ", " + c.area.toLocaleString("es-PE") + " m²" : ""}. Precio final: *${fmt(c.net)}* en soles, sin intereses en ninguna opción:\n\n${lines.join("\n")}\n\n¿Cuál te acomoda más? Con eso te preparo la proforma.${c.adv ? "\n— " + c.adv + ", Vivaldi Inmobiliaria" : ""}`, c.phone);
+});
 function renderPf(){
   const c = pfCalc(), half = Math.ceil(c.sched.length / 2);
   const priceRows = [
@@ -3702,6 +3734,7 @@ function renderPf(){
     <div class="doc-sign"><div><b>${esc(c.adv) || "&nbsp;"}</b>Asesor comercial · Vivaldi</div><div><b>${esc(c.name) || "&nbsp;"}</b>Cliente${c.dni ? " · DNI/CE " + esc(c.dni) : ""}</div></div>
     ${pfQr(c)}
     <footer class="doc-foot"><span><b>${CO.name}</b> · RUC ${CO.ruc}</span><span>${CO.addr}</span><span>${CO.tel} · ${CO.mail} · ${CO.web}</span></footer>`;
+  pfCmp(c);
   pf("NoNote").textContent = pfIssued ? `Proforma ${pfIssued} emitida. Si cambias algún dato, se generará con el número siguiente.` : `Se numerará como ${c.no} al enviarla, imprimirla o guardarla.`;
 }
 function pfText(){
