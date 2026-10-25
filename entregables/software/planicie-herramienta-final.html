@@ -594,7 +594,7 @@ details.fold[open] > summary{margin-bottom:16px}
       <div class="form">
         <label class="inp">Descuento (S/)<input id="pfDisc" type="number" inputmode="numeric" min="0" step="100" value="0"></label>
         <label class="inp">Plazo<select id="pfTerm"><option value="0">Al contado</option><option value="12">12 meses</option><option value="24" selected>24 meses</option><option value="36">36 meses</option><option value="48">48 meses</option></select></label>
-        <label class="inp">Cuota inicial (%)<input id="pfIni" type="number" inputmode="numeric" min="0" max="100" step="5" value="20"></label>
+        <label class="inp">Cuota inicial (%)<input id="pfIni" type="number" inputmode="numeric" min="0" max="90" step="5" value="20"></label>
         <label class="inp">Primera cuota<input id="pfStart" type="date"></label>
       </div>
       <div class="pcmp">
@@ -3643,6 +3643,7 @@ const advIni = () => (pf("Adv").value.trim().normalize("NFD").replace(/[\u0300-\
 const pfFmtNo = n => `PF-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(n).padStart(4, "0")}`;
 const pfNo = () => pfIssued || pfFmtNo(pfSeq() + 1);
 function pfIssue(){
+  if (!pfIssued && !(pfCalc().net > 0)){ pf("Price").focus(); toast("Escribe el precio del lote antes de emitir la proforma"); return null; }
   if (!pfIssued){ const n = pfSeq() + 1; try { localStorage.setItem("vivaldi-pf-seq", n); } catch {} pfIssued = pfFmtNo(n);
     const c = pfCalc();
     PFLOG.unshift({no: pfIssued, at: iso(new Date()), name: c.name, dni: c.dni, phone: c.phone, proj: +pf("Proj").value, projName: c.v.name, mz: pf("Mz").value.trim(), lt: pf("Lt").value.trim(),
@@ -3654,7 +3655,7 @@ function pfDirty(){ pfIssued = null; renderPf(); }
 
 function pfCalc(){
   const v = VIV[+pf("Proj").value], area = Math.max(0, +pf("Area").value || 0), price = Math.max(0, Math.round(+pf("Price").value || 0)), disc = Math.min(price, Math.max(0, Math.round(+pf("Disc").value || 0)));
-  const term = +pf("Term").value, iniP = term ? Math.min(100, Math.max(0, +pf("Ini").value || 0)) : 100;
+  const term = +pf("Term").value, iniP = term ? Math.min(90, Math.max(0, +pf("Ini").value || 0)) : 100;
   const net = price - disc, down = Math.round(net * iniP / 100), fin = net - down;
   // rounded like the simulator; the last instalment absorbs the difference so the total is exact
   const q = term ? Math.round(fin / term) : 0, last = term ? fin - q * (term - 1) : 0;
@@ -3685,7 +3686,7 @@ function pfQr(c){
   return svg ? `<div class="doc-qr">${svg}<p><b>¿Listo para separar o tienes dudas?</b>Escanea el código con la cámara y escribe ${c.adv ? "a " + esc(c.adv) : "a tu asesor"} por WhatsApp${c.advPh ? " (" + esc(c.advPh) + ")" : ""}: el mensaje ya incluye el N° de esta proforma.</p></div>` : "";
 }
 function pfPlans(){
-  const c = pfCalc(), ini = Math.min(100, Math.max(0, +pf("Ini").value || 0));
+  const c = pfCalc(), ini = Math.min(90, Math.max(0, +pf("Ini").value || 0));
   return [...pf("Term").options].map(o => +o.value).map(term => {
     const iniP = term ? ini : 100, down = Math.round(c.net * iniP / 100), fin = c.net - down, q = term ? Math.round(fin / term) : 0;
     return {term, iniP, down, q, last: term ? fin - q * (term - 1) : 0, net: c.net};
@@ -3753,14 +3754,14 @@ function pfText(){
 ["Name","Dni","Phone","Mz","Lt","Area","Price","Disc","Ini","Term","Start","Adv","AdvPh"].forEach(k => pf(k).addEventListener("input", pfDirty));
 pf("Term").addEventListener("change", pfDirty);
 const pfFile = (c, ext) => `proforma-${c.no}-${(c.name || "cliente").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.${ext}`;
-pf("Wa").addEventListener("click", () => { pfIssue(); sendWa(pfText(), pf("Phone").value); });
-pf("Copy").addEventListener("click", () => { pfIssue(); copyText(pfText()); });
-pf("Print").addEventListener("click", () => { pfIssue(); const t = document.title; document.title = pfFile(pfCalc(), "pdf").replace(/\.pdf$/, ""); print(); setTimeout(() => document.title = t, 500); });
+pf("Wa").addEventListener("click", () => { if (!pfIssue()) return; sendWa(pfText(), pf("Phone").value); });
+pf("Copy").addEventListener("click", () => { if (!pfIssue()) return; copyText(pfText()); });
+pf("Print").addEventListener("click", () => { if (!pfIssue()) return; const t = document.title; document.title = pfFile(pfCalc(), "pdf").replace(/\.pdf$/, ""); print(); setTimeout(() => document.title = t, 500); });
 
 // proforma as a PNG (1080 px wide): reads well in a WhatsApp chat and can't be edited by mistake
 const loadImg = src => new Promise((r, j) => { const i = new Image(); i.onload = () => r(i); i.onerror = j; i.src = src; });
 async function pfImage(){
-  pfIssue(); const c = pfCalc(); await document.fonts?.ready;
+  if (!pfIssue()) return; const c = pfCalc(); await document.fonts?.ready;
   const W = 1080, P = 64, F = 'Manrope, "Segoe UI", system-ui, sans-serif', NV = "#0A3856", BL = "#2A85C5", GR = "#3C3C3A", MU = "#6B7A86", LN = "#DCE5EC", BG = "#F3F7FA";
   const rows = [["Precio de lista", fmt(c.price)], ...(c.disc ? [["Descuento", "− " + fmt(c.disc)]] : []), ["Precio final", fmt(c.net), 1],
     ...(c.term ? [[`Cuota inicial (${c.iniP}%)`, fmt(c.down)], ["Saldo a financiar", fmt(c.fin)], ["Intereses", "S/ 0"]] : [])];
@@ -3814,7 +3815,7 @@ pf("Img").addEventListener("click", async () => {
   catch (e){ if (e.name === "AbortError") return; }
   download(name, b, "image/png"); toast("Imagen descargada: adjúntala en el chat de WhatsApp");
 });
-pf("Xlsx").addEventListener("click", () => { pfIssue(); xlsxProforma(pfCalc()); });
+pf("Xlsx").addEventListener("click", () => { if (!pfIssue()) return; xlsxProforma(pfCalc()); });
 
 
 /* ---------- branded Excel (.xlsx) exports, built with ExcelJS embedded in this file ---------- */
@@ -4094,7 +4095,7 @@ $("crmFile").addEventListener("change", async e => {
 // proforma → client record
 pf("Save").addEventListener("click", () => {
   const c = pfCalc(); if (!c.name){ pf("Name").focus(); toast("Escribe el nombre del cliente"); return; }
-  pfIssue(); const note = `Proforma ${pfNo()} (${fmtDay(todayIso())}): ${c.v.name}${c.lot ? " " + c.lot : ""}, ${fmt(c.net)}` + (c.term ? `, inicial ${fmt(c.down)} + ${c.term} cuotas de ${fmt(c.q)}` : " al contado");
+  if (!pfIssue()) return; const note = `Proforma ${pfNo()} (${fmtDay(todayIso())}): ${c.v.name}${c.lot ? " " + c.lot : ""}, ${fmt(c.net)}` + (c.term ? `, inicial ${fmt(c.down)} + ${c.term} cuotas de ${fmt(c.q)}` : " al contado");
   const ex = CLIENTS.find(x => x.name.toLowerCase() === c.name.toLowerCase());
   if (ex){ ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; ex.proj = c.v.name; if (pf("Phone").value) ex.phone = pf("Phone").value; if (ex.stage === "Nuevo") ex.stage = "Contactado"; }
   else { const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
@@ -4235,6 +4236,11 @@ function planOf(r){
   const q = term ? Math.round(fin / term) : 0, last = term ? fin - q * (term - 1) : 0, start = r.start ? new Date(r.start + "T12:00") : addMonths(new Date(r.at + "T12:00"), 1);
   return {down, fin, q, term, sched: Array.from({length: term}, (_, k) => ({i: k + 1, d: iso(addMonths(start, k)), amt: k === term - 1 ? last : q}))};
 }
+// "Cuota 3 de 24", or the balance paid at signing (i = 0): rest of the down payment, or the whole cash price
+function cuotaLbl(k, s, short){
+  const n = k.sched.filter(x => x.i > 0).length;
+  return s.i === 0 ? (n ? "Saldo de inicial" : "Pago al contado") : short ? `${s.i} de ${n}` : `Cuota ${s.i} de ${n}`;
+}
 function sepCalc(){
   const r = PFLOG.find(x => x.no === $("sepPf").value), amt = Math.max(0, Math.round(+$("sepAmt").value || 0)), d = $("sepDate").value ? new Date($("sepDate").value + "T12:00") : new Date();
   const lim = new Date(d); lim.setDate(lim.getDate() + Math.max(1, +$("sepDays").value || 7));
@@ -4278,6 +4284,8 @@ function renderSep(){
 }
 function sepIssue(){
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return null; }
+  if (!sepIssued && !(c.amt > 0)){ $("sepAmt").focus(); toast("Escribe el monto recibido de la separación"); return null; }
+  if (!sepIssued && c.amt > c.r.net){ $("sepAmt").focus(); toast(`La separación no puede superar el precio final (${fmt(c.r.net)})`); return null; }
   if (!sepIssued){ const n = sepSeq() + 1; try { localStorage.setItem("vivaldi-sep-seq", n); } catch {} sepIssued = `SEP-${today.getFullYear()}-${advIni() ? advIni() + "-" : ""}${String(n).padStart(4, "0")}`;
     SEPS.unshift({no: sepIssued, pf: c.r.no, at: iso(c.d), amt: c.amt, pay: c.pay, op: c.op, lim: iso(c.lim), name: c.r.name, adv: c.r.adv || pf("Adv").value.trim()}); try { localStorage.setItem(SEP_KEY, JSON.stringify(SEPS)); } catch {} if (window.hoyReady) renderHoy();
     lotMark(c.r.projName, c.r.mz, c.r.lt, "Separado", c.r.name);
@@ -4299,13 +4307,13 @@ const cobSave = () => { try { localStorage.setItem(COB_KEY, JSON.stringify(COB))
 let cobF = "pend";
 $("sepSale").addEventListener("click", () => {
   const c = sepCalc(); if (!c.r){ toast("Primero emite una proforma"); return; }
-  if (!c.plan.term){ toast("Venta al contado: no genera cuotas"); return; }
   if (COB.some(x => x.pf === c.r.no) && !confirm("Esta proforma ya tiene un cronograma en cobranza. ¿Registrarla otra vez?")) return;
-  COB.unshift({id: Date.now().toString(36), at: todayIso(), pf: c.r.no, sep: sepIssued, adv: c.r.adv || pf("Adv").value.trim(), name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "), sched: c.plan.sched, paid: {}});
+  COB.unshift({id: Date.now().toString(36), at: todayIso(), pf: c.r.no, sep: sepIssued, adv: c.r.adv || pf("Adv").value.trim(), name: c.r.name, phone: c.r.phone, projName: c.r.projName, lot: [c.r.mz && "Mz " + c.r.mz, c.r.lt && "Lt " + c.r.lt].filter(Boolean).join(" "),
+    sched: [...(c.plan.down - (sepIssued ? c.amt : 0) > 0 ? [{i: 0, d: iso(c.lim), amt: c.plan.down - (sepIssued ? c.amt : 0)}] : []), ...c.plan.sched], paid: {}});
   cobSave(); lotMark(c.r.projName, c.r.mz, c.r.lt, "Vendido", c.r.name);
   const cl = CLIENTS.find(x => x.name && c.r.name && x.name.toLowerCase() === c.r.name.toLowerCase());
   if (cl){ cl.stage = "Vendido"; cl.stageAt = todayIso(); crmSave(); renderCrm(); }
-  renderCob(); toast(`Venta registrada: ${c.plan.term} cuotas en cobranza`); $("cobBody").scrollIntoView({behavior:"smooth", block:"center"});
+  renderCob(); toast(c.plan.term ? `Venta registrada: saldo de inicial y ${c.plan.term} cuotas en cobranza` : "Venta al contado registrada: el saldo queda en cobranza"); $("cobBody").scrollIntoView({behavior:"smooth", block:"center"});
 });
 function cobRows(){
   const t = todayIso(), lim = iso(new Date(Date.now() + 30 * 864e5));
@@ -4318,7 +4326,7 @@ function renderCob(){
     .map(([k, v, s, hl]) => `<div class="kp ${hl && late.length ? "hl" : ""}"><span>${k}</span><b>${v}</b><small>${s}</small></div>`).join("");
   const list = rows.filter(r => cobF === "all" || (cobF === "paid" ? r.paid : (r.state === "late" || r.state === "soon"))).slice(0, 300);
   const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
-  $("cobBody").innerHTML = list.length ? list.map(r => `<tr><td class="num">${dNum(new Date(r.s.d + "T12:00"))}</td><td><b>${esc(r.k.name) || "—"}</b><br><span class="note">Cuota ${r.s.i} de ${r.k.sched.length}</span></td><td>${esc(r.k.projName)}${r.k.lot ? " · " + esc(r.k.lot) : ""}</td><td class="r num">${fmt(r.s.amt)}</td>
+  $("cobBody").innerHTML = list.length ? list.map(r => `<tr><td class="num">${dNum(new Date(r.s.d + "T12:00"))}</td><td><b>${esc(r.k.name) || "—"}</b><br><span class="note">${cuotaLbl(r.k, r.s)}</span></td><td>${esc(r.k.projName)}${r.k.lot ? " · " + esc(r.k.lot) : ""}</td><td class="r num">${fmt(r.s.amt)}</td>
     <td><span class="st ${r.state}">${lab[r.state]}${r.paid ? " · " + dNum(new Date(r.paid + "T12:00")) : ""}</span></td>
     <td><div class="acts2">${r.paid ? `<button type="button" data-undo="${r.k.id}:${r.s.i}">Deshacer</button>` : `${r.k.phone ? `<button type="button" class="w" data-rem="${r.k.id}:${r.s.i}">Recordar</button>` : ""}<button type="button" data-pay="${r.k.id}:${r.s.i}">Registrar pago</button>`}</div></td></tr>`).join("")
     : `<tr><td colspan="6" class="note" style="text-align:center;padding:20px">${COB.length ? "No hay cuotas en este filtro." : "Aún no hay ventas en cobranza. Registra una desde la constancia de separación."}</td></tr>`;
@@ -4327,10 +4335,10 @@ function renderCob(){
 $("cobFilter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; cobF = b.dataset.v; $("cobFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderCob(); });
 $("cobBody").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return; const [id, i] = (b.dataset.pay || b.dataset.rem || b.dataset.undo).split(":"), k = COB.find(x => x.id === id), s = k?.sched.find(x => x.i === +i); if (!s) return;
-  if (b.dataset.pay){ k.paid[s.i] = todayIso(); cobSave(); renderCob(); toast(`Cuota ${s.i} de ${k.name} registrada`); }
+  if (b.dataset.pay){ k.paid[s.i] = todayIso(); cobSave(); renderCob(); toast(`${cuotaLbl(k, s)} de ${k.name} registrado`); }
   if (b.dataset.undo){ delete k.paid[s.i]; cobSave(); renderCob(); }
   if (b.dataset.rem){ const late = s.d < todayIso();
-    sendWa(`Hola ${(k.name || "").split(" ")[0]}, te saluda Vivaldi Inmobiliaria. ${late ? "Te recordamos que tu cuota" : "Te recordamos que tu próxima cuota"} *${s.i} de ${k.sched.length}* de ${k.projName}${k.lot ? " (" + k.lot + ")" : ""} por *${fmt(s.amt)}* ${late ? "venció el" : "vence el"} *${dLong(new Date(s.d + "T12:00"))}*. Puedes pagar en soles en las cuentas de la empresa; si ya pagaste, envíanos tu constancia por aquí. ¡Gracias!`, k.phone); }
+    sendWa(`Hola ${(k.name || "").split(" ")[0]}, te saluda Vivaldi Inmobiliaria. ${s.i === 0 ? `Te recordamos que el *${cuotaLbl(k, s).toLowerCase()}*` : late ? `Te recordamos que tu cuota *${cuotaLbl(k, s, 1)}*` : `Te recordamos que tu próxima cuota *${cuotaLbl(k, s, 1)}*`} de ${k.projName}${k.lot ? " (" + k.lot + ")" : ""} por *${fmt(s.amt)}* ${late ? "venció el" : "vence el"} *${dLong(new Date(s.d + "T12:00"))}*. Puedes pagar en soles en las cuentas de la empresa; si ya pagaste, envíanos tu constancia por aquí. ¡Gracias!`, k.phone); }
 });
 $("cobX").addEventListener("click", async () => {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Cobranza", {properties:{tabColor:{argb:XL.nv}}});
@@ -4339,7 +4347,7 @@ $("cobX").addEventListener("click", async () => {
   r = xlKpis(ws, r, [["Vencido", tot(all.filter(x => x.state === "late")), XL.money, all.some(x => x.state === "late")], ["Por cobrar 30 días", tot(all.filter(x => x.state === "soon")), XL.money],
     ["Cobrado este mes", tot(all.filter(x => x.paid && x.paid.slice(0, 7) === ym)), XL.money], ["Saldo por cobrar", tot(all.filter(x => !x.paid)), XL.money]], 8);
   r = xlTable(ws, r, [{h:"Vence", w:12, fmt:XL.date, al:"center"}, {h:"Cliente", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Lote", w:13}, {h:"Cuota", w:11, al:"center"}, {h:"Importe", w:14, fmt:XL.money}, {h:"Estado", w:22}],
-    all.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.k.lot, `${x.s.i} de ${x.k.sched.length}`, x.s.amt, lab[x.state] + (x.paid ? " · " + dNum(new Date(x.paid + "T12:00")) : "")]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }),
+    all.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.k.lot, cuotaLbl(x.k, x.s, 1), x.s.amt, lab[x.state] + (x.paid ? " · " + dNum(new Date(x.paid + "T12:00")) : "")]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }),
     {total:{label:"TOTAL CARTERA", sum:[6]}, freeze:true});
   r++; xlNote(ws, r, 8, "Rojo: cuota vencida. Verde: cuota pagada. Usa el filtro de la columna Estado para ver solo lo pendiente; el total se recalcula con el filtro.");
   await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
@@ -4352,7 +4360,7 @@ function hoyItems(){
   const cl = CLIENTS.filter(c => isActive(c) && c.next && c.next <= t).sort((a, b) => a.next.localeCompare(b.next))
     .map(c => ({kind: "cl", late: c.next < t, id: c.id, title: c.name, sub: `${c.stage} · ${c.proj}${c.phone ? " · " + c.phone : ""}`, tag: c.next < t ? "Atrasado desde " + fmtDay(c.next) : "Contactar hoy", c}));
   const cu = cobRows().filter(r => !r.paid && r.s.d <= in3)
-    .map(r => ({kind: "cu", late: r.s.d < t, id: r.k.id + ":" + r.s.i, title: r.k.name || "—", sub: `Cuota ${r.s.i} de ${r.k.sched.length} · ${fmt(r.s.amt)} · ${r.k.projName}${r.k.lot ? " · " + r.k.lot : ""}`, tag: (r.s.d < t ? "Venció " : r.s.d === t ? "Vence hoy " : "Vence ") + fmtDay(r.s.d), r}));
+    .map(r => ({kind: "cu", late: r.s.d < t, id: r.k.id + ":" + r.s.i, title: r.k.name || "—", sub: `${cuotaLbl(r.k, r.s)} · ${fmt(r.s.amt)} · ${r.k.projName}${r.k.lot ? " · " + r.k.lot : ""}`, tag: (r.s.d < t ? "Venció " : r.s.d === t ? "Vence hoy " : "Vence ") + fmtDay(r.s.d), r}));
   const se = SEPS.filter(x => x.lim && x.lim <= in3 && !COB.some(k => k.pf === x.pf))
     .map(x => ({kind: "se", late: x.lim < t, id: x.no, title: x.name || "—", sub: `${x.no} · separación ${fmt(x.amt)}`, tag: (x.lim < t ? "Firma vencida el " : "Firma hasta el ") + fmtDay(x.lim), x}));
   return {cl, cu, se, n: cl.length + cu.length + se.length, late: [...cl, ...cu, ...se].filter(i => i.late).length};
@@ -4510,7 +4518,7 @@ $("repX").addEventListener("click", async () => {
     ["Proformas emitidas este mes", monthPf.length, monthPf.reduce((a, x) => a + x.net, 0), "Monto cotizado"],
     ["Proformas emitidas (total)", PFLOG.length, PFLOG.reduce((a, x) => a + x.net, 0), ""],
     ["Separaciones este mes", SEPS.filter(x => x.at.slice(0, 7) === ym).length, SEPS.filter(x => x.at.slice(0, 7) === ym).reduce((a, x) => a + x.amt, 0), "Montos recibidos"],
-    ["Ventas en cobranza", COB.length, COB.reduce((a, k) => a + k.sched.reduce((x, s) => x + s.amt, 0), 0), "Saldo financiado total"],
+    ["Ventas en cobranza", COB.length, COB.reduce((a, k) => a + k.sched.reduce((x, s) => x + s.amt, 0), 0), "Saldo total en cobranza"],
     S("COBRANZA"),
     Object.assign(["Cuotas vencidas", rows.filter(x => x.state === "late").length, sum(rows.filter(x => x.state === "late")), "Prioridad de cobro"], rows.some(x => x.state === "late") ? {tint:"FFFBE3DF"} : {}),
     ["Por cobrar en 30 días", rows.filter(x => x.state === "soon").length, sum(rows.filter(x => x.state === "soon")), ""],
@@ -4529,7 +4537,7 @@ $("repX").addEventListener("click", async () => {
     SEPS.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.pf, x.amt, x.pay, x.op, new Date(x.lim + "T12:00")]), {label:"TOTAL SEPARADO", sum:[4]});
   const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
   sheet("Cobranza", "CONTROL DE COBRANZA", [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Cuota", w:11, al:"center"}, {h:"Importe", w:13, fmt:XL.money}, {h:"Estado", w:14}, {h:"Pagado el", w:12, fmt:XL.date, al:"center"}],
-    rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, `${x.s.i} de ${x.k.sched.length}`, x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }), {label:"TOTAL", sum:[5]});
+    rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, cuotaLbl(x.k, x.s, 1), x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }), {label:"TOTAL", sum:[5]});
   sheet("Clientes", "CARTERA DE CLIENTES", [{h:"Nombre", w:24}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:14, fmt:XL.money}, {h:"Notas", w:46, wrap:true}],
     CLIENTS.map(c => [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes]));
   sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión", w:13, fmt:XL.pct}],

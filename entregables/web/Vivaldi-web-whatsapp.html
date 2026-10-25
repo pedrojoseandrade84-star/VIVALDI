@@ -1780,7 +1780,7 @@ document.addEventListener("click", e => {
 });
 $("#leadForm").addEventListener("submit", e => {
   e.preventDefault();
-  const err = $("#fErr"), ok = $("#fOk"), name = $("#fName").value.trim(), phone = $("#fPhone").value.replace(/\D/g,"");
+  const err = $("#fErr"), ok = $("#fOk"), name = $("#fName").value.trim(), phone = $("#fPhone").value.replace(/\D/g,"").replace(/^(00)?51(?=9\d{8}$)/,"");
   err.hidden = true; ok.hidden = true;
   const problems = [];
   if (name.length < 3) problems.push("escribe tu nombre completo");
