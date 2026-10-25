@@ -487,6 +487,7 @@ header.site.away{transform:translateY(-100%)}
   .mbar.show{transform:none}
   .mbar .btn{flex:1;justify-content:center;padding:13px 14px}
   .mbar .wa-b{background:#1FA855;color:#fff}
+  .mbar .call-b{flex:0 0 auto;width:50px;padding:0;background:var(--mist);color:var(--deep);box-shadow:inset 0 0 0 1.5px var(--line)}
   .cookie{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
 
@@ -689,6 +690,7 @@ dialog.sheet[open]{transform:none}
 .sh-chips span{padding:6px 12px;border-radius:999px;background:var(--mist);box-shadow:inset 0 0 0 1px var(--line);font-size:.85rem;font-weight:600}
 .sh-acts{display:flex;flex-wrap:wrap;gap:10px}
 .sh-acts .btn{padding:12px 18px}
+.sh-wa{background:#1FA855;color:#fff}
 @media (max-width:640px){
   dialog.sheet{margin:auto 0 0;width:100vw;height:92dvh;border-radius:24px 24px 0 0;transform:translateY(100%)}
   @starting-style{dialog.sheet[open]{transform:translateY(100%)}}
@@ -1044,7 +1046,7 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
           <div><span>Intereses</span><b class="num">S/ 0</b></div>
           <div><span>Con un crédito al 24% pagarías</span><b class="num" id="oBank"></b></div>
         </div>
-        <a class="btn btn-sun" href="#contacto" id="simCta" style="width:fit-content">Quiero esta cuota</a>
+        <div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn btn-sun" href="#contacto" id="simCta">Quiero esta cuota</a><a class="btn btn-line" id="simWa" href="#" target="_blank" rel="noopener" style="color:#fff">Enviar por WhatsApp</a></div>
         <p class="sim-note">Simulación referencial. Plazos e inicial sujetos a evaluación del asesor.</p>
       </div>
     </div>
@@ -1169,6 +1171,7 @@ dialog[open]::backdrop{background:rgba(6,25,29,.6)}
 
 <nav class="mbar" id="mbar" aria-label="Acciones rápidas">
   <a class="btn btn-deep" href="#contacto">Cotizar lote</a>
+  <a class="btn call-b" href="tel:+51922549723" aria-label="Llamar a Vivaldi"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></a>
   <a class="btn wa-b" href="https://wa.me/51922549723?text=Hola%20Vivaldi%2C%20quiero%20informaci%C3%B3n%20de%20sus%20lotes%20de%20playa." target="_blank" rel="noopener">WhatsApp</a>
 </nav>
 
@@ -1190,6 +1193,7 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = s => document.querySelector(s);
 const fmt = n => "S/ " + Math.round(n).toLocaleString("es-PE");
 const UP = "https://vivaldiinmobiliaria.com/wp-content/uploads/";
+const waUrl = (t, num = "51922549723") => `https://wa.me/${num}?text=${encodeURIComponent(t)}`;
 // rolls a soles amount from its current value to the new one (short, ease-out; instant with reduced motion)
 function tweenNum(el, to, dur = 450){
   const from = el._v ?? to; el._v = to;
@@ -1637,6 +1641,7 @@ function sim(){
   $("#oDown").textContent = fmt(down);
   $("#oBank").textContent = fmt(down + qb*term) + " (+" + fmt(qb*term - fin) + ")";
   $("#simCta").dataset.proj = p.id;
+  $("#simWa").href = waUrl(`Hola Vivaldi, simulé mi cuota para *${p.name}*: lote de ${fmt(p.price)}, inicial ${Math.round(ini*100)}% (${fmt(down)}) y ${term} cuotas de ${fmt(q)} sin intereses. ¿Me ayudan a separarlo?`);
   const si = $("#simImg"); if (si.dataset.p !== p.id){ si.src = UP + p.photo; si.dataset.p = p.id; }
 }
 sProj.addEventListener("change", sim); sIni.addEventListener("input", sim);
@@ -1921,8 +1926,14 @@ const bars = $("#whyBars"); if (io){ bars.classList.add("pre"); io.observe(bars)
         <div style="display:grid;gap:10px"><span class="eyebrow">Cómo llegar</span>
           <div class="sh-acts"><a class="btn btn-line" style="color:var(--deep)" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Abrir en Google Maps</a><a class="btn btn-line" style="color:var(--deep)" href="https://waze.com/ul?q=${q}" target="_blank" rel="noopener">Abrir en Waze</a></div></div>
         <div class="sh-acts">${p.st !== "sold" ? `<a class="btn btn-deep" href="#contacto" data-proj="${p.id}" data-close>Cotizar este proyecto</a>` : `<span class="pill p-sold">Proyecto 100% vendido y entregado</span>`}${p.price ? `<a class="btn btn-sun" href="#financiamiento" data-sim="${p.id}" data-close>Simular cuota</a>` : ""}</div>
+        <div class="sh-acts">${p.st !== "sold" ? `<a class="btn sh-wa" href="${waUrl(`Hola Vivaldi, quiero información de ${p.name}${p.km ? " (km " + p.km + ")" : ""}.`)}" target="_blank" rel="noopener">Consultar por WhatsApp</a>` : ""}<button class="btn btn-line" style="color:var(--deep)" type="button" id="shShare">Compartir proyecto</button></div>
       </div>`;
     body.querySelector(".sh-close").onclick = () => dlgS.close();
+    body.querySelector("#shShare").onclick = async () => {
+      const t = `Mira este proyecto de Vivaldi Inmobiliaria: *${p.name}*${p.km ? ", km " + p.km + " de la Panamericana Sur" : ""}.` + (p.price ? ` Lotes de ${p.m2} m² desde ${fmt(p.price)}, en soles y sin intereses.` : "") + ` Informes: wa.me/51922549723`;
+      try { if (navigator.share){ await navigator.share({title: p.name, text: t}); return; } } catch (e){ if (e.name === "AbortError") return; }
+      const u = waUrl(t, ""), w = window.open(u, "_blank"); if (w) w.opener = null; else location.href = u;
+    };
     body.querySelectorAll(".sh-arrows button").forEach(b => b.onclick = () => setPhoto(idx + +b.dataset.d));
     body.querySelectorAll(".sh-thumbs button").forEach(b => b.onclick = () => setPhoto(+b.dataset.k));
     body.querySelectorAll("[data-close]").forEach(a => a.addEventListener("click", () => dlgS.close()));
@@ -1976,6 +1987,7 @@ const bars = $("#whyBars"); if (io){ bars.classList.add("pre"); io.observe(bars)
 (function loteween(){
   const box = $("#lwCount"), sec = $("#loteween");
   const target = new Date(new Date().getFullYear(), 9, 31, 23, 59, 59);
+  if (new Date() > target || new Date().getMonth() < 9){ sec.remove(); document.querySelector(".lw-bar")?.remove(); return; }
   const parts = [["d","días"],["h","horas"],["m","min"],["s","seg"]];
   box.innerHTML = parts.map(([k,l]) => `<div><b data-k="${k}">00</b><small>${l}</small></div>`).join("");
   const last = {};
