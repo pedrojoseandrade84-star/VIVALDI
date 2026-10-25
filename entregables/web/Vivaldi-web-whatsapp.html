@@ -2038,12 +2038,12 @@ const bars = $("#whyBars"); if (io){ bars.classList.add("pre"); io.observe(bars)
         const blob = await projectCard(p, g, body.querySelector(".sh-media img:not(.out)") || body.querySelector(".sh-media img"));
         const name = `vivaldi-${p.id}.png`, file = new File([blob], name, {type:"image/png"});
         let shared = false;
-        try { if (matchMedia("(pointer: coarse)").matches && navigator.canShare?.({files:[file]})){ await navigator.share({files:[file], text:`${p.name} · Vivaldi Inmobiliaria · wa.me/51922549723`}); shared = true; } } catch (err){ if (err.name === "AbortError") shared = true; }
+        try { if (matchMedia("(pointer: coarse)").matches && navigator.canShare?.({files:[file]})){ await navigator.share({files:[file], text:`${p.name} · Vivaldi Inmobiliaria · WhatsApp +51 922 549 723`}); shared = true; } } catch (err){ if (err.name === "AbortError") shared = true; }
         if (!shared){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
       } finally { btn.disabled = false; btn.textContent = label; }
     };
     body.querySelector("#shShare").onclick = async () => {
-      const t = `Mira este proyecto de Vivaldi Inmobiliaria: *${p.name}*${p.km ? ", km " + p.km + " de la Panamericana Sur" : ""}.` + (p.price ? ` Lotes de ${p.m2} m² desde ${fmt(p.price)}, en soles y sin intereses.` : "") + ` Informes: wa.me/51922549723`;
+      const t = `Mira este proyecto de Vivaldi Inmobiliaria: *${p.name}*${p.km ? ", km " + p.km + " de la Panamericana Sur" : ""}.` + (p.price ? ` Lotes de ${p.m2} m² desde ${fmt(p.price)}, en soles y sin intereses.` : "") + ` Informes por WhatsApp: +51 922 549 723`;
       try { if (navigator.share){ await navigator.share({title: p.name, text: t}); return; } } catch (e){ if (e.name === "AbortError") return; }
       const u = waUrl(t, ""), w = window.open(u, "_blank"); if (w) w.opener = null; else location.href = u;
     };

@@ -6,6 +6,7 @@
 | web/ | Vivaldi-web-final.html (21.5 MB) | Máxima calidad: publicar o presentar en computadora |
 | software/ | planicie-herramienta-whatsapp.html (1.7 MB) | Enviar por WhatsApp a los asesores |
 | software/ | planicie-herramienta-final.html (2.8 MB) | Máxima calidad |
+| software/ejemplos-excel/ | 8 archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
 | propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta formal con cuadro de precios |
 | propuesta/ | investigacion-mercado-y-diagnostico.md | Fuentes de precios y diagnóstico |
 | propuesta/fuente-editable/ | propuesta-*.html + style.css | Para editar textos o precios y regenerar el PDF |

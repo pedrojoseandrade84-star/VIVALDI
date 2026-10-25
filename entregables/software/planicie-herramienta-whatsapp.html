@@ -3510,6 +3510,7 @@ async function copyText(txt){
 }
 // opens WhatsApp with the text; to the client's number if one is given (Peru +51)
 function sendWa(txt, phone){
+  txt = String(txt).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\uFE0F\u200D]/gu, "").replace(/^ +| +$/gm, "");
   const p = String(phone || "").replace(/\D/g, ""), num = p.length === 9 ? "51" + p : p;
   const url = `https://wa.me/${num}?text=${encodeURIComponent(txt)}`, w = window.open(url, "_blank");
   if (w) w.opener = null; else location.href = url;
@@ -3742,12 +3743,12 @@ function renderPf(){
 }
 function pfText(){
   const c = pfCalc();
-  return `🏖️ *Proforma ${c.no} · Vivaldi Inmobiliaria*${c.name ? `\nCliente: ${c.name}` : ""}\n\n` +
-    `📍 *${c.v.name}* (km ${c.v.km} Panamericana Sur)${c.lot ? `\nLote: ${c.lot}` : ""}\n` +
-    `📐 Área: ${c.area} m²\n💰 Precio: ${fmt(c.price)}${c.disc ? `\nDescuento: −${fmt(c.disc)}\nPrecio final: ${fmt(c.net)}` : ""}\n` +
-    (c.term ? `Inicial (${c.iniP}%): ${fmt(c.down)}\n🗓️ *${c.term} cuotas de ${fmt(c.q)}*${c.last !== c.q ? ` (última de ${fmt(c.last)})` : ""}, sin intereses\nPrimera cuota: ${dLong(c.sched[0].d)}`
-            : `Pago al contado: ${fmt(c.net)}`) +
-    `\n\n✅ En soles, sin intereses y con título independizado.\nVálida hasta el ${dLong(c.valid)}.${c.adv ? `\nAsesor: ${c.adv}${c.advPh ? " · " + c.advPh : ""}` : ""}\nVivaldi Inmobiliaria · ${CO.tel}`;
+  return `*VIVALDI INMOBILIARIA*\n*Proforma N° ${c.no}*${c.name ? `\nCliente: ${c.name}` : ""}\n\n` +
+    `*LOTE*\nProyecto: ${c.v.name} (km ${c.v.km} Panamericana Sur)${c.lot ? `\nUbicación: ${c.lot}` : ""}\nÁrea: ${c.area.toLocaleString("es-PE")} m²\n\n` +
+    `*PRECIO*\nPrecio de lista: ${fmt(c.price)}${c.disc ? `\nDescuento: - ${fmt(c.disc)}` : ""}\n*Precio final: ${fmt(c.net)}*\n\n` +
+    (c.term ? `*FORMA DE PAGO*\nInicial (${c.iniP}%): ${fmt(c.down)}\n*${c.term} cuotas de ${fmt(c.q)}*${c.last !== c.q ? ` (la última de ${fmt(c.last)})` : ""}\nIntereses: S/ 0\nPrimera cuota: ${dLong(c.sched[0].d)}`
+            : `*FORMA DE PAGO*\nAl contado: ${fmt(c.net)}`) +
+    `\n\nEn soles, sin intereses y con título independizado. Válida hasta el ${dLong(c.valid)}.\n\n${c.adv ? `${c.adv} · Asesor comercial${c.advPh ? "\nCel. " + c.advPh : ""}\n` : ""}Vivaldi Inmobiliaria · ${CO.tel}`;
 }
 ["Name","Dni","Phone","Mz","Lt","Area","Price","Disc","Ini","Term","Start","Adv","AdvPh"].forEach(k => pf(k).addEventListener("input", pfDirty));
 pf("Term").addEventListener("change", pfDirty);
@@ -3817,7 +3818,7 @@ pf("Xlsx").addEventListener("click", () => { pfIssue(); xlsxProforma(pfCalc()); 
 
 
 /* ---------- branded Excel (.xlsx) exports, built with ExcelJS embedded in this file ---------- */
-const XL = {nv:"FF0A3856", bl:"FF2A85C5", gr:"FF3C3C3A", mu:"FF6B7A86", ln:"FFDCE5EC", bg:"FFF3F7FA", wh:"FFFFFFFF", money:'"S/" #,##0', money2:'"S/" #,##0.00', date:"dd/mm/yyyy"};
+const XL = {font:"Calibri", pct:"0%", nv:"FF0A3856", bl:"FF2A85C5", gr:"FF3C3C3A", mu:"FF6B7A86", ln:"FFDCE5EC", bg:"FFF3F7FA", wh:"FFFFFFFF", money:'"S/" #,##0', money2:'"S/" #,##0.00', date:"dd/mm/yyyy"};
 const xlFill = c => ({type:"pattern", pattern:"solid", fgColor:{argb:c}});
 const xlBorder = () => ({top:{style:"thin", color:{argb:XL.ln}}, bottom:{style:"thin", color:{argb:XL.ln}}, left:{style:"thin", color:{argb:XL.ln}}, right:{style:"thin", color:{argb:XL.ln}}});
 // ExcelJS shares one style object between cells of a column: always give each cell a fresh one
@@ -3833,36 +3834,66 @@ function xlHead(wb, ws, ncols, title, sub){
   ws.addImage(id, {tl:{col:0.15, row:1}, ext:{width:190, height:39}});
   const last = ws.getColumn(ncols).letter;
   ws.mergeCells(`C2:${last}2`); ws.mergeCells(`C3:${last}3`);
-  xs(ws.getCell("C2"), {font:{name:"Calibri", size:18, bold:true, color:{argb:XL.nv}}, alignment:{horizontal:"right", vertical:"middle"}}).value = title;
-  xs(ws.getCell("C3"), {font:{name:"Calibri", size:10, color:{argb:XL.mu}}, alignment:{horizontal:"right"}}).value = sub;
+  xs(ws.getCell("C2"), {font:{name:XL.font, size:18, bold:true, color:{argb:XL.nv}}, alignment:{horizontal:"right", vertical:"middle"}}).value = title;
+  xs(ws.getCell("C3"), {font:{name:XL.font, size:10, color:{argb:XL.mu}}, alignment:{horizontal:"right"}}).value = sub;
+  ws.headerFooter.oddHeader = `&R&8&K6B7A86${title.replace(/&/g, "&&")}`;
   ws.getRow(5).height = 5;
   for (let i = 1; i <= ncols; i++) xs(ws.getRow(5).getCell(i), {fill: xlFill(i <= Math.ceil(ncols / 2) ? XL.nv : XL.bl)});
   return 7;
 }
 // a styled table: header row in navy, zebra rows, borders, number formats per column; returns the row after it
-function xlTable(ws, r0, cols, rows, {total} = {}){
-  const hr = ws.getRow(r0); hr.height = 22;
-  cols.forEach((c, i) => { xs(hr.getCell(i + 1), {font:{bold:true, color:{argb:XL.wh}, size:10}, fill:xlFill(XL.nv), border:xlBorder(),
-    alignment:{vertical:"middle", horizontal: c.fmt ? "right" : "left", wrapText:true}}).value = c.h; });
-  rows.forEach((row, k) => { const r = ws.getRow(r0 + 1 + k);
-    row.forEach((v, i) => { const c = cols[i], st = {border:xlBorder(), font:{size:10, color:{argb: row.bold ? XL.nv : XL.gr}, bold: !!row.bold},
-      alignment:{vertical:"middle", horizontal: c.fmt ? "right" : "left", wrapText: !!c.wrap}};
-      if (c.fmt) st.numFmt = c.fmt; if (row.tint) st.fill = xlFill(row.tint); else if (k % 2) st.fill = xlFill(XL.bg);
-      xs(r.getCell(i + 1), st).value = v ?? null; }); });
+// cols: {h, w, fmt, wrap, al}; rows may carry .tint, .bold or .sec (a full-width section title)
+// freeze: keep the header visible while scrolling; the header also repeats on every printed page
+function xlTable(ws, r0, cols, rows, {total, freeze, empty = "Sin registros por ahora."} = {}){
+  const n = cols.length, al = c => c.al || (c.fmt ? "right" : "left");
+  const hr = ws.getRow(r0); hr.height = 24;
+  cols.forEach((c, i) => { xs(hr.getCell(i + 1), {font:{name:XL.font, bold:true, color:{argb:XL.wh}, size:10}, fill:xlFill(XL.nv), border:xlBorder(),
+    alignment:{vertical:"middle", horizontal: al(c), wrapText:true, indent: al(c) === "center" ? 0 : 1}}).value = c.h; });
+  if (!rows.length) rows = [Object.assign([empty], {empty:true})];
+  let z = 0;
+  rows.forEach((row, k) => { const rn = r0 + 1 + k, r = ws.getRow(rn);
+    if (row.sec || row.empty){ ws.mergeCells(rn, 1, rn, n); r.height = row.sec ? 22 : 26;
+      xs(r.getCell(1), {font:{name:XL.font, size: row.sec ? 10 : 10, bold: !!row.sec, italic: !!row.empty, color:{argb: row.sec ? XL.bl : XL.mu}}, fill: row.sec ? xlFill("FFE3EEF8") : undefined,
+        border:xlBorder(), alignment:{vertical:"middle", horizontal: row.empty ? "center" : "left", indent:1}}).value = row[0]; z = 0; return; }
+    r.height = 20;
+    cols.forEach((c, i) => { const v = row[i], st = {border:xlBorder(), font:{name:XL.font, size:10, color:{argb: row.bold ? XL.nv : XL.gr}, bold: !!row.bold},
+      alignment:{vertical:"middle", horizontal: al(c), wrapText: !!c.wrap, indent: al(c) === "center" ? 0 : 1}};
+      if (c.fmt) st.numFmt = c.fmt; if (row.tint) st.fill = xlFill(row.tint); else if (z % 2) st.fill = xlFill(XL.bg);
+      xs(r.getCell(i + 1), st).value = v ?? null; });
+    if (cols.some(c => c.wrap)) r.height = undefined;
+    z++; });
   let end = r0 + rows.length + 1;
-  if (total){ const r = ws.getRow(end); r.height = 22;
-    cols.forEach((c, i) => { const sum = total.sum?.includes(i), cell = xs(r.getCell(i + 1), {border:{top:{style:"medium", color:{argb:XL.nv}}}, font:{bold:true, color:{argb:XL.nv}, size:11},
-        ...(sum ? {numFmt: c.fmt, alignment:{horizontal:"right"}} : {})});
+  const data = rows.filter(x => !x.sec && !x.empty).length;
+  if (total && data){ const r = ws.getRow(end); r.height = 24;
+    cols.forEach((c, i) => { const sum = total.sum?.includes(i), cell = xs(r.getCell(i + 1), {fill:xlFill("FFE3EEF8"), border:{top:{style:"medium", color:{argb:XL.nv}}, bottom:{style:"thin", color:{argb:XL.nv}}},
+        font:{name:XL.font, bold:true, color:{argb:XL.nv}, size:11}, alignment:{vertical:"middle", horizontal: sum ? "right" : "left", indent:1}, ...(sum ? {numFmt: c.fmt} : {})});
       if (i === 0) cell.value = total.label;
-      if (sum){ const L = ws.getColumn(i + 1).letter; cell.value = {formula:`SUM(${L}${r0 + 1}:${L}${end - 1})`}; } });
+      if (sum){ const L = ws.getColumn(i + 1).letter; cell.value = {formula:`SUBTOTAL(9,${L}${r0 + 1}:${L}${end - 1})`}; } });
     end++; }
   cols.forEach((c, i) => ws.getColumn(i + 1).width = c.w || 14);
+  ws.pageSetup.printTitlesRow = `${r0}:${r0}`;
+  if (freeze) ws.views = [{state:"frozen", ySplit:r0, showGridLines:false, zoomScale:100}];
+  if (freeze && data) ws.autoFilter = {from:{row:r0, column:1}, to:{row:r0 + rows.length, column:n}};
   return end;
 }
-function xlNote(ws, row, ncols, text){ ws.mergeCells(row, 1, row, ncols); xs(ws.getCell(row, 1), {font:{size:9, italic:true, color:{argb:XL.mu}}, alignment:{wrapText:true, vertical:"top"}}).value = text; ws.getRow(row).height = 42; }
+// two-column summary block (label · value) used above detail tables; returns the next free row
+function xlKpis(ws, r, items, ncols, spans){
+  const per = Math.max(1, Math.floor(ncols / items.length)); let at = 1;
+  items.forEach(([k, v, fmt, warn], i) => { const c1 = at, c2 = i === items.length - 1 ? ncols : c1 + (spans ? spans[i] : per) - 1; at = c2 + 1;
+    ws.mergeCells(r, c1, r, c2); ws.mergeCells(r + 1, c1, r + 1, c2);
+    xs(ws.getCell(r, c1), {font:{name:XL.font, size:9, bold:true, color:{argb:XL.mu}}, fill:xlFill(XL.bg), alignment:{horizontal:"left", vertical:"bottom", indent:1},
+      border:{top:{style:"thin", color:{argb:XL.ln}}, left:{style:"thick", color:{argb: warn ? "FFC0392B" : XL.bl}}}}).value = k.toUpperCase();
+    xs(ws.getCell(r + 1, c1), {font:{name:XL.font, size:15, bold:true, color:{argb: warn ? "FFC0392B" : XL.nv}}, fill:xlFill(XL.bg), numFmt: fmt || "General",
+      alignment:{horizontal:"left", vertical:"middle", indent:1}, border:{bottom:{style:"thin", color:{argb:XL.ln}}, left:{style:"thick", color:{argb: warn ? "FFC0392B" : XL.bl}}}}).value = v; });
+  ws.getRow(r).height = 18; ws.getRow(r + 1).height = 28;
+  return r + 3;
+}
+function xlNote(ws, row, ncols, text){ ws.mergeCells(row, 1, row, ncols); xs(ws.getCell(row, 1), {font:{name:XL.font, size:9, italic:true, color:{argb:XL.mu}}, alignment:{wrapText:true, vertical:"top", indent:1}}).value = text; ws.getRow(row).height = 42; }
 async function xlSave(wb, name){
   if (!window.ExcelJS){ toast("No se pudo generar el Excel"); return; }
-  wb.creator = "Vivaldi Inmobiliaria"; wb.created = new Date();
+  wb.creator = pf("Adv").value.trim() || "Vivaldi Inmobiliaria"; wb.lastModifiedBy = wb.creator; wb.created = wb.modified = new Date();
+  wb.company = CO.name; wb.title = name.replace(/\.xlsx$/, ""); wb.subject = "Herramienta de ventas Vivaldi";
+  wb.worksheets.forEach(ws => { if (!ws.headerFooter.oddFooter) ws.headerFooter.oddFooter = `&L&8${CO.name.replace(/&/g, "&&")} · RUC ${CO.ruc}&R&8Página &P de &N`; });
   const buf = await wb.xlsx.writeBuffer(), blob = new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   const file = new File([blob], name, {type: blob.type});
   // on phones, hand it to the share sheet (WhatsApp, Drive, mail); elsewhere download it
@@ -3877,19 +3908,21 @@ async function xlsxProforma(c){
   let r = xlHead(wb, ws, 5, `PROFORMA ${c.no}`, `Emisión ${dNum(today)} · Válida hasta ${dNum(c.valid)}`);
   const kv = (label, value, fmt) => { const row = ws.getRow(r++); ws.mergeCells(row.number, 1, row.number, 2); ws.mergeCells(row.number, 3, row.number, 5);
     const line = {bottom:{style:"thin", color:{argb:XL.ln}}};
-    xs(row.getCell(1), {font:{size:10, color:{argb:XL.mu}}, border:line}).value = label;
-    xs(row.getCell(3), {font:{size:11, bold:true, color:{argb:XL.nv}}, border:line, alignment:{horizontal:"left"}, ...(fmt ? {numFmt:fmt} : {})}).value = value; };
-  const sec = t => { const row = ws.getRow(r); r += 1; ws.mergeCells(row.number, 1, row.number, 5); row.height = 22; xs(row.getCell(1), {font:{size:10, bold:true, color:{argb:XL.bl}}, alignment:{vertical:"bottom"}}).value = t; };
+    const hl = kv.hl; kv.hl = false; row.height = hl ? 24 : 19;
+    xs(row.getCell(1), {font:{name:XL.font, size:10, color:{argb: hl ? XL.nv : XL.mu}, bold: hl}, border:line, alignment:{vertical:"middle", indent:1}, ...(hl ? {fill:xlFill("FFE3EEF8")} : {})}).value = label;
+    xs(row.getCell(3), {font:{name:XL.font, size: hl ? 13 : 11, bold:true, color:{argb:XL.nv}}, border:line, alignment:{horizontal:"left", vertical:"middle", indent:1}, ...(hl ? {fill:xlFill("FFE3EEF8")} : {}), ...(fmt ? {numFmt:fmt} : {})}).value = value; };
+  const kvh = (...a) => { kv.hl = true; kv(...a); };
+  const sec = t => { const row = ws.getRow(r); r += 1; ws.mergeCells(row.number, 1, row.number, 5); row.height = 24; xs(row.getCell(1), {font:{name:XL.font, size:10, bold:true, color:{argb:XL.bl}}, alignment:{vertical:"bottom"}, border:{bottom:{style:"medium", color:{argb:XL.bl}}}}).value = t; };
   sec("CLIENTE"); kv("Nombre", c.name || "—"); if (c.dni) kv("DNI / CE", c.dni); if (c.phone) kv("Celular", c.phone);
   sec("INMUEBLE"); kv("Proyecto", c.v.name); kv("Ubicación", `Km ${c.v.km} Panamericana Sur`); kv("Manzana / Lote", c.lot || "Por asignar"); kv("Área", `${c.area} m²`);
-  sec("PRECIO Y FORMA DE PAGO"); kv("Precio de lista", c.price, XL.money); if (c.disc) kv("Descuento", -c.disc, XL.money); kv("Precio final", c.net, XL.money);
-  if (c.term){ kv(`Cuota inicial (${c.iniP}%)`, c.down, XL.money); kv("Saldo a financiar", c.fin, XL.money); kv("Plazo", `${c.term} cuotas mensuales`); kv("Cuota mensual", c.q, XL.money); kv("Intereses", 0, XL.money); }
+  sec("PRECIO Y FORMA DE PAGO"); kv("Precio de lista", c.price, XL.money); if (c.disc) kv("Descuento", -c.disc, XL.money); kvh("Precio final", c.net, XL.money);
+  if (c.term){ kv(`Cuota inicial (${c.iniP}%)`, c.down, XL.money); kv("Saldo a financiar", c.fin, XL.money); kv("Plazo", `${c.term} cuotas mensuales sin intereses`); kvh("Cuota mensual", c.q, XL.money); if (c.last !== c.q) kv("Última cuota", c.last, XL.money); kv("Intereses", 0, XL.money); }
   else kv("Forma de pago", "Al contado");
   sec("ASESOR"); kv("Asesor comercial", c.adv || "—"); kv("Contacto", [c.advPh, CO.tel].filter(Boolean).join(" · "));
   if (c.term){
     r++; sec("CRONOGRAMA DE PAGOS");
-    const rows = [Object.assign([0, "Inicial a la firma", null, c.down, c.fin], {tint: "FFE3EEF8"}), ...c.sched.map(s => [s.i, "Cuota mensual", s.d, s.amt, s.bal])];
-    r = xlTable(ws, r, [{h:"N°", w:10}, {h:"Concepto", w:26}, {h:"Vencimiento", w:18, fmt:XL.date}, {h:"Importe", w:18, fmt:XL.money}, {h:"Saldo", w:20, fmt:XL.money}], rows, {total:{label:"TOTAL A PAGAR", sum:[3]}});
+    const rows = [Object.assign(["—", "Inicial a la firma", null, c.down, c.fin], {tint: "FFE3EEF8"}), ...c.sched.map(s => [s.i, "Cuota mensual", s.d, s.amt, s.bal])];
+    r = xlTable(ws, r, [{h:"N°", w:10, al:"center"}, {h:"Concepto", w:26}, {h:"Vencimiento", w:18, fmt:XL.date, al:"center"}, {h:"Importe", w:18, fmt:XL.money}, {h:"Saldo", w:20, fmt:XL.money}], rows, {total:{label:"TOTAL A PAGAR", sum:[3]}});
   }
   r++; xlNote(ws, r, 5, `Precios en soles, sin intereses. Proforma referencial válida hasta el ${dLong(c.valid)}; precio y disponibilidad se confirman al separar. ${CO.name} · RUC ${CO.ruc} · ${CO.addr} · ${CO.tel}`);
   await xlSave(wb, pfFile(c, "xlsx"));
@@ -3900,13 +3933,13 @@ async function xlsxClients(list){
   let r = xlHead(wb, ws, 8, "CARTERA DE CLIENTES", `${pf("Adv").value.trim() ? "Asesor: " + pf("Adv").value.trim() + " · " : ""}Reporte al ${dNum(new Date())} · ${list.length} clientes`);
   // summary by stage
   const counts = STAGES.map(s => [s, list.filter(c => c.stage === s).length, list.filter(c => c.stage === s).reduce((a, c) => a + (+c.budget || 0), 0)]);
-  r = xlTable(ws, r, [{h:"Etapa", w:22}, {h:"Clientes", w:12, fmt:"0"}, {h:"Presupuesto", w:24, fmt:XL.money}], counts, {total:{label:"TOTAL", sum:[1, 2]}});
+  r = xlTable(ws, r, [{h:"Etapa", w:28}, {h:"Clientes", w:13, fmt:"0"}, {h:"Presupuesto", w:22, fmt:XL.money}], counts, {total:{label:"TOTAL", sum:[1, 2]}});
   r += 1;
   const rows = list.map(c => { const row = [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes, c.created ? new Date(c.created + "T12:00") : null];
     if (isActive(c) && c.next && c.next < todayIso()) row.tint = "FFFBE3DF"; return row; });
   const top = r;
-  r = xlTable(ws, r, [{h:"Nombre", w:22}, {h:"Celular", w:12}, {h:"Proyecto", w:24}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:24, fmt:XL.money}, {h:"Notas", w:44, wrap:true}, {h:"Registrado", w:12, fmt:XL.date}], rows);
-  ws.autoFilter = {from:{row:top, column:1}, to:{row:Math.max(top, r - 1), column:8}};
+  r = xlTable(ws, r, [{h:"Nombre", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date, al:"center"}, {h:"Presupuesto", w:15, fmt:XL.money}, {h:"Notas", w:52, wrap:true}, {h:"Registrado", w:13, fmt:XL.date, al:"center"}], rows);
+  if (list.length) ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:8}};
   xlNote(ws, r + 1, 8, "En rojo: clientes con el contacto atrasado. Generado con la herramienta de ventas Vivaldi.");
   await xlSave(wb, `clientes-vivaldi-${iso(new Date())}.xlsx`);
 }
@@ -3914,12 +3947,10 @@ async function xlsxClients(list){
 async function xlsxComp(){
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Comparativo", {properties:{tabColor:{argb:XL.nv}}});
   let r = xlHead(wb, ws, 9, "PLANICIE DE ASIA · COMPARATIVO DE PRECIOS", `Km 99 a 131 Panamericana Sur · Datos: ${STATE.date || "—"} · TC S/ ${FX.toFixed(2)}`);
-  const rows = DATA.map(d => { const row = [d.name, d.dev, d.zone, d.km, d.m2, d.pen ? "S/" : "US$", d.pen ?? d.usd, Math.round(d.total), Math.round(d.perM2)];
+  const rows = [...DATA].sort((a, b) => a.perM2 - b.perM2).map(d => { const row = [d.name, d.dev, d.zone, d.km, d.m2, d.pen ? "S/" : "US$", d.pen ?? d.usd, Math.round(d.total), Math.round(d.perM2)];
     if (d.me){ row.bold = true; row.tint = "FFE3EEF8"; } return row; });
   const top = r;
-  r = xlTable(ws, r, [{h:"Proyecto", w:30}, {h:"Desarrollador / fuente", w:26}, {h:"Zona", w:12}, {h:"Km", w:8, fmt:"0.0"}, {h:"Lote m²", w:10, fmt:"#,##0"}, {h:"Moneda", w:9}, {h:"Precio publicado", w:16, fmt:"#,##0"}, {h:"Precio en S/", w:16, fmt:XL.money}, {h:"S/ por m²", w:13, fmt:XL.money}], rows);
-  ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:9}};
-  ws.views = [{state:"frozen", ySplit:top, showGridLines:false}];
+  r = xlTable(ws, r, [{h:"Proyecto", w:30}, {h:"Desarrollador / fuente", w:28}, {h:"Zona", w:13}, {h:"Km", w:8, fmt:"0.0", al:"center"}, {h:"Lote m²", w:10, fmt:"#,##0"}, {h:"Moneda", w:10, al:"center"}, {h:"Precio publicado", w:17, fmt:"#,##0"}, {h:"Precio en S/", w:16, fmt:XL.money}, {h:"S/ por m²", w:13, fmt:XL.money}], rows, {freeze:true});
   r++; xlNote(ws, r, 9, `Mediana de la competencia: ${fmt(median)}/m². Planicie de Asia: ${fmt(ME.perM2)}/m² (−${pct()}%). Precios en dólares convertidos a S/ ${FX.toFixed(2)}. Fuentes: portales y webs de los desarrolladores.`);
   await xlSave(wb, `comparativo-planicie-de-asia-${iso(new Date())}.xlsx`);
 }
@@ -4165,10 +4196,9 @@ $("pfLogX").addEventListener("click", async () => {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Proformas", {properties:{tabColor:{argb:XL.nv}}});
   let r = xlHead(wb, ws, 9, "REGISTRO DE PROFORMAS", `${pf("Adv").value.trim() ? "Asesor: " + pf("Adv").value.trim() + " · " : ""}Al ${dNum(new Date())} · ${PFLOG.length} proformas`);
   const top = r;
-  r = xlTable(ws, r, [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"DNI/CE", w:12}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Mz / Lote", w:12}, {h:"Precio final", w:15, fmt:XL.money}, {h:"Forma de pago", w:20}],
-    PFLOG.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.dni, x.phone, x.projName, [x.mz, x.lt].filter(Boolean).join(" / "), x.net, x.term ? `${x.term} cuotas de S/ ${Math.round(x.q).toLocaleString("es-PE")}` : "Contado"]),
-    {total:{label:"TOTAL COTIZADO", sum:[7]}});
-  ws.autoFilter = {from:{row:top, column:1}, to:{row:Math.max(top, r - 2), column:9}};
+  r = xlTable(ws, r, [{h:"N°", w:20}, {h:"Fecha", w:12, fmt:XL.date, al:"center"}, {h:"Cliente", w:28}, {h:"DNI/CE", w:12}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Mz / Lote", w:11, al:"center"}, {h:"Precio final", w:15, fmt:XL.money}, {h:"Forma de pago", w:24}],
+    PFLOG.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.dni, x.phone, x.projName, [x.mz, x.lt].filter(Boolean).join(" / "), x.net, x.term ? `${x.term} cuotas de ${fmt(x.q)}` : "Al contado"]),
+    {total:{label:"TOTAL COTIZADO", sum:[7]}, freeze:true});
   await xlSave(wb, `registro-proformas-${iso(new Date())}.xlsx`);
 });
 renderPanel();
@@ -4260,7 +4290,7 @@ function sepIssue(){
 $("sepPrint").addEventListener("click", () => { if (!sepIssue()) return; document.body.classList.add("print-sep"); const t = document.title; document.title = `constancia-${sepIssued}`; print(); setTimeout(() => { document.body.classList.remove("print-sep"); document.title = t; }, 600); });
 addEventListener("afterprint", () => document.body.classList.remove("print-sep"));
 $("sepWa").addEventListener("click", () => { if (!sepIssue()) return; const c = sepCalc(), r = c.r;
-  sendWa(`🏖️ *Constancia de separación ${sepIssued} · Vivaldi Inmobiliaria*\n\nCliente: ${r.name}\n📍 ${r.projName}${r.mz || r.lt ? ` · Mz ${r.mz} Lt ${r.lt}` : ""}\n💰 Separación recibida: *${fmt(c.amt)}* (${c.pay}${c.op ? ", op. " + c.op : ""})\nPrecio final: ${fmt(r.net)} · Saldo: ${fmt(Math.max(0, r.net - c.amt))}\n🗓️ Firma de contrato hasta el *${dLong(c.lim)}*\n\nGracias por confiar en Vivaldi.`, r.phone); });
+  sendWa(`*VIVALDI INMOBILIARIA*\n*Constancia de separación N° ${sepIssued}*\n\nCliente: ${r.name}\nProyecto: ${r.projName}${r.mz || r.lt ? `\nUbicación: Mz ${r.mz} · Lote ${r.lt}` : ""}\n\nSeparación recibida: *${fmt(c.amt)}*\nMedio: ${c.pay}${c.op ? " · Op. " + c.op : ""}\nPrecio final: ${fmt(r.net)}\nSaldo pendiente: ${fmt(Math.max(0, r.net - c.amt))}\n\n*Firma de contrato hasta el ${dLong(c.lim)}*\n\nGracias por confiar en Vivaldi Inmobiliaria.`, r.phone); });
 
 /* ---------- cobranza ---------- */
 const COB_KEY = "vivaldi-cobranza-v1";
@@ -4304,12 +4334,14 @@ $("cobBody").addEventListener("click", e => {
 });
 $("cobX").addEventListener("click", async () => {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Cobranza", {properties:{tabColor:{argb:XL.nv}}});
-  let r = xlHead(wb, ws, 8, "CONTROL DE COBRANZA", `Al ${dNum(new Date())} · ${COB.length} ventas`);
-  const lab = {late:"Vencida", soon:"Próxima (30 días)", ok:"Pagada", fut:"Programada"}, top = r;
-  r = xlTable(ws, r, [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Lote", w:12}, {h:"Cuota", w:10, fmt:"0"}, {h:"Importe", w:14, fmt:XL.money}, {h:"Estado", w:22}],
-    cobRows().map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.k.lot, x.s.i, x.s.amt, lab[x.state] + (x.paid ? " · " + dNum(new Date(x.paid + "T12:00")) : "")]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }),
-    {total:{label:"TOTAL CARTERA", sum:[6]}});
-  ws.autoFilter = {from:{row:top, column:1}, to:{row:Math.max(top, r - 2), column:8}};
+  let r = xlHead(wb, ws, 8, "CONTROL DE COBRANZA", `Al ${dNum(new Date())} · ${COB.length} ventas en cobranza`);
+  const lab = {late:"Vencida", soon:"Próxima (30 días)", ok:"Pagada", fut:"Programada"}, all = cobRows(), ym = iso(new Date()).slice(0, 7), tot = a => a.reduce((x, y) => x + y.s.amt, 0);
+  r = xlKpis(ws, r, [["Vencido", tot(all.filter(x => x.state === "late")), XL.money, all.some(x => x.state === "late")], ["Por cobrar 30 días", tot(all.filter(x => x.state === "soon")), XL.money],
+    ["Cobrado este mes", tot(all.filter(x => x.paid && x.paid.slice(0, 7) === ym)), XL.money], ["Saldo por cobrar", tot(all.filter(x => !x.paid)), XL.money]], 8);
+  r = xlTable(ws, r, [{h:"Vence", w:12, fmt:XL.date, al:"center"}, {h:"Cliente", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Lote", w:13}, {h:"Cuota", w:11, al:"center"}, {h:"Importe", w:14, fmt:XL.money}, {h:"Estado", w:22}],
+    all.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.k.lot, `${x.s.i} de ${x.k.sched.length}`, x.s.amt, lab[x.state] + (x.paid ? " · " + dNum(new Date(x.paid + "T12:00")) : "")]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }),
+    {total:{label:"TOTAL CARTERA", sum:[6]}, freeze:true});
+  r++; xlNote(ws, r, 8, "Rojo: cuota vencida. Verde: cuota pagada. Usa el filtro de la columna Estado para ver solo lo pendiente; el total se recalcula con el filtro.");
   await xlSave(wb, `cobranza-vivaldi-${iso(new Date())}.xlsx`);
 });
 renderSep(); renderCob(); window.sepReady = true; renderRank();
@@ -4404,11 +4436,30 @@ function pfLotCheck(){
 ["Proj", "Mz", "Lt"].forEach(k => pf(k).addEventListener("input", pfLotCheck)); pf("Proj").addEventListener("change", pfLotCheck);
 // Excel: template, import, export
 $("invTpl").addEventListener("click", async () => {
-  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Lotes");
-  ws.columns = [{header:"Proyecto", key:"p", width:28}, {header:"Manzana", key:"m", width:10}, {header:"Lote", key:"l", width:8}, {header:"Área", key:"a", width:10}, {header:"Precio", key:"pr", width:12}, {header:"Ubicación", key:"u", width:18}, {header:"Estado", key:"e", width:12}, {header:"Cliente", key:"c", width:26}];
-  ws.getRow(1).eachCell(c => { c.style = {font:{bold:true, color:{argb:XL.wh}}, fill:xlFill(XL.nv)}; });
-  ws.addRow({p: $("invProj").value, m: "B", l: 1, a: 200, pr: 29000, u: "Frente al parque", e: "Disponible", c: ""});
-  ws.addRow({p: $("invProj").value, m: "B", l: 2, a: 200, pr: 29000, u: "Interior", e: "Separado", c: "Nombre del cliente"});
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Lotes", {properties:{tabColor:{argb:XL.nv}}});
+  const cols = [["Proyecto", 30], ["Manzana", 11], ["Lote", 9], ["Área m²", 11], ["Precio S/", 14], ["Ubicación", 20], ["Estado", 14], ["Cliente", 30]], N = 60, NV = 1000;
+  cols.forEach(([h, w], i) => { ws.getColumn(i + 1).width = w; xs(ws.getCell(1, i + 1), {font:{name:XL.font, bold:true, size:10, color:{argb:XL.wh}}, fill:xlFill(XL.nv), border:xlBorder(), alignment:{vertical:"middle", horizontal: i >= 1 && i <= 4 ? "center" : "left", indent: i >= 1 && i <= 4 ? 0 : 1}}).value = h; });
+  ws.getRow(1).height = 26;
+  for (let r = 2; r <= N + 1; r++) cols.forEach((_, i) => { xs(ws.getCell(r, i + 1), {font:{name:XL.font, size:10, color:{argb:XL.gr}}, border:xlBorder(), ...(r % 2 ? {fill:xlFill(XL.bg)} : {}),
+      alignment:{vertical:"middle", horizontal: i >= 1 && i <= 4 ? "center" : "left", indent: i >= 1 && i <= 4 ? 0 : 1}, numFmt: i === 3 ? "#,##0" : i === 4 ? XL.money : "@"}); });
+  const list = a => ({type:"list", allowBlank:true, formulae:[`"${a.join(",")}"`], showErrorMessage:true, errorStyle:"warning", errorTitle:"Valor no reconocido", error:"Elige un valor de la lista."});
+  for (let r = 2; r <= NV + 1; r++){
+    ws.getCell(r, 1).dataValidation = list(VIV.map(v => v.name.replace(/,/g, "")));
+    ws.getCell(r, 6).dataValidation = {...list(["Interior", "Frente al parque", "Esquina"]), showErrorMessage:false};
+    ws.getCell(r, 7).dataValidation = list(LST);
+    ws.getCell(r, 4).dataValidation = {type:"decimal", operator:"greaterThan", formulae:[0], allowBlank:true, showErrorMessage:true, errorTitle:"Área", error:"Escribe el área en m² (solo números)."};
+    ws.getCell(r, 5).dataValidation = {type:"decimal", operator:"greaterThanOrEqual", formulae:[0], allowBlank:true, showErrorMessage:true, errorTitle:"Precio", error:"Escribe el precio en soles (solo números)."}; }
+  ws.views = [{state:"frozen", ySplit:1, showGridLines:false}];
+  ws.autoFilter = {from:{row:1, column:1}, to:{row:1, column:8}};
+  ws.pageSetup = {paperSize:9, orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:"1:1", margins:{left:.4, right:.4, top:.5, bottom:.6, header:.2, footer:.3}};
+  const wi = wb.addWorksheet("Instrucciones", {properties:{tabColor:{argb:XL.bl}}}); let r = xlHead(wb, wi, 4, "PLANTILLA DE LOTES", "Cómo llenarla e importarla en la herramienta");
+  r = xlTable(wi, r, [{h:"Columna", w:16}, {h:"Qué escribir", w:46, wrap:true}, {h:"Ejemplo", w:20}, {h:"¿Obligatoria?", w:14, al:"center"}], [
+    ["Proyecto", "Elige de la lista. Si la dejas vacía se usa el proyecto elegido en la herramienta al importar.", VIV[0].name, "No"],
+    ["Manzana", "Letra o código de la manzana.", "B", "Sí"], ["Lote", "Número del lote.", "12", "Sí"],
+    ["Área m²", "Área en metros cuadrados, solo números.", "200", "No"], ["Precio S/", "Precio de lista en soles, solo números.", "29000", "No"],
+    ["Ubicación", "Interior, Frente al parque, Esquina u otra descripción.", "Esquina", "No"], ["Estado", "Disponible, Separado, Vendido o Bloqueado.", "Disponible", "No"],
+    ["Cliente", "Solo si el lote está separado o vendido.", "Nombre del cliente", "No"]]);
+  r++; xlNote(wi, r, 4, "1) En la hoja Lotes escribe un lote por fila desde la fila 2 (Proyecto, Estado y Ubicación tienen lista desplegable). 2) Guarda el archivo. 3) En la herramienta: Lotes → Crear lotes en bloque → Importar Excel. Los lotes que ya existen se actualizan; no se duplican.");
   await xlSave(wb, "plantilla-lotes-vivaldi.xlsx");
 });
 $("invImp").addEventListener("click", () => $("invFile").click());
@@ -4434,10 +4485,12 @@ $("invX").addEventListener("click", async () => {
   for (const v of VIV){ const mine = INV.filter(l => l.proj === v.name); if (!mine.length) continue;
     const ws = wb.addWorksheet(v.name.replace(/[^\wÁÉÍÓÚÑáéíóúñ ]/g, "").slice(0, 28), {properties:{tabColor:{argb:XL.bl}}});
     let r = xlHead(wb, ws, 7, `INVENTARIO · ${v.name.toUpperCase()}`, `Al ${dNum(new Date())} · ${mine.filter(l => l.st === "Disponible").length} disponibles de ${mine.length}`);
-    const top = r, tint = {Separado:"FFFBEFD3", Vendido:"FFE6ECEC", Bloqueado:"FFFBE3DF"};
-    r = xlTable(ws, r, [{h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:14}, {h:"Cliente", w:28}],
-      mine.sort((a, b) => normLot(a.mz).localeCompare(normLot(b.mz)) || parseFloat(a.lt) - parseFloat(b.lt)).map(l => { const row = [l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]; if (tint[l.st]) row.tint = tint[l.st]; return row; }));
-    ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:7}};
+    const tint = {Separado:"FFFBEFD3", Vendido:"FFE6ECEC", Bloqueado:"FFFBE3DF"}, cnt = s => mine.filter(l => l.st === s).length;
+    r = xlKpis(ws, r, [["Disponibles", cnt("Disponible")], ["Separados", cnt("Separado")], ["Vendidos", cnt("Vendido")], ["Valor disponible", mine.filter(l => l.st === "Disponible").reduce((a, l) => a + (+l.price || 0), 0), XL.money]], 7, [2, 2, 1, 2]);
+    r = xlTable(ws, r, [{h:"Manzana", w:11, al:"center"}, {h:"Lote", w:9, al:"center"}, {h:"Área m²", w:11, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:20}, {h:"Estado", w:14}, {h:"Cliente", w:30}],
+      mine.sort((a, b) => normLot(a.mz).localeCompare(normLot(b.mz)) || parseFloat(a.lt) - parseFloat(b.lt)).map(l => { const row = [l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]; if (tint[l.st]) row.tint = tint[l.st]; return row; }),
+      {freeze:true});
+    r++; xlNote(ws, r, 7, "Ámbar: separado. Gris: vendido. Rojo: bloqueado. Sin color: disponible.");
   }
   if (!wb.worksheets.length){ toast("Aún no hay lotes para exportar"); return; }
   await xlSave(wb, `inventario-lotes-${iso(new Date())}.xlsx`);
@@ -4450,33 +4503,39 @@ $("repX").addEventListener("click", async () => {
   const rows = cobRows(), sum = a => a.reduce((x, r) => x + r.s.amt, 0), monthPf = PFLOG.filter(r => r.at.slice(0, 7) === ym);
   // 1. summary
   const ws = wb.addWorksheet("Resumen", {properties:{tabColor:{argb:XL.nv}}}); let r = xlHead(wb, ws, 4, "REPORTE GERENCIAL COMERCIAL", sub);
-  r = xlTable(ws, r, [{h:"Indicador", w:40}, {h:"Valor", w:18, fmt:"#,##0"}, {h:"Monto", w:18, fmt:XL.money}, {h:"Detalle", w:30}], [
+  const S = t => Object.assign([t], {sec:true});
+  r = xlKpis(ws, r, [["Cotizado este mes", monthPf.reduce((a, x) => a + x.net, 0), XL.money], ["Cobrado este mes", sum(rows.filter(x => x.paid && x.paid.slice(0, 7) === ym)), XL.money], ["Vencido", sum(rows.filter(x => x.state === "late")), XL.money, rows.some(x => x.state === "late")]], 4, [1, 2, 1]);
+  r = xlTable(ws, r, [{h:"Indicador", w:42}, {h:"Cantidad", w:12, fmt:"#,##0"}, {h:"Monto", w:18, fmt:XL.money}, {h:"Detalle", w:30}], [
+    S("VENTAS"),
     ["Proformas emitidas este mes", monthPf.length, monthPf.reduce((a, x) => a + x.net, 0), "Monto cotizado"],
     ["Proformas emitidas (total)", PFLOG.length, PFLOG.reduce((a, x) => a + x.net, 0), ""],
     ["Separaciones este mes", SEPS.filter(x => x.at.slice(0, 7) === ym).length, SEPS.filter(x => x.at.slice(0, 7) === ym).reduce((a, x) => a + x.amt, 0), "Montos recibidos"],
     ["Ventas en cobranza", COB.length, COB.reduce((a, k) => a + k.sched.reduce((x, s) => x + s.amt, 0), 0), "Saldo financiado total"],
+    S("COBRANZA"),
     Object.assign(["Cuotas vencidas", rows.filter(x => x.state === "late").length, sum(rows.filter(x => x.state === "late")), "Prioridad de cobro"], rows.some(x => x.state === "late") ? {tint:"FFFBE3DF"} : {}),
     ["Por cobrar en 30 días", rows.filter(x => x.state === "soon").length, sum(rows.filter(x => x.state === "soon")), ""],
     ["Cobrado este mes", rows.filter(x => x.paid && x.paid.slice(0, 7) === ym).length, sum(rows.filter(x => x.paid && x.paid.slice(0, 7) === ym)), ""],
+    S("CLIENTES"),
     ...STAGES.map(s => [`Clientes en etapa: ${s}`, CLIENTS.filter(c => c.stage === s).length, CLIENTS.filter(c => c.stage === s).reduce((a, c) => a + (+c.budget || 0), 0), "Presupuesto declarado"]),
-    ["Clientes con contacto atrasado", CLIENTS.filter(c => isActive(c) && c.next && c.next < t).length, null, "Llamar hoy"],
+    Object.assign(["Clientes con contacto atrasado", CLIENTS.filter(c => isActive(c) && c.next && c.next < t).length, null, "Llamar hoy"], CLIENTS.some(c => isActive(c) && c.next && c.next < t) ? {tint:"FFFBE3DF"} : {}),
+    S("INVENTARIO"),
     ...VIV.map(v => { const m = INV.filter(l => l.proj === v.name); return [`Lotes disponibles · ${v.name}`, m.filter(l => l.st === "Disponible").length, m.filter(l => l.st === "Disponible").reduce((a, l) => a + (+l.price || 0), 0), m.length ? `de ${m.length} cargados` : "sin inventario cargado"]; }),
   ]);
   // 2..6 detail sheets
-  const sheet = (name, title, cols, data) => { const w = wb.addWorksheet(name, {properties:{tabColor:{argb:XL.bl}}}); let rr = xlHead(wb, w, cols.length, title, sub); const top = rr; rr = xlTable(w, rr, cols, data); if (data.length) w.autoFilter = {from:{row:top, column:1}, to:{row:rr - 1, column:cols.length}}; };
-  sheet("Proformas", "PROFORMAS EMITIDAS", [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Proyecto", w:26}, {h:"Mz / Lote", w:12}, {h:"Precio final", w:15, fmt:XL.money}, {h:"Pago", w:22}, {h:"Asesor", w:18}],
-    PFLOG.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.projName, [x.mz, x.lt].filter(Boolean).join(" / "), x.net, x.term ? `${x.term} × S/ ${Math.round(x.q).toLocaleString("es-PE")}` : "Contado", x.adv]));
+  const sheet = (name, title, cols, data, total) => { const w = wb.addWorksheet(name, {properties:{tabColor:{argb:XL.bl}}}); xlTable(w, xlHead(wb, w, cols.length, title, sub), cols, data, {freeze:true, total}); };
+  sheet("Proformas", "PROFORMAS EMITIDAS", [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Proyecto", w:26}, {h:"Mz / Lote", w:12}, {h:"Precio final", w:15, fmt:XL.money}, {h:"Pago", w:22}, {h:"Asesor", w:20}],
+    PFLOG.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.projName, [x.mz, x.lt].filter(Boolean).join(" / "), x.net, x.term ? `${x.term} cuotas de ${fmt(x.q)}` : "Al contado", x.adv]), {label:"TOTAL COTIZADO", sum:[5]});
   sheet("Separaciones", "CONSTANCIAS DE SEPARACIÓN", [{h:"N°", w:16}, {h:"Fecha", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Proforma", w:16}, {h:"Monto", w:13, fmt:XL.money}, {h:"Medio de pago", w:20}, {h:"Operación", w:14}, {h:"Firmar hasta", w:13, fmt:XL.date}],
-    SEPS.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.pf, x.amt, x.pay, x.op, new Date(x.lim + "T12:00")]));
+    SEPS.map(x => [x.no, new Date(x.at + "T12:00"), x.name, x.pf, x.amt, x.pay, x.op, new Date(x.lim + "T12:00")]), {label:"TOTAL SEPARADO", sum:[4]});
   const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
-  sheet("Cobranza", "CONTROL DE COBRANZA", [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Cuota", w:8, fmt:"0"}, {h:"Importe", w:13, fmt:XL.money}, {h:"Estado", w:14}, {h:"Pagado el", w:12, fmt:XL.date}],
-    rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, x.s.i, x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; return row; }));
+  sheet("Cobranza", "CONTROL DE COBRANZA", [{h:"Vence", w:12, fmt:XL.date}, {h:"Cliente", w:26}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Cuota", w:11, al:"center"}, {h:"Importe", w:13, fmt:XL.money}, {h:"Estado", w:14}, {h:"Pagado el", w:12, fmt:XL.date, al:"center"}],
+    rows.map(x => { const row = [new Date(x.s.d + "T12:00"), x.k.name, x.k.phone, x.k.projName, `${x.s.i} de ${x.k.sched.length}`, x.s.amt, lab[x.state], x.paid ? new Date(x.paid + "T12:00") : null]; if (x.state === "late") row.tint = "FFFBE3DF"; if (x.paid) row.tint = "FFE6F4EA"; return row; }), {label:"TOTAL", sum:[5]});
   sheet("Clientes", "CARTERA DE CLIENTES", [{h:"Nombre", w:24}, {h:"Celular", w:12}, {h:"Proyecto", w:26}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date}, {h:"Presupuesto", w:14, fmt:XL.money}, {h:"Notas", w:46, wrap:true}],
     CLIENTS.map(c => [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes]));
-  sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión %", w:13, fmt:"0"}],
-    advStats("todo").map(s => [s.adv, s.pf, s.amt, s.sep, s.sale, s.paid, s.conv]));
+  sheet("Asesores", "RANKING POR ASESOR (HISTÓRICO)", [{h:"Asesor", w:26}, {h:"Proformas", w:11, fmt:"0"}, {h:"Monto cotizado", w:16, fmt:XL.money}, {h:"Separaciones", w:13, fmt:"0"}, {h:"Ventas", w:9, fmt:"0"}, {h:"Cobrado", w:15, fmt:XL.money}, {h:"Conversión", w:13, fmt:XL.pct}],
+    advStats("todo").map(s => [s.adv, s.pf, s.amt, s.sep, s.sale, s.paid, s.pf ? s.sale / s.pf : null]), {label:"TOTAL EQUIPO", sum:[1, 2, 3, 4, 5]});
   sheet("Inventario", "INVENTARIO DE LOTES", [{h:"Proyecto", w:28}, {h:"Manzana", w:10}, {h:"Lote", w:8}, {h:"Área m²", w:10, fmt:"#,##0"}, {h:"Precio", w:14, fmt:XL.money}, {h:"Ubicación", w:18}, {h:"Estado", w:12}, {h:"Cliente", w:26}],
-    INV.map(l => [l.proj, l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client]));
+    INV.map(l => { const row = [l.proj, l.mz, l.lt, l.area, l.price, l.loc, l.st, l.client], tn = {Separado:"FFFBEFD3", Vendido:"FFE6ECEC", Bloqueado:"FFFBE3DF"}[l.st]; if (tn) row.tint = tn; return row; }));
   await xlSave(wb, `reporte-gerencial-vivaldi-${iso(now)}.xlsx`);
 });
 
