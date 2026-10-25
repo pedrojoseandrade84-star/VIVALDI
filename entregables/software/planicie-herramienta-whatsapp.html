@@ -444,6 +444,9 @@ details.fold[open] > summary{margin-bottom:16px}
 .pcmp td button{font:inherit;font-weight:inherit;background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}
 .doc-qr{display:flex;align-items:center;gap:12px;margin-top:14px;padding:8px 12px;border:1px solid #D5E3EE;border-radius:8px;background:#F5F9FC;break-inside:avoid}
 .doc-qr svg{width:66px;height:66px;flex:none}
+.sep-end{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:end;margin-top:22px}
+.sep-end .doc-sign{margin-top:0;gap:18px}.sep-end .doc-qr{margin-top:0;padding:6px 8px;gap:8px}.sep-end .doc-qr svg{width:56px;height:56px}.sep-end .doc-qr p{font-size:9.5px}.sep-end .doc-qr b{font-size:10.5px}
+@media (max-width:560px){.sep-end{grid-template-columns:minmax(0,1fr)}}
 .doc-qr p{margin:0;font-size:11px;color:var(--mu);line-height:1.45}.doc-qr b{display:block;color:var(--nv);font-size:12px}
 .doc-foot{margin-top:4px;padding-top:10px;border-top:3px solid var(--nv);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:10.5px;color:var(--mu)}
 .doc-foot b{color:var(--nv)}
@@ -4207,6 +4210,11 @@ function sepCalc(){
   const lim = new Date(d); lim.setDate(lim.getDate() + Math.max(1, +$("sepDays").value || 7));
   return {r, amt, d, lim, pay: $("sepPay").value, op: $("sepOp").value.trim(), obs: $("sepObs").value.trim(), no: sepNo(), plan: r ? planOf(r) : null};
 }
+function sepQr(r, c){
+  const ph = String(r.advPh || CO.tel).replace(/\D/g, ""), num = ph.length === 9 ? "51" + ph : ph;
+  const svg = qrSvg(`https://wa.me/${num}?text=${encodeURIComponent(`Hola, soy ${r.name || "cliente"}. Tengo la constancia de separación N° ${c.no} (proforma ${r.no}) y quiero coordinar la firma del contrato.`)}`);
+  return svg ? `<div class="doc-qr">${svg}<p><b>Coordina tu firma</b>Escanea y escribe por WhatsApp antes del ${dShort(c.lim)}; el mensaje incluye el N° de esta constancia.</p></div>` : "";
+}
 function renderSep(){
   fillSepPf();
   const c = sepCalc(), r = c.r;
@@ -4235,7 +4243,7 @@ function renderSep(){
       <li>Si el contrato no se firma en ese plazo por causa del cliente, el lote vuelve a quedar disponible; la devolución o aplicación del monto se rige por las políticas de la empresa que el asesor explica antes del pago.</li>
       <li>Pagos solo en cuentas a nombre de ${CO.name}. Precios en soles.</li>
       ${c.obs ? `<li>${esc(c.obs)}</li>` : ""}</ol></div>
-    <div class="doc-sign"><div><b>${esc(r.adv) || "&nbsp;"}</b>Asesor comercial · Vivaldi</div><div><b>${esc(r.name) || "&nbsp;"}</b>Cliente${r.dni ? " · DNI/CE " + esc(r.dni) : ""}</div></div>
+    <div class="sep-end"><div class="doc-sign"><div><b>${esc(r.adv) || "&nbsp;"}</b>Asesor comercial · Vivaldi</div><div><b>${esc(r.name) || "&nbsp;"}</b>Cliente${r.dni ? " · DNI/CE " + esc(r.dni) : ""}</div></div>${sepQr(r, c)}</div>
     <footer class="doc-foot"><span><b>${CO.name}</b> · RUC ${CO.ruc}</span><span>${CO.addr}</span><span>${CO.tel} · ${CO.mail}</span></footer>`;
 }
 function sepIssue(){
