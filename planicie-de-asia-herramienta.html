@@ -196,6 +196,7 @@ footer a{overflow-wrap:anywhere}
 /* internal-use banner */
 .mode{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--sun-soft);color:var(--ink);font-size:.86rem}
 .mode b{color:var(--warn)}
+.mode[hidden]{display:none}
 .mode .upd{font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
 
 /* nav: fade on the scroll edge so it's clear there's more */
@@ -339,6 +340,7 @@ details.fold[open] > summary{margin-bottom:16px}
 </style>
 </head>
 <body>
+<noscript><div style="background:#E8A93A;color:#1F1604;padding:12px 16px;font:600 15px/1.4 system-ui,sans-serif;text-align:center">Vista previa limitada: la vista previa de WhatsApp en iPhone no ejecuta esta herramienta. Ábrela en <b>Chrome</b> (Android o computadora) o desde su enlace.</div></noscript>
 
 <nav class="top" aria-label="Secciones">
   <div class="wrap">
@@ -362,6 +364,7 @@ details.fold[open] > summary{margin-bottom:16px}
 
 <div class="wrap">
 
+<div class="mode" id="noStore" role="alert" hidden style="background:#FBE3DF"><span><b style="color:var(--bad)">Este visor no guarda datos.</b> Los clientes y cambios se perderán al cerrar. Abre el archivo en Chrome o Safari para guardarlos.</span></div>
 <div class="mode" role="note"><span><b>Uso interno</b> · Herramienta de ventas para asesores Vivaldi. Arma la proforma, compara con la competencia y envía todo por WhatsApp.</span><span class="upd" id="updLbl">Datos: octubre 2026</span></div>
 
 <header class="hero">
@@ -441,7 +444,8 @@ details.fold[open] > summary{margin-bottom:16px}
       <div class="sched" id="pfSched"></div>
       <p class="note">Precio en soles. Financiamiento directo con Vivaldi sin intereses. Proforma referencial válida por 7 días; sujeta a disponibilidad del lote. Inmobiliaria &amp; Constructora Vivaldi S.A.C. · RUC 20604145458 · +51 922 549 723.</p>
       <div class="acts">
-        <button class="btn wa" type="button" id="pfWa">Enviar por WhatsApp</button>
+        <button class="btn wa" type="button" id="pfImg">Enviar como imagen</button>
+        <button class="btn wa" type="button" id="pfWa" style="background:transparent;color:#178A45;box-shadow:inset 0 0 0 1.5px #1FA855">Enviar como texto</button>
         <button class="btn pri" type="button" id="pfPrint">Imprimir / PDF</button>
         <button class="btn ghost" type="button" id="pfCopy">Copiar texto</button>
         <button class="btn ghost" type="button" id="pfSave">Guardar en Mis clientes</button>
@@ -719,7 +723,7 @@ details.fold[open] > summary{margin-bottom:16px}
         <li id="winTicket">Entrada desde S/ 29,000, la mitad del lote más barato de los condominios de Asia (S/ 57,000 por 90 m²).</li>
         <li>Cuotas en soles sin intereses: el precio que ves es el precio que pagas.</li>
         <li>A 2.5 km de Asia 109, donde el m² cuesta casi 10 veces más.</li>
-        <li>En octubre, con la campaña Loteween de Vivaldi, comprar lote te hace participar por una Land Cruiser Prado 0 km, 2 lotes de 120 m² o un viaje a Panamá.</li>
+        <li data-lw>En octubre, con la campaña Loteween de Vivaldi, comprar lote te hace participar por una Land Cruiser Prado 0 km, 2 lotes de 120 m² o un viaje a Panamá.</li>
         <li>Comprar en preventa permite capturar la valorización durante la obra.</li>
       </ul>
     </div>
@@ -849,6 +853,7 @@ const VIV = [
 const STORE = "vivaldi-planicie-datos-v1";
 const clone = o => JSON.parse(JSON.stringify(o));
 let STATE;
+try { localStorage.setItem("vv-test", "1"); localStorage.removeItem("vv-test"); } catch { document.getElementById("noStore").hidden = false; }
 try { STATE = JSON.parse(localStorage.getItem(STORE)) || clone(DEFAULTS); } catch { STATE = clone(DEFAULTS); }
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(STATE)); } catch {} };
 
@@ -884,8 +889,10 @@ async function copyText(txt){
 // opens WhatsApp with the text; to the client's number if one is given (Peru +51)
 function sendWa(txt, phone){
   const p = String(phone || "").replace(/\D/g, ""), num = p.length === 9 ? "51" + p : p;
-  open(`https://wa.me/${num}?text=${encodeURIComponent(txt)}`, "_blank", "noopener");
+  const url = `https://wa.me/${num}?text=${encodeURIComponent(txt)}`, w = window.open(url, "_blank");
+  if (w) w.opener = null; else location.href = url;
 }
+const LOTEWEEN_ON = (() => { const n = new Date(); return n.getMonth() === 9; })();
 
 // headline numbers that depend on the data
 function renderNumbers(){
@@ -1025,17 +1032,66 @@ function renderPf(){
 }
 function pfText(){
   const c = pfCalc();
-  return `*Proforma Vivaldi Inmobiliaria*${c.name ? `\nCliente: ${c.name}` : ""}\n` +
-    `Proyecto: ${c.v.name} (km ${c.v.km} Panamericana Sur)${c.lot ? `\nLote: ${c.lot}` : ""}\n` +
-    `Área: ${c.area} m²\nPrecio: ${fmt(c.price)}${c.disc ? `\nDescuento: −${fmt(c.disc)}\nPrecio final: ${fmt(c.net)}` : ""}\n` +
-    (c.term ? `Inicial (${c.iniP}%): ${fmt(c.down)}\n${c.term} cuotas de ${fmt(c.q)}${c.last !== c.q ? ` (última de ${fmt(c.last)})` : ""}, sin intereses\nPrimera cuota: ${dLong(c.sched[0].d)}`
+  return `🏖️ *Proforma Vivaldi Inmobiliaria*${c.name ? `\nCliente: ${c.name}` : ""}\n\n` +
+    `📍 *${c.v.name}* (km ${c.v.km} Panamericana Sur)${c.lot ? `\nLote: ${c.lot}` : ""}\n` +
+    `📐 Área: ${c.area} m²\n💰 Precio: ${fmt(c.price)}${c.disc ? `\nDescuento: −${fmt(c.disc)}\nPrecio final: ${fmt(c.net)}` : ""}\n` +
+    (c.term ? `Inicial (${c.iniP}%): ${fmt(c.down)}\n🗓️ *${c.term} cuotas de ${fmt(c.q)}*${c.last !== c.q ? ` (última de ${fmt(c.last)})` : ""}, sin intereses\nPrimera cuota: ${dLong(c.sched[0].d)}`
             : `Pago al contado: ${fmt(c.net)}`) +
-    `\n\nPrecio en soles, con título independizado. Proforma referencial válida por 7 días.${c.adv ? `\nAsesor: ${c.adv}` : ""}\nVivaldi Inmobiliaria · +51 922 549 723`;
+    `\n\n✅ En soles, sin intereses y con título independizado.\nProforma referencial válida por 7 días.${c.adv ? `\nAsesor: ${c.adv}` : ""}\nVivaldi Inmobiliaria · +51 922 549 723`;
 }
 ["Name","Phone","Lot","Area","Price","Disc","Ini","Term","Start","Adv"].forEach(k => pf(k).addEventListener("input", renderPf));
 pf("Wa").addEventListener("click", () => sendWa(pfText(), pf("Phone").value));
 pf("Copy").addEventListener("click", () => copyText(pfText()));
 pf("Print").addEventListener("click", () => print());
+// proforma as a PNG: looks clean in a WhatsApp chat and can't be edited by mistake
+async function pfImage(){
+  const c = pfCalc(); await document.fonts?.ready;
+  const W = 1080, P = 72, serif = '"Instrument Serif", Georgia, serif', sans = 'Manrope, "Segoe UI", system-ui, sans-serif';
+  const rows = [["Área del lote", `${c.area} m²`], ["Precio de lista", fmt(c.price)], ...(c.disc ? [["Descuento", "− " + fmt(c.disc)], ["Precio final", fmt(c.net)]] : []),
+    [c.term ? `Cuota inicial (${c.iniP}%)` : "Pago al contado", fmt(c.down)], ...(c.term ? [["Saldo a financiar", fmt(c.fin)], ["Intereses", "S/ 0"]] : [])];
+  const H = 560 + rows.length * 74 + (c.term ? 330 : 120) + 250;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
+  x.fillStyle = "#EDF2F1"; x.fillRect(0, 0, W, H);
+  // header band
+  x.fillStyle = "#0A2B31"; x.fillRect(0, 0, W, 300);
+  x.fillStyle = "#E8A93A"; x.font = `700 26px ${sans}`; x.fillText("VIVALDI INMOBILIARIA  ·  PROFORMA REFERENCIAL", P, 92);
+  x.fillStyle = "#fff"; x.font = `400 76px ${serif}`; x.fillText(c.v.name, P, 186, W - 2 * P);
+  x.fillStyle = "#BFE3E1"; x.font = `500 30px ${sans}`; x.fillText(`Km ${c.v.km} Panamericana Sur${c.lot ? "  ·  " + c.lot : ""}`, P, 246, W - 2 * P);
+  let y = 370;
+  x.fillStyle = "#53686C"; x.font = `500 28px ${sans}`;
+  x.fillText(dLong(today) + (c.name ? "  ·  Cliente: " + c.name : ""), P, y, W - 2 * P); y += 60;
+  // card with the price rows
+  const card = (top, h) => { x.fillStyle = "#fff"; x.beginPath(); x.roundRect(P - 24, top, W - 2 * P + 48, h, 28); x.fill(); };
+  card(y, rows.length * 74 + 40); y += 66;
+  rows.forEach(([k, v], i) => {
+    x.fillStyle = "#53686C"; x.font = `500 32px ${sans}`; x.textAlign = "left"; x.fillText(k, P, y);
+    x.fillStyle = "#0E2226"; x.font = `700 34px ${sans}`; x.textAlign = "right"; x.fillText(v, W - P, y); x.textAlign = "left";
+    if (i < rows.length - 1){ x.fillStyle = "#D3DFDD"; x.fillRect(P, y + 26, W - 2 * P, 2); }
+    y += 74;
+  });
+  y += 30;
+  // the number that matters
+  x.fillStyle = "#14707A"; x.beginPath(); x.roundRect(P - 24, y, W - 2 * P + 48, c.term ? 290 : 190, 28); x.fill();
+  x.fillStyle = "#D7ECEC"; x.font = `700 28px ${sans}`; x.fillText(c.term ? `CUOTA MENSUAL · ${c.term} MESES · 0% INTERÉS` : "TOTAL AL CONTADO", P, y + 66);
+  x.fillStyle = "#fff"; x.font = `400 120px ${serif}`; x.fillText(c.term ? fmt(c.q) : fmt(c.net), P, y + 172);
+  if (c.term){ const a = c.sched[0].d, b = c.sched[c.sched.length - 1].d;
+    x.fillStyle = "#D7ECEC"; x.font = `500 28px ${sans}`; x.fillText(`Del ${dShort(a)} al ${dShort(b)}${c.last !== c.q ? ` · última de ${fmt(c.last)}` : ""}`, P, y + 236, W - 2 * P); }
+  y += (c.term ? 290 : 190) + 70;
+  x.fillStyle = "#0E2226"; x.font = `600 28px ${sans}`;
+  ["✓ Precio en soles, sin riesgo cambiario", "✓ Título independizado e inscrito en SUNARP", "✓ Financiamiento directo, sin bancos"].forEach(t => { x.fillText(t, P, y); y += 46; });
+  y += 20; x.fillStyle = "#53686C"; x.font = `500 24px ${sans}`;
+  x.fillText(`Proforma referencial válida por 7 días, sujeta a disponibilidad.${c.adv ? "  Asesor: " + c.adv : ""}`, P, y, W - 2 * P);
+  x.fillText("Inmobiliaria & Constructora Vivaldi S.A.C. · WhatsApp +51 922 549 723", P, y + 38, W - 2 * P);
+  return new Promise(r => cv.toBlob(r, "image/png"));
+}
+pf("Img").addEventListener("click", async () => {
+  const b = await pfImage(), c = pfCalc(), name = `proforma-${(c.name || "vivaldi").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+  const file = new File([b], name, {type: "image/png"});
+  try { if (navigator.canShare?.({files: [file]})){ await navigator.share({files: [file], text: `Proforma ${c.v.name} · Vivaldi Inmobiliaria`}); return; } }
+  catch (e){ if (e.name === "AbortError") return; }
+  download(name, b, "image/png"); toast("Imagen descargada: adjúntala en el chat de WhatsApp");
+});
+
 
 /* ---------- objections ---------- */
 function renderObj(){
@@ -1201,6 +1257,7 @@ const TPL = [
   ["Promoción Loteween", c => `Hola ${c.first}, este mes con Loteween, al comprar o separar tu lote en Vivaldi participas por una Land Cruiser Prado 0 km, 2 lotes de 120 m² o un viaje a Panamá. ¿Agendamos tu visita?`],
   ["Gracias por tu compra", c => `${c.first}, ¡bienvenido a la familia Vivaldi! Gracias por confiar en nosotros para tu lote en ${c.proj}. Cualquier consulta sobre tu contrato o tus cuotas, escríbeme por aquí.`],
 ];
+if (!LOTEWEEN_ON){ TPL.splice(TPL.findIndex(t => t[0] === "Promoción Loteween"), 1); document.querySelector("li[data-lw]")?.remove(); }
 function fillTplClients(){
   const sel = $("tplClient"), cur = sel.value;
   sel.innerHTML = `<option value="">— Sin cliente (texto general) —</option>` + CLIENTS.filter(isActive).map(c => `<option value="${c.id}">${esc(c.name)} · ${esc(c.proj)}</option>`).join("");
