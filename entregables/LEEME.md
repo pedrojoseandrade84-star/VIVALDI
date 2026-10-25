@@ -2,7 +2,7 @@
 
 | Carpeta | Archivo | Para qué |
 |---|---|---|
-| web/ | Vivaldi-web-whatsapp.html (9.8 MB) | Enviar por WhatsApp (bajo 10 MB) |
+| web/ | Vivaldi-web-whatsapp.html (8.9 MB) | Enviar por WhatsApp (bajo 9 MB) |
 | web/ | Vivaldi-web-final.html (21.5 MB) | Máxima calidad: publicar o presentar en computadora |
 | software/ | planicie-herramienta-whatsapp.html (1.7 MB) | Enviar por WhatsApp a los asesores |
 | software/ | planicie-herramienta-final.html (2.8 MB) | Máxima calidad |
