@@ -10,6 +10,8 @@
 | propuesta/ | investigacion-mercado-y-diagnostico.md | Fuentes de precios y diagnóstico |
 | propuesta/fuente-editable/ | propuesta-*.html + style.css | Para editar textos o precios y regenerar el PDF |
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso para asesores y jefatura |
+| presentacion/ | Presentacion-Vivaldi.pdf | 9 diapositivas 16:9 para la reunión |
+| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf + contrato-editable.html | Modelo de contrato (revisar con abogado antes de firmar) |
 
 ## Herramienta de ventas: 12 módulos
 Inventario de lotes · Proforma (PDF, imagen, Excel) · Constancia de separación · Cobranza · Panel comercial y metas · Reporte gerencial · Registro de proformas · Mis clientes · Mensajes · Objeciones · Análisis de competencia · Datos y respaldo.
