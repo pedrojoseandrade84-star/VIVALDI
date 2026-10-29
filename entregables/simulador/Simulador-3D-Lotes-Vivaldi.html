@@ -2950,6 +2950,22 @@ canvas.addEventListener("pointerdown", stopTour); $("#modes").addEventListener("
 })();
 const PROG0 = {pisos: 2, dorm: 3, banos: 2, piscina: false, cochera: true, terraza: true, servicio: false, estilo: "playa", negocio: "", amb: {}};
 $("#examples").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; $("#aiText").value = b.dataset.t; $("#aiText").focus(); });
+/* doble toque: acercarse al punto tocado (en Exterior, Entorno, Corte y Rayos X) */
+(() => {
+  const ray = new THREE.Raycaster(), v = new THREE.Vector2(); let lastTap = 0, lastXY = null;
+  const focus = (cx, cy) => {
+    if (!["ext", "site", "cut", "xray"].includes(state.mode)) return;
+    const r = canvas.getBoundingClientRect(); v.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); ray.setFromCamera(v, cam);
+    const hit = ray.intersectObjects(root.children, true).find(h => h.object.visible && h.object.isMesh && h.distance > 0.5 && (!h.object.material.clippingPlanes || !h.object.material.clippingPlanes.length || h.point.y < cutPlane.constant + 0.01));
+    if (!hit) return;
+    const dir = cam.position.clone().sub(controls.target).normalize(), dist = clamp(cam.position.distanceTo(controls.target) * 0.45, 6, 40);
+    if (state.mode === "site") { state.mode = "ext"; applyMode(false); }
+    flyTo({pos: hit.point.clone().add(dir.multiplyScalar(dist)), tgt: hit.point.clone()}, 1.1);
+  };
+  canvas.addEventListener("dblclick", e => focus(e.clientX, e.clientY));
+  canvas.addEventListener("pointerup", e => { if (e.pointerType !== "touch") return; const now = performance.now(); if (now - lastTap < 320 && lastXY && Math.hypot(e.clientX - lastXY[0], e.clientY - lastXY[1]) < 30) { focus(e.clientX, e.clientY); lastTap = 0; } else { lastTap = now; lastXY = [e.clientX, e.clientY]; } });
+})();
+setTimeout(() => { if (!store.get("viv_tip")) { toast("Arrastra para girar · Dos dedos para acercar · Doble toque para ir a un punto"); store.set("viv_tip", "1"); } }, 6000);   // ayuda la primera vez
 /* ---------------- ficha para el cliente ---------------- */
 $("#ficha").addEventListener("click", async () => {
   const d = design, m = d.metrics, proj = PROJ.find(p => p.id === state.proj);
