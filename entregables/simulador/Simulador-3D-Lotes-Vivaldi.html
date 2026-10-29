@@ -2746,19 +2746,20 @@ function localParse(t) {
   const dorm = g(new RegExp(W + "\\s*(?:dormitorios?|cuartos?|habitaciones?|rec[aá]maras?)")); if (dorm) out.dormitorios = dorm;
   const ban = g(new RegExp(W + "\\s*baños?")); if (ban) out.banos = ban;
   const pis = g(new RegExp(W + "\\s*(?:pisos?|plantas?|niveles?)")); if (pis) out.pisos = pis;
+  if (/(?:una )?sola planta|un solo (?:piso|nivel)|de una planta|todo en (?:un|el primer) piso/.test(t)) out.pisos = 1;
   if (/piscina|pileta|alberca/.test(t)) out.piscina = !/sin piscina|no.{0,12}piscina/.test(t);
-  if (/cochera|estacionamiento|garaje|carro|auto|camioneta/.test(t)) out.cochera = !/sin cochera/.test(t);
+  if (/cochera|estacionamiento|garaje|carro|auto|camioneta/.test(t)) out.cochera = !/sin cochera|no .{0,18}(?:cochera|estacionamiento|garaje)/.test(t);
   if (/terraza|balc[oó]n|azotea/.test(t)) out.terraza = true;
   if (/servicio|empleada|nana/.test(t)) out.cuarto_servicio = true;
   if (/bodega|minimarket|abarrotes|tiendita|tienda de/.test(t)) out.uso = "bodega";
   else if (/restaurant|cevicher|poller[ií]a|cafeter[ií]a|comida|men[uú]|juguer[ií]a|helader[ií]a/.test(t)) out.uso = "restaurante";
-  else if (/hospedaje|hostal|hotel|airbnb|habitaciones para (?:alquilar|turistas)|alquiler por noche/.test(t)) out.uso = "hospedaje";
+  else if (/hospedaje|hostal|hotel|airbnb|habitaciones para (?:alquilar|turistas)|alquiler por noche|por cuartos|por habitaciones|a turistas/.test(t)) out.uso = "hospedaje";
   else if (/local comercial|negocio|oficina|consultorio|farmacia|ferreter[ií]a|peluquer[ií]a|lavander[ií]a/.test(t)) out.uso = "comercio";
   else if (/alquil|rentar|renta|departamentos/.test(t)) out.uso = "renta";
   else if (/vivir|vivienda|permanente|todo el a[ñn]o|mudarnos/.test(t)) out.uso = "vivienda";
-  else if (/playa|verano|vacaciones|fin de semana|descanso/.test(t)) out.uso = "playa";
+  else if (/playa|verano|vacaciones|fines? de semana|descanso/.test(t)) out.uso = "playa";
   if (/m[aá]ximo|aprovechar todo|lo m[aá]s grande|todo el terreno|lo m[aá]s posible/.test(t)) out.opcion = "maxima"; else if (/econ[oó]mic|barat|peque[ñn]|sencill|b[aá]sic|poco presupuesto/.test(t)) out.opcion = "compacta";
-  const fam = g(new RegExp("familia de " + W)); if (fam && !out.dormitorios) out.dormitorios = clamp(Math.ceil(fam / 2) + (fam > 4 ? 1 : 0), 1, 6);
+  const fam = g(new RegExp("(?:familia de|somos) " + W)); if (fam && !out.dormitorios) out.dormitorios = clamp(Math.ceil(fam / 2) + (fam > 4 ? 1 : 0), 1, 6);
   if (/niñ|hij|nietos|bebé|chicos/.test(t)) out.amb.push("ninos");
   if (/perro|gato|mascota|engreído/.test(t)) out.amb.push("mascota");
   if (/parrilla|bbq|asado|anticucho/.test(t)) out.amb.push("parrilla");
@@ -3006,7 +3007,7 @@ function wrap(g, t, x, y, w, lh) { const ws = t.split(" "); let line = ""; ws.fo
 /* ---------------- inicio ---------------- */
 syncForm(); regen();
 requestAnimationFrame(frame);
-window.__sim = {state, get design() { return design; }, regen, applyMode, cam, controls, renderer, generate, syncForm, scene, get walk() { return walk; }, get stairs() { return stairs; }, get walls() { return walls; }, blocked, floorAt};
+window.__sim = {state, get design() { return design; }, regen, applyMode, cam, controls, renderer, generate, syncForm, scene, get walk() { return walk; }, get stairs() { return stairs; }, get walls() { return walls; }, blocked, floorAt, localParse};
 })();
 </script>
 </body></html>
