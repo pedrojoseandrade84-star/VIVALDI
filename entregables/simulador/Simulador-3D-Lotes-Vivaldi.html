@@ -106,6 +106,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
 #loading span{font-size:13px;color:var(--mut)}#loading[hidden]{display:none}#loading.err{background:#fff}
 #tourBtn.on{background:var(--nv);color:#fff}
 table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-child{text-align:center;font-weight:600}table.rooms.cmp td.on{font-weight:800}.cmp td:first-child{text-align:left;color:var(--mut)}.cmp td.on{background:#E3F0FA;font-weight:800}.cmp button{font:800 12px Manrope,sans-serif;border:0;background:none;color:var(--nv);padding:4px 2px;cursor:pointer;min-height:32px}
+#toast{position:absolute;left:50%;top:118px;transform:translateX(-50%);background:rgba(10,56,86,.94);color:#fff;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;z-index:4;max-width:calc(100% - 32px);text-align:center;transition:opacity .5s;box-shadow:0 6px 18px rgba(0,0,0,.2)}#toast.out{opacity:0}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -142,6 +143,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 </aside>
 <section id="view">
   <canvas id="c" aria-label="Vista 3D de la construcción en el lote"></canvas>
+  <div id="toast" hidden role="status"></div>
   <div id="loading"><b>Preparando la vista 3D…</b><span>Cargando el entorno del condominio</span></div>
   <div class="bar top">
     <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
@@ -2857,20 +2859,27 @@ function applyParams(o) {
 $("#aiGo").addEventListener("click", async () => {
   const t = $("#aiText").value.trim(), out = $("#aiOut"), btn = $("#aiGo");
   if (!t) { out.innerHTML = "<p>Escribe o dicta lo que el cliente quiere.</p>"; return; }
-  btn.disabled = true; btn.textContent = "Preparando la propuesta…";
-  out.innerHTML = `<p class="small">Analizando lo que cuenta el cliente…</p>`;
-  let res = null, err = null;
-  try { res = await askAssistant(t, name => { out.innerHTML = `<p class="small">Analizando lo que cuenta el cliente (${name})…</p>`; }); } catch (e) { err = e.message; }
-  const local = localParse(t);
-  if (res) { const amb = [...new Set([...(res.ambientacion || []), ...(local.amb || [])])]; res = {...local, ...Object.fromEntries(Object.entries(res).filter(([, v]) => v !== undefined)), ambientacion: amb}; }   // lo que el servicio no captó lo completa la lectura local
-  applyParams(res || local); syncForm(); regen();
-  const tags = Object.keys(state.prog.amb || {}).map(k => `<span class="chip">${AMB[k]}</span>`).join("");
-  out.innerHTML = res
-    ? `<p class="tag">Propuesta para el cliente</p><p>${esc(res.explicacion)}</p>${tags ? `<p>${tags}</p>` : ""}${res.recomendaciones && res.recomendaciones.length ? `<ul>${res.recomendaciones.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<p class="small">Analizado en línea (${esc(res.via)}).</p>`
-    : `<p class="tag">Propuesta para el cliente</p><p>${summary()}</p>${tags ? `<p>${tags}</p>` : ""}<p class="small">${navigator.onLine === false ? "Sin internet: la propuesta se armó con la lectura automática del equipo." : `Los servicios en línea no respondieron esta vez (${esc(err || "")}); la propuesta se armó con la lectura automática. Puedes intentarlo de nuevo en un momento.`}</p>`;
+  btn.disabled = true; btn.textContent = "Afinando la propuesta…";
+  const local = localParse(t);   // 1) propuesta inmediata con la lectura del equipo
+  applyParams(local); syncForm(); regen();
+  const tagsHtml = () => { const tg = Object.keys(state.prog.amb || {}).map(k => `<span class="chip">${AMB[k]}</span>`).join(""); return tg ? `<p>${tg}</p>` : ""; };
+  out.innerHTML = `<p class="tag">Propuesta preliminar</p><p>${summary()}</p>${tagsHtml()}<p class="small">Afinando con el asistente en línea…</p>`;
+  document.body.dataset.tab = "view"; $$(".tabs button").forEach(x => x.classList.toggle("on", x.dataset.t === "view")); setTimeout(resize, 50);
+  toast("Propuesta lista. Afinando los detalles…");
+  let res = null, err = null;   // 2) el asistente en línea la afina (puede tardar unos segundos)
+  try { res = await askAssistant(t, name => { out.querySelector(".small:last-child").textContent = `Afinando con el asistente en línea (${name})…`; }); } catch (e) { err = e.message; }
+  if (res) {
+    const amb = [...new Set([...(res.ambientacion || []), ...(local.amb || [])])];
+    res = {...local, ...Object.fromEntries(Object.entries(res).filter(([, v]) => v !== undefined)), ambientacion: amb};   // lo que el servicio no captó lo completa la lectura local
+    applyParams(res); syncForm(); regen(true);
+    out.innerHTML = `<p class="tag">Propuesta para el cliente</p><p>${esc(res.explicacion)}</p>${tagsHtml()}${res.recomendaciones && res.recomendaciones.length ? `<ul>${res.recomendaciones.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<p class="small">Analizado en línea (${esc(res.via)}).</p>`;
+    toast("Propuesta afinada ✓ La explicación para el cliente está en Configurar.");
+  } else {
+    out.innerHTML = `<p class="tag">Propuesta para el cliente</p><p>${summary()}</p>${tagsHtml()}<p class="small">${navigator.onLine === false ? "Sin internet: la propuesta se armó con la lectura automática del equipo." : `Los servicios en línea no respondieron esta vez (${esc(err || "")}); la propuesta se armó con la lectura automática. Puedes intentarlo de nuevo en un momento.`}</p>`;
+  }
   btn.disabled = false; btn.textContent = "Diseñar propuesta";
-  document.body.dataset.tab = "view"; $$(".tabs button").forEach(x => x.classList.toggle("on", x.dataset.t === "view"));
 });
+function toast(msg) { const el = $("#toast"); el.textContent = msg; el.hidden = false; el.classList.remove("out"); clearTimeout(toast.t); toast.t = setTimeout(() => { el.classList.add("out"); setTimeout(() => el.hidden = true, 500); }, 4200); }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 function summary() {
   const p = state.prog, biz = BIZ.includes(p.estilo), parts = [`${p.pisos} piso${p.pisos > 1 ? "s" : ""}`];
