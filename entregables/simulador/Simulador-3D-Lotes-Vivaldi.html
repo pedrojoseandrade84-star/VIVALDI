@@ -1717,10 +1717,16 @@ sun.castShadow = true; sun.shadow.mapSize.set(SH, SH); sun.shadow.radius = 3; su
 Object.assign(sun.shadow.camera, {left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 160});
 scene.add(sun, sun.target);
 const sky = new THREE.Sky();   // solo para los reflejos; el fondo visible es un cielo degradado más natural
-const SKY_U = {top: {value: new THREE.Color()}, hor: {value: new THREE.Color()}, glow: {value: new THREE.Color()}, sunDir: {value: new THREE.Vector3()}};
+const SKY_U = {top: {value: new THREE.Color()}, hor: {value: new THREE.Color()}, glow: {value: new THREE.Color()}, cloud: {value: new THREE.Color()}, sunDir: {value: new THREE.Vector3()}};
 const skyDome = new THREE.Mesh(new THREE.SphereGeometry(2600, 32, 16), new THREE.ShaderMaterial({uniforms: SKY_U, side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
   vertexShader: "varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position + cameraPosition, 1.0); gl_Position.z = gl_Position.w; }",
-  fragmentShader: "uniform vec3 top, hor, glow, sunDir; varying vec3 vD; void main(){ float h = max(vD.y, 0.0); vec3 c = mix(hor, top, pow(h, 0.55)); float s = max(dot(normalize(vD), normalize(sunDir)), 0.0); c += glow * (pow(s, 6.0) * 0.35 + pow(s, 300.0) * 1.2) * (1.0 - h * 0.6); if (vD.y < 0.0) c = hor; gl_FragColor = vec4(c, 1.0); }"}));
+  fragmentShader: "uniform vec3 top, hor, glow, sunDir, cloud; varying vec3 vD;" +
+    "float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }" +
+    "float ns(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(hs(i), hs(i + vec2(1, 0)), f.x), mix(hs(i + vec2(0, 1)), hs(i + vec2(1, 1)), f.x), f.y); }" +
+    "float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * ns(p); p *= 2.03; a *= 0.5; } return v; }" +
+    "void main(){ float h = max(vD.y, 0.0); vec3 c = mix(hor, top, pow(h, 0.55)); float s = max(dot(normalize(vD), normalize(sunDir)), 0.0); c += glow * (pow(s, 6.0) * 0.35 + pow(s, 300.0) * 1.2) * (1.0 - h * 0.6);" +
+    " if (vD.y > 0.01) { vec2 uv = vD.xz / (vD.y + 0.12) * 1.6; float cl = smoothstep(0.52, 0.78, fbm(uv + vec2(3.0, 7.0))) * smoothstep(0.01, 0.12, vD.y); c = mix(c, cloud + glow * pow(s, 4.0) * 0.4, cl * 0.75); }" +
+    " if (vD.y < 0.0) c = hor; gl_FragColor = vec4(c, 1.0); }"}));
 skyDome.renderOrder = -1; skyDome.frustumCulled = false; scene.add(skyDome);
 const roomLight = new THREE.PointLight(0xfff0dc, 0, 10, 1.6); scene.add(roomLight);   // luz de ambiente interior al recorrer la casa
 function updateShadow() {
@@ -1748,7 +1754,8 @@ function setTime() {   // día o atardecer: sol, cielo, reflejos y luces encendi
   sun.color.set(tarde ? 0xffa45c : 0xffe9cc); sun.intensity = tarde ? 1.5 : 2.9;
   hemi.intensity = tarde ? 0.22 : 0.2; hemi.color.set(tarde ? 0xffc29a : 0xcfe3f5); hemi.groundColor.set(tarde ? 0x8a6a55 : 0xb89c72);
   renderer.toneMappingExposure = tarde ? 0.62 : 0.5;
-  SKY_U.top.value.set(tarde ? 0x34507e : 0x2f74c0); SKY_U.hor.value.set(tarde ? 0xf3b27a : 0xc9def0); SKY_U.glow.value.set(tarde ? 0xffb066 : 0xfff3d6);
+  SKY_U.top.value.set(tarde ? 0x34507e : 0x2f74c0); SKY_U.hor.value.set(tarde ? 0xf3b27a : 0xc9def0); SKY_U.glow.value.set(tarde ? 0xffb066 : 0xfff3d6); SKY_U.cloud.value.set(tarde ? 0xe89a78 : 0xf6f8fb);
+  if (groups.noche) groups.noche.visible = tarde;
   scene.fog.color.set(tarde ? 0xe9b386 : 0xc9def0);
   if (envRT) envRT.dispose();
   const s2 = ENV_SCENE, sk = ENV_SKY; Object.keys(u).forEach(k => sk.material.uniforms[k].value = u[k].value);
@@ -1792,6 +1799,8 @@ const AO_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x000000, transp
 const PATCH_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x9a7a4a, transparent: true, opacity: 0.06, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4});
 const AO_CACHE = {};
 const aoMat = op => !op ? AO_MAT : AO_CACHE[op] || (AO_CACHE[op] = Object.assign(AO_MAT.clone(), {opacity: op}));
+const GLOW_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0xffb35a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -10});
+function glow(x, z, r, layer = "noche") { const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2), GLOW_MAT); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.03, z); m.renderOrder = 2; return add(m, layer); }   // charco de luz de un poste al atardecer
 function aoBlob(x, z, w, d, layer, op, y = 0.015) {   // x,z = centro
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), aoMat(op)); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.renderOrder = 1; return add(m, layer);
 }
@@ -2053,7 +2062,7 @@ function place(t, sub, x, y, z, main) {   // etiqueta de lugar: tamaño fijo en 
   if (main) { const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, y - 0.5, 6), new THREE.MeshBasicMaterial({color: 0x0A3856})); pin.position.set(x, (y - 0.5) / 2, z); add(pin, "lugares"); }
   return s;
 }
-function streetLamp(x, z) { cyl(0.06, 4.2, MAT.dark, x, 0, z, "entorno", 8); box(0.9, 0.08, 0.12, MAT.dark, x - 0.45, 4.1, z - 0.06, "entorno"); ball(0.13, MAT.bulb, x - 0.4, 4.0, z, "entorno", 1); }
+function streetLamp(x, z) { cyl(0.06, 4.2, MAT.dark, x, 0, z, "entorno", 8); box(0.9, 0.08, 0.12, MAT.dark, x - 0.45, 4.1, z - 0.06, "entorno"); ball(0.13, MAT.bulb, x - 0.4, 4.0, z, "entorno", 1); glow(x - 0.4, z - 1.2, 3.2); }
 const CAR_GEO = (() => {   // perfil lateral de una camioneta tipo SUV, extruido a lo ancho
   const sh = (pts) => { const p = new THREE.Shape(); pts.forEach(([a, b], k) => k ? p.lineTo(a, b) : p.moveTo(a, b)); return p; };
   const ext = (shape, w) => { const g = new THREE.ExtrudeGeometry(shape, {depth: w, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 2, steps: 1}); g.translate(0, 0, -w / 2); g.rotateY(-Math.PI / 2); return g; };
@@ -2099,6 +2108,7 @@ function neighborLot(lx, fz, W, D, dir, rr, P) {
       if (style === 2 || (f === 0 && rr() < 0.5)) for (let k = 0; k < 7; k++) box(0.07, H - 0.3, 0.07, MAT.wood, lx + W - 1.9 + k * 0.22, f * H + 0.15, fzF + out * 0.04, L, {cast: false});
     }
     box(1.0, 2.2, 0.06, MAT.wood, lx + W - 1.7, 0, wz - 0.03, L, {cast: false});
+    ball(0.08, MAT.bulb, lx + W - 1.95, 2.3, wz + out * 0.08, L); glow(lx + W - 1.2, wz + out * 1.2, 1.6);
     const bz = dir > 0 ? fz + setb + dep + 0.01 : fz - setb - dep - 0.06;   // fachada posterior y techo con tanque y terma solar
     for (let f = 0; f < floors; f++) box(Math.min(W - 2, 2.4), 1.2, 0.05, MAT.neighWin, lx + 1, f * H + 0.9, f ? bz - out * 1 : bz, L, {cast: false});
     plane(lx + 0.15, Math.min(zAt(setb - (floors > 1 ? (style === 0 ? 0.8 : 0.4) : 0), 0), zAt(setb + dep - (floors > 1 ? 1 : 0), setb + dep - (floors > 1 ? 1 : 0))), W - 0.3, dep - (floors > 1 ? 1 : 0) + (floors > 1 ? (style === 0 ? 0.8 : 0.4) : 0), top + 0.012, MAT.roof, L, 3);
@@ -2469,7 +2479,7 @@ function buildInstalls(d, h) {
 /* ---------------- capas y modos ---------------- */
 function applyLayers() {
   const L = state.layers, xr = state.mode === "xray";
-  const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true, jardin: state.mode !== "cut" && state.mode !== "plan"};
+  const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true, jardin: state.mode !== "cut" && state.mode !== "plan", noche: state.time === "tarde"};
   if (["walk", "ext", "site"].includes(state.mode)) ["elec", "agua", "caliente", "desague"].forEach(k => vis[k] = false);   // las tuberías van empotradas: se ven en Corte, Rayos X y Plano   // al recorrer, las tuberías quedan dentro de los muros: se ven en Rayos X y Corte
   Object.entries(groups).forEach(([k, g]) => g.visible = vis[k] !== false);
   ["wall", "wallExt", "slab", "accent", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "steel", "dark", "stone"].forEach(k => {
