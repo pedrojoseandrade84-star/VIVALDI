@@ -109,6 +109,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 #toast{position:absolute;left:50%;top:118px;transform:translateX(-50%);background:rgba(10,56,86,.94);color:#fff;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;z-index:4;max-width:calc(100% - 32px);text-align:center;transition:opacity .5s;box-shadow:0 6px 18px rgba(0,0,0,.2)}#toast.out{opacity:0}
 .aiRow{display:flex;gap:8px}.aiRow #aiGo{flex:1}#micBtn{flex:0 0 auto;padding:0 14px}#micBtn.rec{background:#C62828;color:#fff;border-color:#C62828}
 .ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.ex span{font-size:12px;color:var(--mut);font-weight:700}.ex button{font:700 12px Manrope,sans-serif;border:1px solid var(--line);background:#fff;color:var(--nv);border-radius:999px;padding:6px 10px;min-height:32px;cursor:pointer}
+#scaleBar{position:absolute;right:14px;top:122px;background:rgba(255,255,255,.92);border-radius:10px;padding:6px 10px;font:800 12px Manrope,sans-serif;color:var(--nv);display:flex;flex-direction:column;align-items:flex-start;gap:4px;z-index:3}#scaleBar i{display:block;height:6px;border:2px solid var(--nv);border-top:0;background:repeating-linear-gradient(90deg,var(--nv) 0 50%,#fff 50% 100%)}#scaleBar[hidden]{display:none}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -147,6 +148,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 <section id="view">
   <canvas id="c" aria-label="Vista 3D de la construcción en el lote"></canvas>
   <div id="toast" hidden role="status"></div>
+  <div id="scaleBar" hidden><i></i><span></span></div>
   <div id="loading"><b>Preparando la vista 3D…</b><span>Cargando el entorno del condominio</span></div>
   <div class="bar top">
     <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
@@ -2515,7 +2517,7 @@ function applyLayers() {
     const m = MAT[k], t = xr ? (k.startsWith("floor") ? 0.35 : 0.12) : 1;
     m.transparent = xr; m.opacity = t; m.depthWrite = !xr; m.needsUpdate = true;
   });
-  const f = state.mode === "plan" ? 2.3 : state.mode === "walk" ? 0.35 : 1.15;
+  const f = state.mode === "plan" ? 2.3 * clamp(canvas.clientWidth / 900, 0.72, 1) : state.mode === "walk" ? 0.35 : 1.15;
   if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) s.scale.copy(s.userData.base).multiplyScalar(f); if (state.mode !== "walk") s.visible = true; });
 }
 let walk = null, tween = null;
@@ -2535,7 +2537,7 @@ canvas.addEventListener("pointerdown", () => { tween = null; });
 function applyMode(rebuild) {
   const m = state.mode, d = design, h = state.norm.h;
   cutPlane.constant = m === "cut" || m === "plan" ? state.floor * h + state.cut : 1000;
-  $("#cutRow").hidden = m !== "cut";
+  $("#cutRow").hidden = m !== "cut"; $("#scaleBar").hidden = m !== "plan";
   $("#joy").hidden = m !== "walk"; $("#walkHelp").hidden = m !== "walk";
   if (m === "walk") { const h = $("#walkHelp"); h.classList.remove("fade"); clearTimeout(applyMode.th); applyMode.th = setTimeout(() => h.classList.add("fade"), 6000); }
   controls.enabled = m !== "walk" && m !== "plan";
@@ -2547,6 +2549,8 @@ function applyMode(rebuild) {
     const W = d.W, D = d.D, c = canvas.clientWidth / Math.max(1, canvas.clientHeight), span = Math.max(D / 2 + 2.5, (W / 2 + 2.5) / c);
     ortho.left = -span * c; ortho.right = span * c; ortho.top = span; ortho.bottom = -span; ortho.updateProjectionMatrix();
     ortho.position.set(W / 2, 60, D / 2); ortho.up.set(0, 0, 1); ortho.lookAt(W / 2, 0, D / 2);
+    const ppm = canvas.clientHeight / (2 * span), m = ppm * 5 > 160 ? 2 : 5;   // escala gráfica: 2 o 5 metros
+    $("#scaleBar i").style.width = Math.round(ppm * m) + "px"; $("#scaleBar span").textContent = `${m} m`;
   } else if (m === "site") {   // vista del condominio: dónde está el lote, el club, la playa y la carretera
     flyTo(siteView(d), 1.6);
   } else if (rebuild || m === "ext") {
