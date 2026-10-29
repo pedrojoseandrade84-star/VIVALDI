@@ -1802,6 +1802,7 @@ const AO_TEX = (() => {   // sombra de contacto suave bajo construcciones, autos
 })();
 const AO_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8});
 const PATCH_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x9a7a4a, transparent: true, opacity: 0.06, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4});
+const PATCH_GREEN = Object.assign(PATCH_MAT.clone(), {color: new THREE.Color(0x2f4a1c), opacity: 0.12});
 const AO_CACHE = {};
 const aoMat = op => !op ? AO_MAT : AO_CACHE[op] || (AO_CACHE[op] = Object.assign(AO_MAT.clone(), {opacity: op}));
 const GLOW_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0xffb35a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -10});
@@ -2043,7 +2044,7 @@ function buildSite(d) {
   for (let i = 0; i < 14; i++) { const r = 60 + rr() * 90, m = new THREE.Mesh(new THREE.ConeGeometry(r, 30 + rr() * 55, 7, 1), i % 2 ? hill : hill2); m.position.set(-700 + i * 105 + rr() * 40, 10, -330 - rr() * 260); m.rotation.y = rr() * 3; add(m, "entorno"); }
   // dunas suaves, manchas de arena, huarangos y arbustos en los alrededores
   for (let i = 0; i < 40; i++) bush(-260 + rr() * 520, -60 - rr() * 220, 0.4 + rr() * 0.6, "entorno");
-  for (let i = 0; i < 70; i++) { const a = 30 + rr() * 110, m = new THREE.Mesh(new THREE.PlaneGeometry(a, a * (0.4 + rr() * 0.5)), PATCH_MAT); m.rotation.set(-Math.PI / 2, 0, rr() * 3); m.position.set(-450 + rr() * 900, -0.1, -420 + rr() * 820); add(m, "entorno"); }
+  for (let i = 0; i < 70; i++) { const a = 30 + rr() * 110, m = new THREE.Mesh(new THREE.PlaneGeometry(a, a * (0.4 + rr() * 0.5)), verde ? PATCH_GREEN : PATCH_MAT); m.rotation.set(-Math.PI / 2, 0, rr() * 3); m.position.set(-450 + rr() * 900, -0.1, -420 + rr() * 820); add(m, "entorno"); }
   for (let i = 0; i < 26; i++) { const tx = x0 - 30 + rr() * (x1 - x0 + 60), tz = rr() < 0.5 ? zF - 6 - rr() * 40 : zB + 6 + rr() * Math.max(10, (P.sea || 60) - 50); tree(tx, tz, 1 + rr() * 0.8, "entorno", rr); }
   for (let x = x0 + 5; x < x1 - 3; x += 9 + rr() * 5) tree(x, zB + 2.2, 0.8 + rr() * 0.4, "entorno", rr);
   if (verde) {   // arboledas y chacras alrededor del condominio
