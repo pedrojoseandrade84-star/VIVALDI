@@ -1708,6 +1708,7 @@ function adaptQuality(dt) {   // si el equipo va lento (celulares antiguos), baj
   perf.n++; perf.t += dt; if (perf.n < 90) return;
   const avg = perf.t / perf.n; perf.n = perf.t = 0;
   if (avg > 0.045 && PR > 1.25) { PR = Math.max(1.25, PR - 0.35); renderer.setPixelRatio(PR); }
+  else if (avg > 0.07 && PR <= 1.25 && !perf.low) { perf.low = true; renderer.shadowMap.type = THREE.PCFShadowMap; sun.shadow.mapSize.set(1024, 1024); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => m.needsUpdate = true); }); }   // equipo muy lento: sombras simples
 }
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputEncoding = THREE.sRGBEncoding; renderer.localClippingEnabled = true;
@@ -2591,11 +2592,18 @@ function floorAt(x, z, feet) {
   const lv = clamp(Math.round(feet / h), 0, design.pisos - 1); return lv * h;
 }
 function stepWalk(dt) {
-  const f = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) - joy.y, s = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
+  let f = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) - joy.y, s = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
+  if (f || s) walk.goal = null;
+  if (walk.goal) {   // caminata automática hacia el punto tocado
+    const gx = walk.goal.x - walk.x, gz = walk.goal.z - walk.z, gl = Math.hypot(gx, gz);
+    if (gl < 0.25) walk.goal = null; else { const want = Math.atan2(-gx, -gz); let dy = want - walk.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); walk.yaw += dy * Math.min(1, dt * 5); f = Math.abs(dy) < 0.6 ? 1 : 0.2; }
+  }
+  const px0 = walk.x, pz0 = walk.z;
   const sp = 1.6 * dt, dx = (-Math.sin(walk.yaw) * f + Math.cos(walk.yaw) * s) * sp, dz = (-Math.cos(walk.yaw) * f - Math.sin(walk.yaw) * s) * sp;
   if (!blocked(walk.x + dx, walk.z, walk.y)) walk.x += dx;
   if (!blocked(walk.x, walk.z + dz, walk.y)) walk.z += dz;
   walk.x = clamp(walk.x, 0.2, design.W - 0.2); walk.z = clamp(walk.z, -3, design.D - 0.2);
+  if (walk.goal && Math.hypot(walk.x - px0, walk.z - pz0) < 1e-4 && f) walk.goal = null;   // si un muro lo impide, se detiene
   walk.y = floorAt(walk.x, walk.z, walk.y);
   const lv = Math.round(walk.y / state.norm.h); if (lv !== state.floor && Math.abs(walk.y - lv * state.norm.h) < 0.05) { state.floor = lv; $$("#floors button").forEach(b => b.classList.toggle("on", +b.dataset.f === lv)); }
   cam.position.set(walk.x, walk.y + 1.6, walk.z);
@@ -2954,8 +2962,13 @@ $("#examples").addEventListener("click", e => { const b = e.target.closest("butt
 (() => {
   const ray = new THREE.Raycaster(), v = new THREE.Vector2(); let lastTap = 0, lastXY = null;
   const focus = (cx, cy) => {
-    if (!["ext", "site", "cut", "xray"].includes(state.mode)) return;
     const r = canvas.getBoundingClientRect(); v.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); ray.setFromCamera(v, cam);
+    if (state.mode === "walk" && walk) {   // al recorrer: caminar hasta el punto del piso tocado
+      const h = ray.intersectObjects(root.children, true).find(h => h.object.visible && h.object.isMesh && h.distance > 0.3);
+      if (h && Math.abs(h.point.y - walk.y) < 0.4 && h.distance < 15) walk.goal = {x: h.point.x, z: h.point.z};
+      return;
+    }
+    if (!["ext", "site", "cut", "xray"].includes(state.mode)) return;
     const hit = ray.intersectObjects(root.children, true).find(h => h.object.visible && h.object.isMesh && h.distance > 0.5 && (!h.object.material.clippingPlanes || !h.object.material.clippingPlanes.length || h.point.y < cutPlane.constant + 0.01));
     if (!hit) return;
     const dir = cam.position.clone().sub(controls.target).normalize(), dist = clamp(cam.position.distanceTo(controls.target) * 0.45, 6, 40);
