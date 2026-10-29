@@ -93,6 +93,7 @@ dialog p{font-size:13px;line-height:1.5;color:var(--mut);margin:8px 0}
   aside{border:0}
   .pill button{padding:0 10px}
 }
+#modes{max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}#modes::-webkit-scrollbar{display:none}#modes button{flex:0 0 auto}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -130,7 +131,7 @@ dialog p{font-size:13px;line-height:1.5;color:var(--mut);margin:8px 0}
 <section id="view">
   <canvas id="c" aria-label="Vista 3D de la construcción en el lote"></canvas>
   <div class="bar top">
-    <div class="pill" id="modes"><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
+    <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
     <div class="pill" id="floors"></div>
     <div class="pill" id="timeSw"><button data-t="dia" class="on">Día</button><button data-t="tarde">Atardecer</button></div>
     <div id="cutRow" hidden>Altura de corte <input id="cut" type="range" min="0.3" max="2.6" step="0.05" value="1.3"></div>
@@ -152,10 +153,12 @@ dialog p{font-size:13px;line-height:1.5;color:var(--mut);margin:8px 0}
 <aside class="right" id="right"><h3>Análisis del diseño</h3><div id="analysis"></div></aside>
 </main>
 <dialog id="keyDlg"><h4>Asistente de diseño en línea (gratuito)</h4>
-  <p>Sin configurar nada, la herramienta lee el pedido del cliente dentro del mismo celular. Con el asistente en línea entiende pedidos libres (familia, negocio, gustos) y redacta una explicación para el cliente. Usa el servicio gratuito Gemini de Google.</p>
-  <ol class="steps"><li>Entra a <b>aistudio.google.com</b> con una cuenta de Google de la empresa.</li><li>Toca <b>Get API key</b> y crea una clave (sin tarjeta de crédito).</li><li>Pégala aquí y guarda. Queda solo en este equipo.</li></ol>
-  <label>Clave del asistente<input id="akey" type="password" autocomplete="off" placeholder="AIza..."></label>
-  <p>La capa gratuita tiene un límite de consultas por minuto y por día; si se alcanza, la herramienta sigue funcionando con la lectura automática.</p>
+  <p><b>Ya funciona sin configurar nada:</b> con internet, el pedido del cliente se analiza con un servicio abierto y gratuito; sin internet, con la lectura automática del equipo. Si un servicio está saturado, la herramienta pasa sola al siguiente.</p>
+  <p>Opcional: agrega claves gratuitas (sin tarjeta) para respuestas más rápidas y con más cupo. Con las dos, el asistente casi nunca se queda sin respuesta.</p>
+  <ol class="steps"><li><b>Groq</b> (la más rápida): entra a <b>console.groq.com</b>, inicia sesión con Google y crea una clave en <b>API Keys</b>.</li><li><b>Gemini</b> de Google: entra a <b>aistudio.google.com</b> y toca <b>Get API key</b>.</li><li>Pégalas aquí y guarda. Quedan solo en este equipo; usa una cuenta de la empresa.</li></ol>
+  <label>Clave de Groq<input id="qkey" type="password" autocomplete="off" placeholder="gsk_..."></label>
+  <label>Clave de Gemini<input id="akey" type="password" autocomplete="off" placeholder="AIza..."></label>
+  <p>Lo que escribas se envía a estos servicios para analizarlo: no incluyas DNI, teléfonos ni datos bancarios del cliente.</p>
   <div class="g2"><button class="btn ghost" type="button" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn" id="keySave" type="button">Guardar</button></div></dialog>
 <script>/**
  * @license
@@ -1468,7 +1471,7 @@ const state = {
   norm: {rf: 3, rp: 0, al: 30, maxP: 3, h: 2.7},
   prog: {pisos: 2, dorm: 3, banos: 3, piscina: true, cochera: true, terraza: true, servicio: false, estilo: "playa", negocio: "", amb: {ninos: true, parrilla: true}},
   opt: "equilibrada", desague: "red", costM2: 1500, time: "dia",
-  mode: "ext", floor: 0, cut: 1.3,
+  mode: "ext", intro: true, floor: 0, cut: 1.3,
   layers: {muros: true, losas: true, mob: true, elec: true, agua: true, caliente: true, desague: true, etiquetas: true, vecinos: true},
 };
 let design = null;
@@ -1650,29 +1653,42 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.outputEncoding = THREE.sRGBEncoding; renderer.localClippingEnabled = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.42;
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xcfdbe3, 140, 900);
+scene.fog = new THREE.Fog(0xcfdbe3, 260, 1700);
 const cam = new THREE.PerspectiveCamera(50, 1, 0.05, 3000);
 const ortho = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 400);
 const controls = new THREE.OrbitControls(cam, canvas);
-controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 3; controls.maxDistance = 160;
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 3; controls.maxDistance = 420;
 const hemi = new THREE.HemisphereLight(0xdbeaf7, 0xc9b48c, 0.55); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
-sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+const MOBILE = Math.min(screen.width, screen.height) < 700;
+sun.castShadow = true; sun.shadow.mapSize.set(MOBILE ? 2048 : 4096, MOBILE ? 2048 : 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
 Object.assign(sun.shadow.camera, {left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 160});
 scene.add(sun, sun.target);
-const sky = new THREE.Sky(); sky.scale.setScalar(4000); scene.add(sky);
+const sky = new THREE.Sky();   // solo para los reflejos; el fondo visible es un cielo degradado más natural
+const SKY_U = {top: {value: new THREE.Color()}, hor: {value: new THREE.Color()}, glow: {value: new THREE.Color()}, sunDir: {value: new THREE.Vector3()}};
+const skyDome = new THREE.Mesh(new THREE.SphereGeometry(2600, 32, 16), new THREE.ShaderMaterial({uniforms: SKY_U, side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
+  vertexShader: "varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position + cameraPosition, 1.0); gl_Position.z = gl_Position.w; }",
+  fragmentShader: "uniform vec3 top, hor, glow, sunDir; varying vec3 vD; void main(){ float h = max(vD.y, 0.0); vec3 c = mix(hor, top, pow(h, 0.55)); float s = max(dot(normalize(vD), normalize(sunDir)), 0.0); c += glow * (pow(s, 6.0) * 0.35 + pow(s, 300.0) * 1.2) * (1.0 - h * 0.6); if (vD.y < 0.0) c = hor; gl_FragColor = vec4(c, 1.0); }"}));
+skyDome.renderOrder = -1; skyDome.frustumCulled = false; scene.add(skyDome);
+function updateShadow() {   // la zona con sombras sigue a la cámara: sombras nítidas de cerca y también en la vista aérea
+  const t = controls.target, dist = state.mode === "walk" ? 12 : cam.position.distanceTo(t), ext = clamp(dist * 0.85, 22, 190);
+  const sc = sun.shadow.camera; sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.far = 500; sc.updateProjectionMatrix();
+  const c = state.mode === "walk" && walk ? new THREE.Vector3(walk.x, 0, walk.z) : t.clone().setY(0);
+  sun.position.copy(SKY_U.sunDir.value).multiplyScalar(200).add(c); sun.target.position.copy(c); sun.target.updateMatrixWorld();
+}
 const pmrem = new THREE.PMREMGenerator(renderer); let envRT = null;
 function setTime() {   // día o atardecer: sol, cielo, reflejos y luces encendidas
   const tarde = state.time === "tarde", d = design || {W: 8, D: 25};
-  const elev = tarde ? 3.5 : 48, azi = tarde ? 182 : 215;
+  const elev = tarde ? 6 : 38, azi = tarde ? 185 : 222;
   const phi = THREE.MathUtils.degToRad(90 - elev), theta = THREE.MathUtils.degToRad(azi), v = new THREE.Vector3().setFromSphericalCoords(1, phi, theta);
   const u = sky.material.uniforms;
   u.turbidity.value = tarde ? 6 : 2.2; u.rayleigh.value = tarde ? 2.6 : 2.0; u.mieCoefficient.value = tarde ? 0.008 : 0.004; u.mieDirectionalG.value = 0.86; u.sunPosition.value.copy(v);
-  sun.position.copy(v).multiplyScalar(80).add(new THREE.Vector3(d.W / 2, 0, d.D / 2)); sun.target.position.set(d.W / 2, 0, d.D / 2);
-  sun.color.set(tarde ? 0xffa760 : 0xfff1dc); sun.intensity = tarde ? 1.1 : 1.75;
-  hemi.intensity = tarde ? 0.3 : 0.42; hemi.color.set(tarde ? 0xffc7a0 : 0xdbeaf7);
-  renderer.toneMappingExposure = tarde ? 0.55 : 0.42;
-  scene.fog.color.set(tarde ? 0xe7b996 : 0xcfdbe3);
+  SKY_U.sunDir.value.copy(v);
+  sun.color.set(tarde ? 0xffa45c : 0xffe9cc); sun.intensity = tarde ? 1.25 : 2.1;
+  hemi.intensity = tarde ? 0.32 : 0.38; hemi.color.set(tarde ? 0xffc29a : 0xcfe3f5); hemi.groundColor.set(tarde ? 0x8a6a55 : 0xb89c72);
+  renderer.toneMappingExposure = tarde ? 0.6 : 0.46;
+  SKY_U.top.value.set(tarde ? 0x34507e : 0x2f74c0); SKY_U.hor.value.set(tarde ? 0xf3b27a : 0xc9def0); SKY_U.glow.value.set(tarde ? 0xffb066 : 0xfff3d6);
+  scene.fog.color.set(tarde ? 0xe9b386 : 0xc9def0);
   if (envRT) envRT.dispose();
   const s2 = new THREE.Scene(), sk = new THREE.Sky(); sk.scale.setScalar(1000); s2.add(sk); Object.keys(u).forEach(k => sk.material.uniforms[k].value = u[k].value);
   envRT = pmrem.fromScene(s2); scene.environment = envRT.texture;
@@ -1692,7 +1708,7 @@ function makeTex(kind) {
   if (TEX[kind]) return TEX[kind];
   const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d"), r = rnd(kind.length * 977 + 13);
   const noise = (base, amp, n, sz) => { g.fillStyle = base; g.fillRect(0, 0, 256, 256); for (let i = 0; i < n; i++) { const v = (r() - 0.5) * amp; g.fillStyle = `rgba(${v > 0 ? "255,255,255" : "0,0,0"},${Math.abs(v)})`; g.fillRect(r() * 256, r() * 256, sz * r() + 1, sz * r() + 1); } };
-  if (kind === "sand") noise("#cdb88d", 0.22, 9000, 2.2);
+  if (kind === "sand") noise("#c3a679", 0.2, 9000, 2.2);
   else if (kind === "grass") { noise("#6f9a45", 0.3, 7000, 2); for (let i = 0; i < 2500; i++) { g.strokeStyle = r() > 0.5 ? "rgba(140,190,80,.5)" : "rgba(60,95,35,.5)"; g.beginPath(); const x = r() * 256, y = r() * 256; g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 3, y - 4 - r() * 4); g.stroke(); } }
   else if (kind === "asphalt") noise("#3c4144", 0.25, 9000, 1.6);
   else if (kind === "pavers") { noise("#c9bfae", 0.12, 3000, 2); g.strokeStyle = "rgba(90,80,65,.35)"; g.lineWidth = 2; for (let y = 0; y <= 256; y += 32) { g.beginPath(); g.moveTo(0, y); g.lineTo(256, y); g.stroke(); for (let x = (y / 32) % 2 ? 0 : 32; x <= 256; x += 64) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 32); g.stroke(); } } }
@@ -1705,17 +1721,27 @@ function makeTex(kind) {
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
   return TEX[kind] = t;
 }
+const AO_TEX = (() => {   // sombra de contacto suave bajo construcciones, autos y árboles
+  const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d");
+  const gr = g.createRadialGradient(64, 64, 8, 64, 64, 64); gr.addColorStop(0, "rgba(0,0,0,1)"); gr.addColorStop(0.55, "rgba(0,0,0,.55)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
+})();
+const AO_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2});
+const PATCH_MAT = new THREE.MeshBasicMaterial({map: AO_TEX, color: 0x9a7a4a, transparent: true, opacity: 0.06, depthWrite: false});
+function aoBlob(x, z, w, d, layer, op, y = 0.015) {   // x,z = centro
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), op ? Object.assign(AO_MAT.clone(), {opacity: op}) : AO_MAT); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.renderOrder = 1; return add(m, layer);
+}
 const M = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color, roughness: 0.85, metalness: 0}, o));
 const MAT = {
-  wall: M(0xffffff, {map: makeTex("plaster")}), wallExt: M(0xfbf3e6, {map: makeTex("plaster")}), accent: M(0x9b6a43, {roughness: 0.7}), slab: M(0xd8d3cb), glass: M(0x9fcbe6, {transparent: true, opacity: 0.32, roughness: 0.05, metalness: 0.4}),
+  wall: M(0xffffff, {map: makeTex("plaster")}), wallExt: M(0xece2d3, {map: makeTex("plaster")}), accent: M(0x9b6a43, {roughness: 0.7}), slab: M(0xd8d3cb), glass: M(0x9fcbe6, {transparent: true, opacity: 0.32, roughness: 0.05, metalness: 0.4}),
   frame: M(0x3b3f44, {metalness: 0.5, roughness: 0.4}),
   sand: M(0xffffff, {map: makeTex("sand")}), grass: M(0xffffff, {map: makeTex("grass")}), street: M(0xffffff, {map: makeTex("asphalt"), roughness: 0.95}), walk: M(0xffffff, {map: makeTex("pavers")}),
-  pave: M(0xffffff, {map: makeTex("pavers")}), water: M(0x2ab0dd, {transparent: true, opacity: 0.88, roughness: 0.05, metalness: 0.1}), sea: M(0x2f7fa8, {roughness: 0.15, metalness: 0.2}),
+  pave: M(0xffffff, {map: makeTex("pavers")}), water: M(0x2ab0dd, {transparent: true, opacity: 0.88, roughness: 0.05, metalness: 0.1}), sea: M(0x1d6890, {roughness: 0.12, metalness: 0.25}),
   poolEdge: M(0xf0ebe2, {roughness: 0.6}), wood: M(0xffffff, {map: makeTex("wood")}), deck: M(0xffffff, {map: makeTex("deck")}),
   floorLiving: M(0xffffff, {map: makeTex("porcelain")}), floorWet: M(0xffffff, {map: makeTex("tile")}), floorBed: M(0xffffff, {map: makeTex("wood")}), floorTerr: M(0xffffff, {map: makeTex("deck")}),
   white: M(0xfafafa, {roughness: 0.35}), dark: M(0x3d4247), fabric: M(0x7d9cb3), fabric2: M(0xd9c7a7), cushion: M(0xe9a65c), rug: M(0xcdb79a, {roughness: 1}), bedding: M(0xf4f1ea), steel: M(0xb5bcc2, {metalness: 0.7, roughness: 0.3}),
   leaf: M(0x4f7d3a, {flatShading: true}), leaf2: M(0x6b9a44, {flatShading: true}), trunk: M(0x8a6a4a), pot: M(0xc0704a), flower: M(0xe85d75),
-  neigh: M(0xf6efe4, {map: makeTex("plaster")}), neighWin: M(0x37474f, {roughness: 0.2, metalness: 0.3}), stone: M(0xffffff, {map: makeTex("stone")}),
+  neigh: M(0xf6efe4, {map: makeTex("plaster")}), roof: M(0xbdb5a8, {map: makeTex("plaster"), roughness: 0.95}), neighWin: M(0x37474f, {roughness: 0.2, metalness: 0.3}), stone: M(0xffffff, {map: makeTex("stone")}),
   tank: M(0x2c2f33), meter: M(0x6d7680), light: M(0xfff6c8, {emissive: 0xffd27a}), bulb: M(0xfff1c2, {emissive: 0xffcf73}),
   e1: M(0xffc400, {emissive: 0x6b5200}), e2: M(0xff7a00, {emissive: 0x5a2b00}), e3: M(0xe53935, {emissive: 0x5a1414}),
   cold: M(0x1e88e5, {emissive: 0x0a2f55}), hot: M(0xe53935, {emissive: 0x4a0c0c}), sew: M(0x8d6e63, {emissive: 0x2a1d18}),
@@ -1783,7 +1809,13 @@ function label(text, x, y, z, size = 0.55, sub = "") {
 
 let walls = [], stairs = [];
 const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7);
-const PAL = [0xf4ede2, 0xefe2cf, 0xe9d6bf, 0xf7f3ec, 0xdfe9ec, 0xe8cdb4, 0xf1e6d6];
+const PAL = [0xebe1d2, 0xe6d6bf, 0xdfc8ab, 0xefe9df, 0xdde4e1, 0xe2c3a6, 0xe9dcc8];
+const ACC = [0xc2694a, 0xd6a35b, 0x4f8db3, 0x8ea887, 0x6b5b4e, 0xe0c9a6, 0x2f5f7c];   // terracota, ocre, azul mar, salvia, café, arena, azul profundo
+function tree(x, z, s, layer = "entorno", rr = Math.random) {   // huarango: árbol del desierto costero
+  const g = new THREE.Group(), tr = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * s, 0.2 * s, 1.8 * s, 6), MAT.trunk); tr.position.y = 0.9 * s; tr.rotation.z = (rr() - 0.5) * 0.3; g.add(tr);
+  for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1 * s * (0.7 + rr() * 0.4), 1), i % 2 ? MAT.leaf : M(0x5d7d3f, {flatShading: true})); c.scale.y = 0.45; c.position.set((rr() - 0.5) * 1.6 * s, 1.9 * s + rr() * 0.4 * s, (rr() - 0.5) * 1.6 * s); g.add(c); }
+  g.traverse(o => o.castShadow = true); g.position.set(x, 0, z); add(g, layer); aoBlob(x, z, 3.4 * s, 3.4 * s, layer, 0.3); return g;
+}
 function build() {
   scene.remove(root); const shared = new Set(Object.values(TEX)); root.traverse(o => { if (o.geometry && o.geometry !== PALM_LEAF) o.geometry.dispose(); [].concat(o.material || []).forEach(m => { if (m.map && !shared.has(m.map)) m.map.dispose(); }); });
   root = new THREE.Group(); scene.add(root); Object.keys(groups).forEach(k => delete groups[k]); Object.keys(metrado).forEach(k => delete metrado[k]);
@@ -1791,6 +1823,7 @@ function build() {
   const d = design, h = state.norm.h;
   buildSite(d);
   buildLot(d);
+  { const fp = d.rooms.filter(r => r.lvl === 0); if (fp.length) { const x0 = Math.min(...fp.map(r => r.x)), x1 = Math.max(...fp.map(r => r.x + r.w)), z0 = Math.min(...fp.map(r => r.z)), z1 = Math.max(...fp.map(r => r.z + r.d)); aoBlob((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0 + 1.8, z1 - z0 + 1.8, "terreno", 0.35, 0.05); } }
   d.rooms.forEach(r => {
     const y = r.lvl * h, wet = ["bath", "kitchen", "laundry", "prokitchen"].includes(r.type);
     const mat = wet ? MAT.floorWet : ["bed", "guest", "study"].includes(r.type) ? MAT.floorBed : r.type === "terrace" ? MAT.floorTerr : MAT.floorLiving;
@@ -1839,15 +1872,32 @@ function buildSite(d) {
   // mar y playa (los proyectos miran al oeste: atardecer sobre el mar)
   if (P.sea) {
     const zs = D + P.sea;
-    plane(-900, zs - 40, 1800, 40, -0.06, M(0xe9dcbc, {map: makeTex("sand")}), "entorno", 3);
-    const sea = plane(-1500, zs, 3000, 1600, -0.12, MAT.sea, "entorno"); sea.receiveShadow = false;
-    for (let i = 0; i < 26; i++) box(20 + rr() * 30, 0.02, 0.5, M(0xffffff, {transparent: true, opacity: 0.7}), -400 + rr() * 800, -0.1, zs + 4 + rr() * 14, "entorno", {cast: false});
+    plane(-900, zs - 40, 1800, 40, -0.05, M(0xe9dcbc, {map: makeTex("sand")}), "entorno", 3);
+    const sea = plane(-1500, zs, 3000, 1600, -0.03, MAT.sea, "entorno"); sea.receiveShadow = false;
+    for (let i = 0; i < 26; i++) box(20 + rr() * 30, 0.02, 0.5, M(0xffffff, {transparent: true, opacity: 0.7}), -400 + rr() * 800, -0.02, zs + 4 + rr() * 14, "entorno", {cast: false});
   }
   // lomas del desierto costero hacia el este
   const hill = M(0xc8a77a, {flatShading: true, roughness: 1}), hill2 = M(0xb8956a, {flatShading: true, roughness: 1});
   for (let i = 0; i < 14; i++) { const r = 60 + rr() * 90, m = new THREE.Mesh(new THREE.ConeGeometry(r, 30 + rr() * 55, 7, 1), i % 2 ? hill : hill2); m.position.set(-700 + i * 105 + rr() * 40, 10, -330 - rr() * 260); m.rotation.y = rr() * 3; add(m, "entorno"); }
-  // dunas suaves y arbustos en los alrededores
+  // dunas suaves, manchas de arena, huarangos y arbustos en los alrededores
   for (let i = 0; i < 40; i++) bush(-260 + rr() * 520, -60 - rr() * 220, 0.4 + rr() * 0.6, "entorno");
+  for (let i = 0; i < 70; i++) { const a = 30 + rr() * 110, m = new THREE.Mesh(new THREE.PlaneGeometry(a, a * (0.4 + rr() * 0.5)), PATCH_MAT); m.rotation.set(-Math.PI / 2, 0, rr() * 3); m.position.set(-450 + rr() * 900, -0.07, -420 + rr() * 820); add(m, "entorno"); }
+  for (let i = 0; i < 26; i++) { const tx = x0 - 30 + rr() * (x1 - x0 + 60), tz = rr() < 0.5 ? zF - 6 - rr() * 40 : zB + 6 + rr() * Math.max(10, (P.sea || 60) - 50); tree(tx, tz, 1 + rr() * 0.8, "entorno", rr); }
+  for (let x = x0 + 5; x < x1 - 3; x += 9 + rr() * 5) tree(x, zB + 2.2, 0.8 + rr() * 0.4, "entorno", rr);
+  for (let i = 0; i < 6; i++) { const r = 4 + rr() * 6, m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), M(0xd2b98d, {map: makeTex("sand")})); m.scale.y = 0.18; m.position.set(-300 + rr() * 600, -0.1, zB + 20 + rr() * Math.max(20, (P.sea || 80) - 60)); m.receiveShadow = true; add(m, "entorno"); }
+  // nombres de los lugares (vista Entorno)
+  place("Tu lote", `${fmt(W)} × ${fmt(D)} m · ${fmt(W * D, 0)} m²`, W / 2, 14 + d.pisos * 3, D / 2, true);
+  place("Ingreso al condominio", P.name, x0 - 1, 9, -S / 2);
+  if (P.club.length) place("Club y áreas comunes", P.club.map(k => ({piscina: "piscina", club: "casa club", parrilla: "parrillas", juegos: "juegos", tenis: "tenis", bicicross: "bicicross", gimnasio: "gimnasio", losa: "losa", futbol: "fútbol", voley: "vóley"})[k]).join(" · "), cx0 + 20, 9, -S - 10);
+  if (P.front === "parque") place("Parque", "frente a tu lote", W / 2, 8, -S - opp / 2);
+  place("Panamericana Sur", P.km || "acceso principal", px, 10, -S - 30);
+  if (P.sea) place("Playa", `a ${P.sea} m de tu lote`, W / 2, 10, D + P.sea - 10);
+}
+function place(t, sub, x, y, z, main) {   // etiqueta de lugar: tamaño fijo en pantalla
+  const s = label(t, x, y, z, 1, sub); s.parent.remove(s); s.material.sizeAttenuation = false; s.material.depthTest = false; s.material.clippingPlanes = [];
+  const k = (main ? 0.075 : 0.055) / s.scale.y; s.scale.multiplyScalar(k); s.userData.base = null; s.userData.pbase = s.scale.clone(); add(s, "lugares");
+  if (main) { const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, y - 0.5, 6), new THREE.MeshBasicMaterial({color: 0x0A3856})); pin.position.set(x, (y - 0.5) / 2, z); add(pin, "lugares"); }
+  return s;
 }
 function streetLamp(x, z) { cyl(0.06, 4.2, MAT.dark, x, 0, z, "entorno", 8); box(0.9, 0.08, 0.12, MAT.dark, x - 0.45, 4.1, z - 0.06, "entorno"); ball(0.13, MAT.bulb, x - 0.4, 4.0, z, "entorno", 1); }
 function car(x, z, rot, color, layer) {
@@ -1855,30 +1905,61 @@ function car(x, z, rot, color, layer) {
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 4.3), paint); body.position.y = 0.6;
   const top = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 2.3), M(0x1d2b36, {roughness: 0.1, metalness: 0.5})); top.position.set(0, 1.2, 0.2); g.add(body, top);
   [[-0.82, -1.4], [0.82, -1.4], [-0.82, 1.4], [0.82, 1.4]].forEach(([a, b]) => { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.26, 14), MAT.dark); w.rotation.z = Math.PI / 2; w.position.set(a, 0.34, b); g.add(w); });
-  g.traverse(o => o.castShadow = true); g.position.set(x, 0, z); g.rotation.y = rot; return add(g, layer);
+  g.traverse(o => o.castShadow = true); g.position.set(x, 0, z); g.rotation.y = rot;
+  const sw = Math.abs(Math.sin(rot)) > 0.5; aoBlob(x, z, sw ? 5 : 2.6, sw ? 2.6 : 5, layer, 0.5); return add(g, layer);
 }
 function neighborLot(lx, fz, W, D, dir, rr, P) {
   const t = rr(), L = "vecinos", zAt = (a, b) => dir > 0 ? fz + a : fz - b;   // a..b medido desde el frente
-  if (t < 0.46) {   // casa construida
-    const floors = rr() < 0.25 ? 1 : rr() < 0.85 ? 2 : 3, dep = 9 + rr() * 5, col = PAL[(rr() * PAL.length) | 0], setb = 3;
-    const mat = M(col, {map: makeTex("plaster")});
-    box(W - 0.3, floors * 2.7, dep, mat, lx + 0.15, 0, zAt(setb, setb + dep), L);
-    box(W - 0.3, 0.9, 0.15, mat, lx + 0.15, floors * 2.7, zAt(setb, setb + 0.15), L);
-    const fzWall = dir > 0 ? fz + setb - 0.02 : fz - setb - 0.02;
-    for (let f = 0; f < floors; f++) box(Math.min(W - 1.6, 3.4), 1.3, 0.04, MAT.neighWin, lx + 0.8, f * 2.7 + 0.9, fzWall, L, {cast: false});
-    box(0.95, 2.1, 0.05, MAT.wood, lx + W - 1.6, 0, fzWall, L, {cast: false});
-    if (rr() < 0.5 && floors > 1) { const zp = zAt(setb + 0.5, setb + 3.1); [[0.4, 0], [W - 0.5, 0], [0.4, 2.5], [W - 0.5, 2.5]].forEach(([px, pz]) => box(0.1, 2.3, 0.1, MAT.wood, lx + px, floors * 2.7, zp + pz, L)); for (let i = 0; i < 6; i++) box(0.08, 0.08, 2.6, MAT.wood, lx + 0.4 + i * (W - 0.9) / 5, floors * 2.7 + 2.3, zp, L); }
-    box(W, 0.9, 0.15, mat, lx, 0, zAt(0, 0.15), L);
-    if (rr() < 0.6) palm(lx + 1.2, zAt(1.4, 1.4), 4 + rr() * 2.5, L, rr); else bush(lx + 1.2, zAt(1.2, 1.2), 0.6, L, true);
-    if (rr() < 0.4) car(lx + W - 2, zAt(1.6, 1.6) + (dir > 0 ? 0 : 0), Math.PI / 2 * 0, [0xe8e8e8, 0x8b9aa5, 0x2a6fa8, 0x7a1f1f][(rr() * 4) | 0], L);
+  if (t < 0.5) {   // casa construida
+    const floors = rr() < 0.2 ? 1 : rr() < 0.85 ? 2 : 3, dep = 9 + rr() * 4, setb = 3, H = 2.8, style = (rr() * 3) | 0;
+    const base = M(PAL[(rr() * PAL.length) | 0], {map: makeTex("plaster")}), acc = M(ACC[(rr() * ACC.length) | 0], {map: makeTex("plaster")});
+    const fzWall = dir > 0 ? fz + setb : fz - setb, out = dir > 0 ? -1 : 1, wz = fzWall + out * 0.03;   // fachada y plano de ventanas
+    box(W - 0.3, H, dep, base, lx + 0.15, 0, zAt(setb, setb + dep), L);
+    for (let f = 1; f < floors; f++) {   // pisos altos: volado de 0.8 m y, a veces, color de acento
+      const m = style === 1 || (style === 2 && f === floors - 1) ? acc : base, cant = style === 0 ? 0.8 : 0.4;
+      box(W - 0.3, H, dep - 1, m, lx + 0.15, f * H, zAt(setb - cant, setb - cant + dep - 1), L);
+      box(W - 0.3, 0.18, cant + 0.05, MAT.slab, lx + 0.15, f * H - 0.18, zAt(setb - cant, setb + 0.05), L, {cast: false});
+    }
+    const top = floors * H; box(W - 0.3, 0.5, dep - 1, base, lx + 0.15, top, zAt(setb + 3, setb + dep - 1), L);   // azotea con parapeto
+    [0.15, W - 0.25].forEach(px => box(0.1, 1.0, 3, base, lx + px, top, zAt(setb, setb + 3), L));
+    box(W - 0.5, 0.9, 0.04, MAT.glass, lx + 0.25, top + 0.05, zAt(setb + 0.05, setb + 0.09), L, {cast: false});
+    if (rr() < 0.6) pergola(lx + 0.4, Math.min(zAt(setb + 0.2, setb + 0.2), zAt(setb + 2.8, setb + 2.8)) , W - 0.8, 2.6, L, top);
+    for (let f = 0; f < floors; f++) {   // ventanal con marco, celosía de madera y baranda en pisos altos
+      const fzF = f ? wz + (style === 0 ? 0.8 : 0.4) * out : wz, ww = Math.min(W - 2.4, 3.6);
+      box(ww, 1.6, 0.05, MAT.neighWin, lx + 0.7, f * H + 0.7, fzF - 0.025, L, {cast: false});
+      box(ww + 0.16, 0.08, 0.12, MAT.frame, lx + 0.62, f * H + 0.66, fzF - 0.06, L, {cast: false}); box(ww + 0.16, 0.08, 0.12, MAT.frame, lx + 0.62, f * H + 2.3, fzF - 0.06, L, {cast: false});
+      box(0.06, 1.6, 0.08, MAT.frame, lx + 0.7 + ww / 2, f * H + 0.7, fzF - 0.04, L, {cast: false});
+      if (f && rr() < 0.7) box(ww + 0.4, 1.0, 0.04, MAT.glass, lx + 0.5, f * H, fzF + out * 0.15, L, {cast: false});
+      if (style === 2 || (f === 0 && rr() < 0.5)) for (let k = 0; k < 7; k++) box(0.07, H - 0.3, 0.07, MAT.wood, lx + W - 1.9 + k * 0.22, f * H + 0.15, fzF + out * 0.04, L, {cast: false});
+    }
+    box(1.0, 2.2, 0.06, MAT.wood, lx + W - 1.7, 0, wz - 0.03, L, {cast: false});
+    const bz = dir > 0 ? fz + setb + dep + 0.01 : fz - setb - dep - 0.06;   // fachada posterior y techo con tanque y terma solar
+    for (let f = 0; f < floors; f++) box(Math.min(W - 2, 2.4), 1.2, 0.05, MAT.neighWin, lx + 1, f * H + 0.9, f ? bz - out * 1 : bz, L, {cast: false});
+    plane(lx + 0.15, Math.min(zAt(setb - (floors > 1 ? (style === 0 ? 0.8 : 0.4) : 0), 0), zAt(setb + dep - (floors > 1 ? 1 : 0), setb + dep - (floors > 1 ? 1 : 0))), W - 0.3, dep - (floors > 1 ? 1 : 0) + (floors > 1 ? (style === 0 ? 0.8 : 0.4) : 0), top + 0.012, MAT.roof, L, 3);
+    const tz = zAt(setb + dep - 2.6, setb + dep - 2.6); cyl(0.55, 1.3, MAT.tank, lx + W - 1.2, top + 0.5, tz, L, 14); box(0.9, 0.5, 0.9, MAT.slab, lx + W - 1.65, top, tz - 0.45, L);
+    if (rr() < 0.5) { const sp = box(1.8, 0.05, 1.1, MAT.neighWin, lx + 1, top + 0.6, tz - 0.55, L); sp.rotation.x = dir > 0 ? 0.5 : -0.5; }
+    // cerco bajo con reja, jardín y estacionamiento
+    box(W * 0.45, 0.6, 0.18, acc, lx, 0, zAt(0, 0.18), L); for (let k = 0; k < 9; k++) box(0.04, 0.8, 0.04, MAT.dark, lx + 0.15 + k * W * 0.05, 0.6, zAt(0.07, 0.11), L, {cast: false});
+    plane(lx + 0.2, Math.min(zAt(0.3, 0.3), zAt(setb - 0.2, setb - 0.2)), W * 0.42, setb - 0.5, 0.012, MAT.grass, L, 2);
+    plane(lx + W * 0.47, Math.min(zAt(0, 0), zAt(setb, setb)), W * 0.5, setb, 0.01, MAT.walk, L, 1.2);
+    if (rr() < 0.65) palm(lx + 1.1, zAt(1.5, 1.5), 4.5 + rr() * 2.5, L, rr); else bush(lx + 1.2, zAt(1.3, 1.3), 0.7, L, true);
+    bush(lx + 2.4, zAt(0.8, 0.8), 0.45, L, rr() < 0.5);
+    if (rr() < 0.55) { const cx = lx + W * 0.72; car(cx, zAt(1.5, 1.5), 0, [0xe8e8e8, 0x8b9aa5, 0x2a6fa8, 0x7a1f1f, 0x2d2f33][(rr() * 5) | 0], L); }
+    aoBlob(lx + W / 2, zAt(setb + dep / 2, setb + dep / 2), W + 1.6, dep + 2.2, L, 0.42);
   } else if (t < 0.6) {   // en construcción
     const dep = 10, cols = [[0.3, 3], [W - 0.6, 3], [0.3, 3 + dep], [W - 0.6, 3 + dep], [W / 2, 3], [W / 2, 3 + dep]];
-    cols.forEach(([a, b]) => box(0.3, 2.9, 0.3, MAT.slab, lx + a, 0, zAt(b, b + 0.3), L));
+    cols.forEach(([a, b]) => { box(0.3, 2.9, 0.3, MAT.slab, lx + a, 0, zAt(b, b + 0.3), L); for (let k = 0; k < 4; k++) box(0.03, 1.0, 0.03, MAT.steel, lx + a + 0.05 + (k % 2) * 0.2, 2.9, zAt(b + 0.05 + (k >> 1) * 0.2, b + 0.05 + (k >> 1) * 0.2), L, {cast: false}); });
+    box(W - 0.6, 1.0, 0.15, M(0xb4553a, {map: makeTex("plaster")}), lx + 0.3, 0, zAt(3 + dep, 3 + dep + 0.15), L);   // muro de ladrillo a medio levantar
+    plane(lx + 0.1, Math.min(zAt(0, 0), zAt(D, D)), W - 0.2, D, 0.008, M(0xa98f6a, {map: makeTex("sand")}), L, 2);
+    aoBlob(lx + W / 2, zAt(3 + dep / 2, 3 + dep / 2), W + 1, dep + 1.5, L, 0.3);
     box(W - 0.3, 0.2, dep + 0.3, MAT.slab, lx + 0.15, 2.7, zAt(3, 3 + dep + 0.3), L);
     const pile = new THREE.Mesh(new THREE.ConeGeometry(1.1, 0.9, 9), M(0xcbb48a, {map: makeTex("sand")})); pile.position.set(lx + W / 2, 0.45, zAt(1.5, 1.5)); add(pile, L);
   } else {   // lote libre con estacas
     [[0.2, 0.2], [W - 0.2, 0.2], [0.2, D - 0.2], [W - 0.2, D - 0.2]].forEach(([a, b]) => box(0.08, 0.6, 0.08, MAT.wood, lx + a, 0, zAt(b, b), L));
     if (rr() < 0.3) bush(lx + W / 2, zAt(D / 2, D / 2), 0.35 + rr() * 0.3, L);
+    const sg = textCanvas([["LOTE", 60, "#0A3856", 70], ["DISPONIBLE", 52, "#0A3856", 135]], 300, 190, "#ffffff");   // cartel de venta
+    const sm = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.76), M(0xffffff, {map: sg})); sm.position.set(lx + W / 2, 1.2, zAt(0.6, 0.6)); if (dir < 0) sm.rotation.y = Math.PI; add(sm, L);
+    box(0.06, 0.85, 0.06, MAT.wood, lx + W / 2 - 0.03, 0, zAt(0.62, 0.62), L);
   }
 }
 function park(x, z, w, d, rr) {
@@ -1928,7 +2009,7 @@ function club(x, z, P, rr) {
 function courtLines(x, z, w, d, L) { [[x, z, w, 0.08], [x, z + d - 0.08, w, 0.08], [x, z, 0.08, d], [x + w - 0.08, z, 0.08, d], [x, z + d / 2 - 0.04, w, 0.08]].forEach(([a, b, c, e]) => box(c, 0.012, e, MAT.courtLine, a, 0.012, b, L, {cast: false})); }
 function lounger(x, z, layer = "entorno") { const b = box(0.7, 0.12, 1.9, MAT.white, x - 0.35, 0.3, z - 0.95, layer); const back = box(0.7, 0.08, 0.7, MAT.fabric2, x - 0.35, 0.55, z - 0.95, layer); back.rotation.x = 0.7; [[-0.3, -0.85], [0.25, -0.85], [-0.3, 0.8], [0.25, 0.8]].forEach(([a, c]) => box(0.05, 0.3, 0.05, MAT.white, x + a, 0, z + c, layer)); return b; }
 function umbrella(x, z, layer = "entorno") { cyl(0.04, 2.4, MAT.white, x, 0, z, layer, 8); const c = new THREE.Mesh(new THREE.ConeGeometry(1.4, 0.55, 10), M(0xf4ede0)); c.position.set(x, 2.45, z); c.castShadow = true; add(c, layer); }
-function pergola(x, z, w, d, layer) { [[0, 0], [w - 0.15, 0], [0, d - 0.15], [w - 0.15, d - 0.15]].forEach(([a, b]) => box(0.15, 2.6, 0.15, MAT.wood, x + a, 0, z + b, layer)); for (let i = 0; i <= Math.floor(w / 0.6); i++) box(0.08, 0.14, d, MAT.wood, x + i * 0.6, 2.6, z, layer); }
+function pergola(x, z, w, d, layer, y0 = 0) { [[0, 0], [w - 0.15, 0], [0, d - 0.15], [w - 0.15, d - 0.15]].forEach(([a, b]) => box(0.15, 2.4, 0.15, MAT.wood, x + a, y0, z + b, layer)); for (let i = 0; i <= Math.floor(w / 0.6); i++) box(0.08, 0.14, d, MAT.wood, x + Math.min(i * 0.6, w - 0.08), y0 + 2.4, z, layer); }
 function grill(x, z, layer) { box(1.0, 0.9, 0.6, MAT.dark, x, 0, z, layer); box(1.0, 0.05, 0.6, MAT.steel, x, 0.9, z, layer); }
 function table(x, z, seats, layer, round) {
   if (round) cyl(0.45, 0.75, MAT.wood, x, 0, z, layer, 16); else box(1.4, 0.06, 0.8, MAT.wood, x - 0.7, 0.72, z - 0.4, layer);
@@ -2220,7 +2301,7 @@ function buildInstalls(d, h) {
 /* ---------------- capas y modos ---------------- */
 function applyLayers() {
   const L = state.layers, xr = state.mode === "xray";
-  const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext", vecinos: L.vecinos, entorno: true, terreno: true};
+  const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true};
   Object.entries(groups).forEach(([k, g]) => g.visible = vis[k] !== false);
   ["wall", "wallExt", "slab", "accent", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "steel", "dark", "stone"].forEach(k => {
     const m = MAT[k], t = xr ? (k.startsWith("floor") ? 0.35 : 0.12) : 1;
@@ -2229,7 +2310,18 @@ function applyLayers() {
   const f = state.mode === "plan" ? 2.3 : state.mode === "walk" ? 0.35 : 1.15;
   if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) s.scale.copy(s.userData.base).multiplyScalar(f); });
 }
-let walk = null;
+let walk = null, tween = null;
+const far = () => clamp(1.15 * Math.max(1, canvas.clientHeight) / Math.max(1, canvas.clientWidth), 1, 2.1);   // en celular vertical la cámara se aleja para que entre la casa completa
+const viewAt = (tgt, off, k = far()) => ({tgt, pos: tgt.clone().add(off.multiplyScalar(k))});
+const homeView = d => viewAt(new THREE.Vector3(d.W / 2, d.pisos * state.norm.h * 0.4, d.z0 + d.fd * 0.4), new THREE.Vector3(-12, 5.5 + d.pisos * 2.2 - d.pisos * state.norm.h * 0.4, -7.6 - d.z0 - d.fd * 0.4));
+const siteView = d => viewAt(new THREE.Vector3(d.W / 2 + 12, 0, d.D / 2 + 8), new THREE.Vector3(-67, 78, -113 - d.D / 2), Math.sqrt(far()));
+function flyTo(v, dur, delay = 0) { tween = {p0: cam.position.clone(), t0: controls.target.clone(), p1: v.pos, t1: v.tgt, dur, t: -delay}; }
+function stepTween(dt) {
+  if (!tween) return; tween.t += dt; if (tween.t < 0) return;
+  const k = Math.min(1, tween.t / tween.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  cam.position.lerpVectors(tween.p0, tween.p1, e); controls.target.lerpVectors(tween.t0, tween.t1, e); if (k >= 1) tween = null;
+}
+canvas.addEventListener("pointerdown", () => { tween = null; });
 function applyMode(rebuild) {
   const m = state.mode, d = design, h = state.norm.h;
   cutPlane.constant = m === "cut" || m === "plan" ? state.floor * h + state.cut : 1000;
@@ -2244,8 +2336,13 @@ function applyMode(rebuild) {
     const W = d.W, D = d.D, c = canvas.clientWidth / Math.max(1, canvas.clientHeight), span = Math.max(D / 2 + 2.5, (W / 2 + 2.5) / c);
     ortho.left = -span * c; ortho.right = span * c; ortho.top = span; ortho.bottom = -span; ortho.updateProjectionMatrix();
     ortho.position.set(W / 2, 60, D / 2); ortho.up.set(0, 0, 1); ortho.lookAt(W / 2, 0, D / 2);
+  } else if (m === "site") {   // vista del condominio: dónde está el lote, el club, la playa y la carretera
+    flyTo(siteView(d), 1.6);
   } else if (rebuild || m === "ext") {
-    if (rebuild) { controls.target.set(d.W / 2, d.pisos * h * 0.45, d.z0 + d.fd * 0.45); cam.position.set(d.W / 2 - 8, 2.6 + d.pisos * 1.6, -10.5); }
+    const v = homeView(d);
+    if (state.intro) { state.intro = false; const s = siteView(d); cam.position.copy(s.pos); controls.target.copy(s.tgt); flyTo(v, 3.2, 1.3); }
+    else if (rebuild) { tween = null; cam.position.copy(v.pos); controls.target.copy(v.tgt); }
+    else if (m === "ext" && cam.position.distanceTo(controls.target) > 70) flyTo(v, 1.4);
   }
   applyLayers();
   $$("#modes button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
@@ -2301,7 +2398,9 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   resize();
-  if (state.mode === "walk" && walk) stepWalk(dt); else if (state.mode !== "plan") controls.update();
+  if (state.mode === "walk" && walk) stepWalk(dt); else if (state.mode !== "plan") { stepTween(Math.min(0.25, (now - (frame.prev || now)) / 1000)); frame.prev = now; controls.update(); }
+  updateShadow(); if (groups.lugares) groups.lugares.children.forEach(s => { if (s.userData.pbase) s.scale.copy(s.userData.pbase).multiplyScalar(clamp(cam.aspect * 1.25, 0.6, 1)); });
+  if (groups.lugares) groups.lugares.visible = state.mode === "site" || (state.mode === "ext" && cam.position.distanceTo(controls.target) > 60);
   renderer.clippingPlanes = [];
   renderer.render(scene, state.mode === "plan" ? ortho : cam);
   requestAnimationFrame(frame);
@@ -2407,7 +2506,7 @@ function regen(keepView) {
 $("#proj").innerHTML = PROJ.map(p => `<option value="${p.id}">${p.name}${p.km ? " · " + p.km : ""}</option>`).join("");
 $("#estilo").innerHTML = Object.entries(USOS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
 $("#ambs").innerHTML = Object.entries(AMB).map(([k, v]) => `<label><input id="amb_${k}" type="checkbox">${v}</label>`).join("");
-$("#proj").addEventListener("change", e => { const p = PROJ.find(x => x.id === e.target.value); state.proj = p.id; state.W = p.W; state.D = p.D; syncForm(); regen(); });
+$("#proj").addEventListener("change", e => { const p = PROJ.find(x => x.id === e.target.value); state.proj = p.id; state.W = p.W; state.D = p.D; state.intro = state.mode === "ext"; syncForm(); regen(); });
 $("#form").addEventListener("change", e => { if (e.target.id === "proj") return; readForm(); regen(true); });
 $("#opts").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; state.opt = b.dataset.o; regen(true); });
 $("#modes").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.m; applyMode(false); });
@@ -2444,7 +2543,7 @@ function localParse(t) {
   if (/hamaca|descans|tranquil|relaj/.test(t)) out.amb.push("hamaca");
   if (/huerto|plantas|jard[ií]n|verde|flores/.test(t)) out.amb.push("huerto");
   if (/deporte|f[uú]tbol|fulbito|b[aá]squet|v[oó]ley|ejercicio|gimnasio/.test(t)) out.amb.push("deportes");
-  if (/abuel|mayores|adulto mayor|silla de ruedas|discapacidad|rodilla|no pueden subir/.test(t)) out.amb.push("mayores");
+  if (/abuel|mayores|adulto mayor|silla de ruedas|discapacidad|rodilla|no pueden subir|bast[oó]n|andador|muletas/.test(t)) out.amb.push("mayores");
   const nm = raw.match(/(?:llamad[oa]|se llamar[aá]|nombre(?: del negocio)?(?: es| ser[aá])?)\s*[:"“']?\s*([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ'&]+(?:\s+[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ'&]+){0,3})/);
   if (nm) out.nombre_negocio = nm[1];
   return out;
@@ -2458,7 +2557,33 @@ const SCHEMA_G = {type: "OBJECT", properties: {
   required: ["uso", "pisos", "dormitorios", "banos", "piscina", "cochera", "terraza", "cuarto_servicio", "opcion", "ambientacion", "explicacion", "recomendaciones"]};
 const store = {get: k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} }};
 const GAPI = "https://generativelanguage.googleapis.com/v1beta";
-async function pickModel(key) {   // usa el modelo Flash más reciente disponible para la clave (los Flash están en la capa gratuita)
+const SYS = "Eres el asistente de diseño de Vivaldi Inmobiliaria (lotes de playa en Asia y Cerro Azul, Perú). Analizas lo que el cliente le cuenta al asesor (familia, presupuesto, si quiere emprender un negocio, gustos) y lo conviertes en parámetros para un simulador de construcción. Respeta los límites del lote y la normativa indicada. 'dormitorios' es el número de habitaciones si el uso es hospedaje. En 'explicacion' escribe 2 a 4 frases en español, cálidas y concretas, dirigidas al cliente, explicando por qué esta propuesta le conviene. Da 2 a 4 recomendaciones técnicas breves. No inventes precios ni prometas valorización. No menciones que eres un modelo ni una inteligencia artificial.";
+const FIELDS = `Responde SOLO con un objeto JSON con estas claves: uso (${Object.keys(USOS).join("|")}), pisos (entero), dormitorios (entero), banos (entero), piscina (true/false), cochera (true/false), terraza (true/false), cuarto_servicio (true/false), opcion (compacta|equilibrada|maxima), nombre_negocio (texto, vacío si no hay negocio), ambientacion (lista con cero o más de: ${Object.keys(AMB).join(", ")}), explicacion (texto), recomendaciones (lista de textos).`;
+function briefing(text) {
+  const n = state.norm, proj = PROJ.find(p => p.id === state.proj);
+  return `Proyecto: ${proj.name}. Lote de ${state.W} m de frente por ${state.D} m de fondo (${state.W * state.D} m²). Normativa ingresada: retiro frontal ${n.rf} m, área libre mínima ${n.al}%, máximo ${n.maxP} pisos.\nLo que cuenta el cliente: ${text}`;
+}
+async function post(url, body, headers, ms) {   // POST con tiempo máximo de espera
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(url, {method: "POST", headers: {"content-type": "application/json", ...headers}, body: JSON.stringify(body), signal: c.signal});
+    const j = await r.json().catch(() => ({}));
+    return {status: r.status, ok: r.ok, j};
+  } catch (e) { return {status: 0, ok: false, j: {error: {message: c.signal.aborted ? "tardó demasiado" : "sin conexión"}}}; }
+  finally { clearTimeout(t); }
+}
+const errMsg = r => r.status === 429 ? "límite del momento" : r.status === 503 ? "servicio saturado" : ((r.j.error && (r.j.error.message || r.j.error)) || "error " + r.status);
+function readJSON(s) {   // tolera texto alrededor del objeto
+  s = String(s || ""); const i = s.indexOf("{"), k = s.lastIndexOf("}");
+  const o = JSON.parse(i >= 0 && k > i ? s.slice(i, k + 1) : s);
+  if (!o || typeof o !== "object" || !o.uso) throw new Error("respuesta incompleta");
+  const num = v => (v === "" || v == null || isNaN(+v)) ? undefined : Math.round(+v), bool = v => v == null || v === "" ? undefined : (v === true || v === "true" || v === "si" || v === "sí");
+  return {...o, uso: USOS[o.uso] ? o.uso : undefined, pisos: num(o.pisos), dormitorios: num(o.dormitorios), banos: num(o.banos),
+    piscina: bool(o.piscina), cochera: bool(o.cochera), terraza: bool(o.terraza), cuarto_servicio: bool(o.cuarto_servicio),
+    opcion: OPTS[o.opcion] ? o.opcion : undefined, ambientacion: [].concat(o.ambientacion || []).filter(a => AMB[a]),
+    explicacion: String(o.explicacion || ""), recomendaciones: [].concat(o.recomendaciones || []).map(String).slice(0, 4)};
+}
+async function pickModel(key) {   // el modelo Flash más reciente disponible para la clave (los Flash están en la capa gratuita)
   const cached = store.get("viv_gm"); if (cached) return cached;
   let best = "gemini-flash-latest";
   try {
@@ -2470,21 +2595,39 @@ async function pickModel(key) {   // usa el modelo Flash más reciente disponibl
   } catch (e) {}
   store.set("viv_gm", best); return best;
 }
-async function askAssistant(text) {
-  const key = store.get("viv_gk"); if (!key) return null;
-  const n = state.norm, proj = PROJ.find(p => p.id === state.proj), model = await pickModel(key);
-  const body = {
-    systemInstruction: {parts: [{text: "Eres el asistente de diseño de Vivaldi Inmobiliaria (lotes de playa en Asia y Cerro Azul, Perú). Analizas lo que el cliente le cuenta al asesor (familia, presupuesto, si quiere emprender un negocio, gustos) y lo conviertes en parámetros para un simulador de construcción. Respeta los límites del lote y la normativa indicada. 'dormitorios' es el número de habitaciones si el uso es hospedaje. En 'explicacion' escribe 2 a 4 frases en español, cálidas y concretas, dirigidas al cliente, explicando por qué esta propuesta le conviene. Da 2 a 4 recomendaciones técnicas breves. No inventes precios ni prometas valorización. No menciones que eres un modelo ni una inteligencia artificial."}]},
-    contents: [{role: "user", parts: [{text: `Proyecto: ${proj.name}. Lote de ${state.W} m de frente por ${state.D} m de fondo (${state.W * state.D} m²). Normativa ingresada: retiro frontal ${n.rf} m, área libre mínima ${n.al}%, máximo ${n.maxP} pisos.\nLo que cuenta el cliente: ${text}`}]}],
+async function viaGemini(key, text) {   // si un modelo está saturado o sin cupo, prueba el siguiente (cada modelo tiene su propio cupo)
+  const body = {systemInstruction: {parts: [{text: SYS}]}, contents: [{role: "user", parts: [{text: briefing(text)}]}],
     generationConfig: {responseMimeType: "application/json", responseSchema: SCHEMA_G, temperature: 0.4}};
-  let r = await fetch(`${GAPI}/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(body)});
-  if (r.status === 404) { store.set("viv_gm", ""); r = await fetch(`${GAPI}/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(key)}`, {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(body)}); }
-  const j = await r.json().catch(() => ({}));
-  if (r.status === 429) throw new Error("se alcanzó el límite gratuito del momento; intenta en unos minutos");
-  if (!r.ok) throw new Error((j.error && j.error.message) || "error " + r.status);
-  const txt = (((j.candidates || [])[0] || {}).content || {}).parts;
-  if (!txt) throw new Error("respuesta vacía");
-  return JSON.parse(txt.map(p => p.text || "").join(""));
+  const models = [...new Set([await pickModel(key), "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"])];
+  let last = "";
+  for (const m of models) {
+    const r = await post(`${GAPI}/models/${m}:generateContent?key=${encodeURIComponent(key)}`, body, {}, 30000);
+    if (r.ok) { const parts = (((r.j.candidates || [])[0] || {}).content || {}).parts; if (parts) return readJSON(parts.map(p => p.text || "").join("")); last = "respuesta vacía"; continue; }
+    last = errMsg(r); if (r.status === 400 || r.status === 401 || r.status === 403) break;   // clave inválida: no insistir
+  }
+  throw new Error("Gemini: " + last);
+}
+async function viaChat(name, url, key, models, text, ms) {   // servicios con formato de chat estándar
+  let last = "";
+  for (const m of models) {
+    const r = await post(url, {model: m, temperature: 0.4, response_format: {type: "json_object"}, messages: [{role: "system", content: SYS + "\n" + FIELDS}, {role: "user", content: briefing(text)}]},
+      key ? {authorization: "Bearer " + key} : {}, ms);
+    if (r.ok) { try { return readJSON((((r.j.choices || [])[0] || {}).message || {}).content); } catch (e) { last = e.message; continue; } }
+    last = errMsg(r); if (r.status === 401 || r.status === 403) break;
+  }
+  throw new Error(name + ": " + last);
+}
+async function askAssistant(text, onStep) {   // cadena: servicios con clave propia (más rápidos) y luego el servicio abierto sin clave
+  const gk = store.get("viv_gk"), qk = store.get("viv_qk"), steps = [];
+  if (qk) steps.push(["Groq", () => viaChat("Groq", "https://api.groq.com/openai/v1/chat/completions", qk, ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"], text, 25000)]);
+  if (gk) steps.push(["Gemini", () => viaGemini(gk, text)]);
+  steps.push(["servicio abierto", () => viaChat("Servicio abierto", "https://text.pollinations.ai/openai", "", ["openai", "openai-fast"], text, 60000)]);
+  const errs = [];
+  for (const [name, fn] of steps) {
+    onStep && onStep(name);
+    try { const res = await fn(); res.via = name; return res; } catch (e) { errs.push(e.message); }
+  }
+  throw new Error(errs.join(" · "));
 }
 function applyParams(o) {
   const p = state.prog, n = state.norm;
@@ -2503,14 +2646,16 @@ $("#aiGo").addEventListener("click", async () => {
   const t = $("#aiText").value.trim(), out = $("#aiOut"), btn = $("#aiGo");
   if (!t) { out.innerHTML = "<p>Escribe o dicta lo que el cliente quiere.</p>"; return; }
   btn.disabled = true; btn.textContent = "Preparando la propuesta…";
+  out.innerHTML = `<p class="small">Analizando lo que cuenta el cliente…</p>`;
   let res = null, err = null;
-  try { res = await askAssistant(t); } catch (e) { err = e.message; }
+  try { res = await askAssistant(t, name => { out.innerHTML = `<p class="small">Analizando lo que cuenta el cliente (${name})…</p>`; }); } catch (e) { err = e.message; }
   const local = localParse(t);
+  if (res) { const amb = [...new Set([...(res.ambientacion || []), ...(local.amb || [])])]; res = {...local, ...Object.fromEntries(Object.entries(res).filter(([, v]) => v !== undefined)), ambientacion: amb}; }   // lo que el servicio no captó lo completa la lectura local
   applyParams(res || local); syncForm(); regen();
   const tags = Object.keys(state.prog.amb || {}).map(k => `<span class="chip">${AMB[k]}</span>`).join("");
   out.innerHTML = res
-    ? `<p class="tag">Propuesta para el cliente</p><p>${esc(res.explicacion)}</p>${tags ? `<p>${tags}</p>` : ""}${res.recomendaciones && res.recomendaciones.length ? `<ul>${res.recomendaciones.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`
-    : `<p class="tag">Propuesta para el cliente</p><p>${summary()}</p>${tags ? `<p>${tags}</p>` : ""}${err ? `<p class="small">El asistente en línea no respondió (${esc(err)}); la propuesta se armó con la lectura automática.</p>` : `<p class="small">Activa el asistente en línea gratuito en ⚙ para entender pedidos más libres y explicar la propuesta al cliente.</p>`}`;
+    ? `<p class="tag">Propuesta para el cliente</p><p>${esc(res.explicacion)}</p>${tags ? `<p>${tags}</p>` : ""}${res.recomendaciones && res.recomendaciones.length ? `<ul>${res.recomendaciones.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<p class="small">Analizado en línea (${esc(res.via)}).</p>`
+    : `<p class="tag">Propuesta para el cliente</p><p>${summary()}</p>${tags ? `<p>${tags}</p>` : ""}<p class="small">${navigator.onLine === false ? "Sin internet: la propuesta se armó con la lectura automática del equipo." : `Los servicios en línea no respondieron esta vez (${esc(err || "")}); la propuesta se armó con la lectura automática. Puedes intentarlo de nuevo en un momento.`}</p>`;
   btn.disabled = false; btn.textContent = "Diseñar propuesta";
   document.body.dataset.tab = "view"; $$(".tabs button").forEach(x => x.classList.toggle("on", x.dataset.t === "view"));
 });
@@ -2522,8 +2667,8 @@ function summary() {
   if (p.piscina) parts.push("piscina"); if (p.cochera) parts.push("cochera"); if (p.terraza) parts.push("terraza"); if (p.servicio) parts.push("cuarto de servicio");
   return `Propuesta: ${parts.join(", ")}${biz ? "" : `, como ${USOS[p.estilo].toLowerCase()}`}. Opción ${OPTS[state.opt].toLowerCase()}. Puedes ajustar cualquier detalle en Configurar.`;
 }
-$("#gear").addEventListener("click", () => { $("#keyDlg").showModal(); $("#akey").value = store.get("viv_gk"); });
-$("#keySave").addEventListener("click", () => { store.set("viv_gk", $("#akey").value.trim()); store.set("viv_gm", ""); $("#keyDlg").close(); });
+$("#gear").addEventListener("click", () => { $("#keyDlg").showModal(); $("#akey").value = store.get("viv_gk"); $("#qkey").value = store.get("viv_qk"); });
+$("#keySave").addEventListener("click", () => { store.set("viv_gk", $("#akey").value.trim()); store.set("viv_qk", $("#qkey").value.trim()); store.set("viv_gm", ""); $("#keyDlg").close(); });
 
 /* ---------------- ficha para el cliente ---------------- */
 $("#ficha").addEventListener("click", async () => {
@@ -2557,7 +2702,7 @@ function wrap(g, t, x, y, w, lh) { const ws = t.split(" "); let line = ""; ws.fo
 /* ---------------- inicio ---------------- */
 syncForm(); regen();
 requestAnimationFrame(frame);
-window.__sim = {state, get design() { return design; }, regen, applyMode};
+window.__sim = {state, get design() { return design; }, regen, applyMode, cam, controls};
 })();
 </script>
 </body></html>
