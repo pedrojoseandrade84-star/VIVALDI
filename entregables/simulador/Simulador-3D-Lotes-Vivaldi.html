@@ -105,6 +105,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
 #loading{position:absolute;inset:0;display:grid;place-content:center;gap:6px;text-align:center;background:linear-gradient(#cfe3f3,#efe6d6);color:var(--nv);z-index:5;padding:24px;font-size:15px}
 #loading span{font-size:13px;color:var(--mut)}#loading[hidden]{display:none}#loading.err{background:#fff}
 #tourBtn.on{background:var(--nv);color:#fff}
+table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-child{text-align:center;font-weight:600}table.rooms.cmp td.on{font-weight:800}.cmp td:first-child{text-align:left;color:var(--mut)}.cmp td.on{background:#E3F0FA;font-weight:800}.cmp button{font:800 12px Manrope,sans-serif;border:0;background:none;color:var(--nv);padding:4px 2px;cursor:pointer;min-height:32px}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -2611,6 +2612,7 @@ function analysis() {
   const met = Object.entries(metrado).filter(([k]) => !/Acometida/.test(k)).sort();
   const guests = d.rooms.filter(r => r.type === "guest").length, shopA = d.rooms.filter(r => r.biz).reduce((s, r) => s + r.area, 0);
   const k3 = biz ? (u === "hospedaje" ? [`${guests}`, "habitaciones"] : u === "restaurante" ? [`${d.tables || 0}`, "mesas de 4 personas"] : [`${fmt(shopA, 0)} m²`, "de local"]) : [`${m.dorm}`, "dormitorios"];
+  const cmp = ["compacta", "equilibrada", "maxima"].map(o => { const keep = state.opt; state.opt = o; const dd = generate(); state.opt = keep; return {o, d: dd}; });
   $("#analysis").innerHTML = `
   <div class="kpis">
     <div><b>${fmt(m.techada, 0)} m²</b><span>área techada</span></div>
@@ -2620,6 +2622,13 @@ function analysis() {
     <div><b>${k3[0]}</b><span>${k3[1]}</span></div>
     <div><b>${m.banos}</b><span>baños</span></div>
   </div>
+  <h4>Comparar opciones</h4>
+  <table class="rooms cmp"><tr><td></td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}"><button type="button" data-o="${c.o}">${OPTS[c.o].replace(" aprovechamiento", "")}</button></td>`).join("")}</tr>
+    <tr><td>Pisos</td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}">${c.d.pisos}</td>`).join("")}</tr>
+    <tr><td>Área techada</td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}">${fmt(c.d.metrics.techada, 0)} m²</td>`).join("")}</tr>
+    <tr><td>${biz ? "Ambientes" : "Dormitorios"}</td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}">${biz ? c.d.rooms.filter(r => r.type !== "stair" && r.type !== "hall").length : c.d.metrics.dorm}</td>`).join("")}</tr>
+    <tr><td>Área libre</td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}">${fmt(c.d.metrics.libreP, 0)}%</td>`).join("")}</tr>
+    <tr><td>Costo ref.</td>${cmp.map(c => `<td class="${c.o === state.opt ? "on" : ""}">${soles(c.d.metrics.techada * state.costM2)}</td>`).join("")}</tr></table>
   <h4>Normativa (parámetros ingresados)</h4>
   <ul class="checks">${d.checks.map(c => `<li class="${c.ok ? "ok" : "no"}">${c.ok ? "✓" : "!"} ${c.t}</li>`).join("")}</ul>
   ${d.warnings.length ? `<div class="warn">${d.warnings.map(w => `<p>${w}</p>`).join("")}</div>` : ""}
@@ -2648,6 +2657,7 @@ function analysis() {
     <li>Estudio de mecánica de suelos antes de diseñar la cimentación.</li>
     ${biz ? `<li>Reglamento interno del condominio: que permita ${u === "hospedaje" ? "hospedaje" : "comercio"}.</li><li>Licencia de funcionamiento municipal e Inspección Técnica de Seguridad (ITSE).</li>${u === "restaurante" ? "<li>Carné de sanidad del personal, trampa de grasa y extracción de humos.</li>" : ""}${u === "hospedaje" ? "<li>Inscripción del establecimiento de hospedaje y señalización de evacuación.</li>" : ""}` : ""}
   </ul>`;
+  $$("#analysis .cmp button").forEach(b => b.addEventListener("click", () => { state.opt = b.dataset.o; regen(true); }));
   const ci = $("#costM2"); ci.addEventListener("change", () => { state.costM2 = Math.max(100, +ci.value || 0); analysis(); });
 }
 function recommendations(d) {
