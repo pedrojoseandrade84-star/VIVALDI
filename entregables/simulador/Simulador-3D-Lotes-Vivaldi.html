@@ -156,6 +156,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
         <label><input type="checkbox" name="elec" checked><span class="sw" style="background:#ffc400"></span>Eléctricas</label><label><input type="checkbox" name="agua" checked><span class="sw" style="background:#1e88e5"></span>Agua fría</label>
         <label><input type="checkbox" name="caliente" checked><span class="sw" style="background:#e53935"></span>Agua caliente</label><label><input type="checkbox" name="desague" checked><span class="sw" style="background:#8d6e63"></span>Desagüe</label>
         <label><input type="checkbox" name="vecinos" checked>Vecinos</label>
+        <p class="small" style="grid-column:1/-1;margin:2px 0 0">Las instalaciones van empotradas: se ven en Corte, Rayos X y Plano.</p>
       </div></details>
     <div class="pill"><button id="tourBtn" type="button">▶ Presentar</button></div>
     <div class="pill" id="maqPill" hidden><button id="maqBtn" type="button">Plano del condominio</button></div>
@@ -1723,7 +1724,9 @@ const skyDome = new THREE.Mesh(new THREE.SphereGeometry(2600, 32, 16), new THREE
 skyDome.renderOrder = -1; skyDome.frustumCulled = false; scene.add(skyDome);
 const roomLight = new THREE.PointLight(0xfff0dc, 0, 10, 1.6); scene.add(roomLight);   // luz de ambiente interior al recorrer la casa
 function updateShadow() {
-  roomLight.intensity = state.mode === "walk" ? (state.time === "tarde" ? 2.2 : 1.6) : 0; if (state.mode === "walk") roomLight.position.set(cam.position.x, cam.position.y + 0.5, cam.position.z);   // la zona con sombras sigue a la cámara: sombras nítidas de cerca y también en la vista aérea
+  roomLight.intensity = state.mode === "walk" ? (state.time === "tarde" ? 1.8 : 1.0) : 0;
+  const inside = state.mode === "walk"; if (inside !== updateShadow.inside) { updateShadow.inside = inside; if (inside) { hemi.userData.c = hemi.color.getHex(); hemi.color.set(0xf4ebdf); } else if (hemi.userData.c !== undefined) hemi.color.set(hemi.userData.c); }   // dentro de la casa, luz ambiente cálida (no el azul del cielo)
+  if (state.mode === "walk") roomLight.position.set(cam.position.x, cam.position.y + 0.5, cam.position.z);   // la zona con sombras sigue a la cámara: sombras nítidas de cerca y también en la vista aérea
   const t = controls.target, dist = state.mode === "walk" ? 12 : cam.position.distanceTo(t), ext = clamp(dist * 0.62, 16, 170);
   const sc = sun.shadow.camera; sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.far = 500; sc.updateProjectionMatrix();
   sun.shadow.normalBias = 0.02 + ext / 900; sun.shadow.bias = -0.0002 - ext / 400000;   // sin rayas de sombra al alejarse
@@ -1741,6 +1744,7 @@ function setTime() {   // día o atardecer: sol, cielo, reflejos y luces encendi
   const u = sky.material.uniforms;
   u.turbidity.value = tarde ? 6 : 2.2; u.rayleigh.value = tarde ? 2.6 : 2.0; u.mieCoefficient.value = tarde ? 0.008 : 0.004; u.mieDirectionalG.value = 0.86; u.sunPosition.value.copy(v);
   SKY_U.sunDir.value.copy(v);
+  updateShadow.inside = undefined;
   sun.color.set(tarde ? 0xffa45c : 0xffe9cc); sun.intensity = tarde ? 1.5 : 2.9;
   hemi.intensity = tarde ? 0.22 : 0.2; hemi.color.set(tarde ? 0xffc29a : 0xcfe3f5); hemi.groundColor.set(tarde ? 0x8a6a55 : 0xb89c72);
   renderer.toneMappingExposure = tarde ? 0.62 : 0.5;
@@ -1813,7 +1817,7 @@ const MC = (color, o = {}) => {   // material compartido para el entorno: mismas
   if (!MCACHE.has(k)) MCACHE.set(k, M(color, o)); return MCACHE.get(k);
 };
 const MAT = {
-  wall: M(0xffffff, {map: makeTex("plaster")}), wallExt: M(0xece2d3, {map: makeTex("plaster")}), accent: M(0x9b6a43, {roughness: 0.7}), slab: M(0xd8d3cb), glass: M(0x9fcbe6, {transparent: true, opacity: 0.32, roughness: 0.04, metalness: 0.5, envMapIntensity: 1.3}),
+  wall: M(0xf1ebe1, {map: makeTex("plaster")}), baseboard: M(0x8a7a68, {roughness: 0.6}), throw: M(0xb8664a, {roughness: 1}), counter: M(0x34302c, {roughness: 0.35, metalness: 0.05, envMapIntensity: 0.25}), wallExt: M(0xece2d3, {map: makeTex("plaster")}), accent: M(0x9b6a43, {roughness: 0.7}), slab: M(0xd8d3cb), glass: M(0x9fcbe6, {transparent: true, opacity: 0.32, roughness: 0.04, metalness: 0.5, envMapIntensity: 1.3}),
   frame: M(0x3b3f44, {metalness: 0.5, roughness: 0.4}),
   sand: M(0xffffff, {map: makeTex("sand")}), grass: M(0xffffff, {map: makeTex("grass")}), street: M(0xffffff, {map: makeTex("asphalt"), roughness: 0.95}), walk: M(0xffffff, {map: makeTex("pavers")}),
   pave: M(0xffffff, {map: makeTex("pavers")}), water: M(0x7fd3ee, {map: RIPPLE, transparent: true, opacity: 0.9, roughness: 0.04, metalness: 0.2, envMapIntensity: 1.2}), sea: M(0x5aa3c4, {map: RIPPLE2, roughness: 0.1, metalness: 0.3, envMapIntensity: 1}),
@@ -1827,8 +1831,9 @@ const MAT = {
   cold: M(0x1e88e5, {emissive: 0x0a2f55}), hot: M(0xe53935, {emissive: 0x4a0c0c}), sew: M(0x8d6e63, {emissive: 0x2a1d18}),
   court: M(0x2f7d6d), courtLine: M(0xffffff), clay: M(0xb55b3c), toy1: M(0xe53935), toy2: M(0xffc107), toy3: M(0x1e88e5),
 };
-const BUILD_MATS = ["wall", "wallExt", "accent", "slab", "glass", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "white", "dark", "fabric", "fabric2", "cushion", "rug", "bedding", "steel", "tank", "light", "bulb", "water", "poolEdge", "leaf", "leaf2", "trunk", "pot", "flower", "toy1", "toy2", "toy3", "stone"];
+const BUILD_MATS = ["baseboard", "throw", "counter", "wall", "wallExt", "accent", "slab", "glass", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "white", "dark", "fabric", "fabric2", "cushion", "rug", "bedding", "steel", "tank", "light", "bulb", "water", "poolEdge", "leaf", "leaf2", "trunk", "pot", "flower", "toy1", "toy2", "toy3", "stone"];
 [...BUILD_MATS, "e1", "e2", "e3", "cold", "hot", "sew", "meter"].forEach(k => { MAT[k].clippingPlanes = [cutPlane]; });
+["wall", "baseboard", "throw", "floorLiving", "floorWet", "floorBed", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "wood", "accent", "slab", "pot", "flower"].forEach(k => { MAT[k].envMapIntensity = 0.12; });   // interiores: sin reflejo azul del cielo
 
 function add(o, layer) { (groups[layer] || (groups[layer] = new THREE.Group(), groups[layer].name = layer, root.add(groups[layer]), groups[layer])).add(o); return o; }
 function box(w, h, d, mat, x, y, z, layer, opts = {}) {
@@ -1854,7 +1859,7 @@ const FROND = (() => {   // hoja de palmera dibujada: nervio central y foliolos,
 })();
 const PALM_LEAF = (() => { const g = new THREE.PlaneGeometry(1.3, 3.0, 1, 8); g.rotateX(-Math.PI / 2); g.translate(0, 0, 1.5); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const z = p.getZ(i); p.setY(i, p.getY(i) - 0.085 * z * z + Math.abs(p.getX(i)) * 0.25); } g.computeVertexNormals(); return g; })();
 const FROND_MAT = M(0xffffff, {map: FROND, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.75}), FROND_DEPTH = new THREE.MeshDepthMaterial({depthPacking: THREE.RGBADepthPacking, map: FROND, alphaTest: 0.45, side: THREE.DoubleSide});
-const TRUNK_TEX = (() => { const c = document.createElement("canvas"); c.width = 32; c.height = 128; const g = c.getContext("2d"); g.fillStyle = "#8b7357"; g.fillRect(0, 0, 32, 128); for (let y = 0; y < 128; y += 8) { g.fillStyle = "rgba(60,45,30,.45)"; g.fillRect(0, y, 32, 2); g.fillStyle = "rgba(200,180,150,.25)"; g.fillRect(0, y + 3, 32, 2); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 4); t.encoding = THREE.sRGBEncoding; return t; })();
+const TRUNK_TEX = (() => { const c = document.createElement("canvas"); c.width = 32; c.height = 128; const g = c.getContext("2d"); g.fillStyle = "#8f8270"; g.fillRect(0, 0, 32, 128); const r = rnd(9); for (let y = 0; y < 128; y += 6 + r() * 4) { g.fillStyle = `rgba(55,45,35,${0.15 + r() * 0.2})`; g.fillRect(0, y, 32, 1.5); } for (let i = 0; i < 300; i++) { g.fillStyle = `rgba(${r() > 0.5 ? "255,250,240" : "40,30,20"},.12)`; g.fillRect(r() * 32, r() * 128, 2, 1); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 4); t.encoding = THREE.sRGBEncoding; return t; })();
 const PALM_TRUNK = M(0xffffff, {map: TRUNK_TEX});
 function palm(x, z, h, layer = "entorno", rr = Math.random) {
   const g = new THREE.Group(), lean = (rr() - 0.5) * 0.25;
@@ -1934,6 +1939,9 @@ function build(keep) {
     const y = r.lvl * h, wet = ["bath", "kitchen", "laundry", "prokitchen"].includes(r.type);
     const mat = wet ? MAT.floorWet : ["bed", "guest", "study"].includes(r.type) ? MAT.floorBed : r.type === "terrace" ? MAT.floorTerr : MAT.floorLiving;
     if (r.type !== "stair") plane(r.x + 0.01, r.z + 0.01, r.w - 0.02, r.d - 0.02, y + 0.025, mat, "losas", wet ? 1.2 : 1.6);
+    if (!r.open && r.type !== "stair") { const t = 0.1, k = 0.015, zb = MAT.baseboard;   // contrazócalo: remata el encuentro del piso con el muro
+      box(r.w - 0.2, t, k, zb, r.x + 0.1, y + 0.03, r.z + 0.07, "muros", {cast: false}); box(r.w - 0.2, t, k, zb, r.x + 0.1, y + 0.03, r.z + r.d - 0.085, "muros", {cast: false});
+      box(k, t, r.d - 0.2, zb, r.x + 0.07, y + 0.03, r.z + 0.1, "muros", {cast: false}); box(k, t, r.d - 0.2, zb, r.x + r.w - 0.085, y + 0.03, r.z + 0.1, "muros", {cast: false}); }
   });
   for (let lvl = 0; lvl < d.pisos; lvl++) buildWalls(d.rooms.filter(r => r.lvl === lvl), lvl, h);
   buildSlabs(d, h);
@@ -2218,7 +2226,7 @@ function buildFurniture(d, h) {
     if (r.type === "bed" || r.type === "guest") {
       const kids = /niños/.test(r.name), big = !kids && r.area >= 10.5, bw = big ? 1.6 : 1.0, bl = 2.0, bz = r.z + r.d - bl - 0.12;
       const beds = kids && r.w >= 2.8 ? [cx - 0.85, cx + 0.85 - bw] : [cx - bw / 2];
-      G(() => beds.forEach(bx => { box(bw, 0.35, bl, MAT.wood, bx, 0, bz, L); box(bw - 0.06, 0.2, bl - 0.1, MAT.bedding, bx + 0.03, 0.35, bz + 0.05, L); box(bw, 0.9, 0.08, MAT.fabric2, bx, 0.2, bz + bl - 0.02, L); box(bw - 0.1, 0.12, 0.35, MAT.white, bx + 0.05, 0.55, bz + bl - 0.5, L); box(bw - 0.06, 0.05, 0.8, kids ? MAT.toy3 : MAT.fabric, bx + 0.03, 0.56, bz + 0.15, L); }));
+      G(() => beds.forEach(bx => { box(bw, 0.35, bl, MAT.wood, bx, 0, bz, L); box(bw - 0.06, 0.2, bl - 0.1, MAT.bedding, bx + 0.03, 0.35, bz + 0.05, L); box(bw, 0.9, 0.08, MAT.fabric2, bx, 0.2, bz + bl - 0.02, L); box(bw - 0.1, 0.12, 0.35, MAT.white, bx + 0.05, 0.55, bz + bl - 0.5, L); box(bw + 0.04, 0.05, 0.8, kids ? MAT.toy3 : MAT.throw, bx - 0.02, 0.55, bz + 0.15, L); box(bw + 0.04, 0.2, 0.05, kids ? MAT.toy3 : MAT.throw, bx - 0.02, 0.37, bz + 0.12, L); }));
       if (!kids && r.w > bw + 1.2) G(() => [cx - bw / 2 - 0.5, cx + bw / 2 + 0.05].forEach(nx => { box(0.45, 0.5, 0.4, MAT.wood, nx, 0, r.z + r.d - 0.55, L); cyl(0.1, 0.3, MAT.light, nx + 0.22, 0.5, r.z + r.d - 0.35, L, 10, 0.07); }));
       G(() => { plane(cx - 1, bz - 0.9, 2, 1.4, 0.03, MAT.rug, L); box(Math.min(1.8, r.w - 0.4), 2.2, 0.55, MAT.white, r.x + 0.2, 0, r.z + 0.25, L); });
       if (kids) G(() => { box(0.6, 0.4, 0.4, MAT.toy2, r.x + r.w - 0.8, 0, r.z + 1.2, L); ball(0.15, MAT.toy1, r.x + r.w - 1.2, 0.15, r.z + 1.8, L); });
@@ -2237,8 +2245,8 @@ function buildFurniture(d, h) {
       if (dining) G(() => table(/^Comedor/.test(r.name) ? cx : r.x + Math.max(1.4, r.w * 0.22), /^Comedor/.test(r.name) ? cz : cz - 0.2, 6, L));
       pend();
     } else if (r.type === "kitchen") {
-      G(() => { box(r.w - 0.3, 0.88, 0.6, MAT.white, r.x + 0.15, 0, r.z + r.d - 0.75, L); box(r.w - 0.3, 0.04, 0.62, MAT.dark, r.x + 0.15, 0.88, r.z + r.d - 0.76, L);
-        box(r.w - 0.3, 0.7, 0.35, MAT.white, r.x + 0.15, 1.5, r.z + r.d - 0.5, L); box(0.75, 1.8, 0.7, MAT.steel, r.x + r.w - 0.95, 0, r.z + 0.25, L);
+      G(() => { box(r.w - 0.3, 0.88, 0.6, MAT.wood, r.x + 0.15, 0, r.z + r.d - 0.75, L); box(r.w - 0.3, 0.04, 0.62, MAT.counter, r.x + 0.15, 0.88, r.z + r.d - 0.76, L);
+        box(r.w - 0.3, 0.58, 0.02, MAT.floorWet, r.x + 0.15, 0.92, r.z + r.d - 0.17, L, {cast: false}); box(r.w - 0.3, 0.7, 0.35, MAT.wood, r.x + 0.15, 1.5, r.z + r.d - 0.5, L); box(0.75, 1.8, 0.7, MAT.steel, r.x + r.w - 0.95, 0, r.z + 0.25, L);
         box(0.6, 0.05, 0.5, MAT.dark, r.x + 0.4, 0.93, r.z + r.d - 0.7, L); if (r.area > 11) box(1.4, 0.9, 0.7, MAT.wood, cx - 0.7, 0, cz - 0.6, L); });
       r.fx = {sink: [r.x + r.w - 0.8, y + 0.85, r.z + r.d - 0.45], stove: [r.x + 0.6, y + 0.9, r.z + r.d - 0.45]};
     } else if (r.type === "prokitchen") {
@@ -2462,14 +2470,14 @@ function buildInstalls(d, h) {
 function applyLayers() {
   const L = state.layers, xr = state.mode === "xray";
   const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true, jardin: state.mode !== "cut" && state.mode !== "plan"};
-  if (state.mode === "walk") ["elec", "agua", "caliente", "desague"].forEach(k => vis[k] = false);   // al recorrer, las tuberías quedan dentro de los muros: se ven en Rayos X y Corte
+  if (["walk", "ext", "site"].includes(state.mode)) ["elec", "agua", "caliente", "desague"].forEach(k => vis[k] = false);   // las tuberías van empotradas: se ven en Corte, Rayos X y Plano   // al recorrer, las tuberías quedan dentro de los muros: se ven en Rayos X y Corte
   Object.entries(groups).forEach(([k, g]) => g.visible = vis[k] !== false);
   ["wall", "wallExt", "slab", "accent", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "steel", "dark", "stone"].forEach(k => {
     const m = MAT[k], t = xr ? (k.startsWith("floor") ? 0.35 : 0.12) : 1;
     m.transparent = xr; m.opacity = t; m.depthWrite = !xr; m.needsUpdate = true;
   });
   const f = state.mode === "plan" ? 2.3 : state.mode === "walk" ? 0.35 : 1.15;
-  if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) s.scale.copy(s.userData.base).multiplyScalar(f); });
+  if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) s.scale.copy(s.userData.base).multiplyScalar(f); if (state.mode !== "walk") s.visible = true; });
 }
 let walk = null, tween = null;
 const far = () => clamp(1.15 * Math.max(1, canvas.clientHeight) / Math.max(1, canvas.clientWidth), 1, 2.1);   // en celular vertical la cámara se aleja para que entre la casa completa
@@ -2564,7 +2572,8 @@ function frame(now) {
   resize();
   if (state.mode === "walk" && walk) stepWalk(dt); else if (state.mode !== "plan") { stepTween(Math.min(0.25, (now - (frame.prev || now)) / 1000)); frame.prev = now; controls.update(); }
   animateScene(now / 1000, Math.min(0.1, dt * 2)); updateShadow(); adaptQuality((now - (frame.pt || now)) / 1000); frame.pt = now;
-  if (!frame.shown && design) { frame.n = (frame.n || 0) + 1; if (frame.n > 2) { frame.shown = true; $("#loading").hidden = true; } } if (groups.lugares) groups.lugares.children.forEach(s => { if (s.userData.pbase) s.scale.copy(s.userData.pbase).multiplyScalar(clamp(cam.aspect * 1.25, 0.6, 1)); });
+  if (!frame.shown && design) { frame.n = (frame.n || 0) + 1; if (frame.n > 2) { frame.shown = true; $("#loading").hidden = true; } }
+  if (state.mode === "walk" && groups.etiquetas && groups.etiquetas.visible) groups.etiquetas.children.forEach(s => { const dd = s.position.distanceTo(cam.position); s.visible = dd > 2.2 && dd < 14; });   // al recorrer, sin carteles pegados a la cara if (groups.lugares) groups.lugares.children.forEach(s => { if (s.userData.pbase) s.scale.copy(s.userData.pbase).multiplyScalar(clamp(cam.aspect * 1.25, 0.6, 1)); });
   if (groups.lugares) groups.lugares.visible = state.mode === "site" || (state.mode === "ext" && cam.position.distanceTo(controls.target) > 60);
   renderer.clippingPlanes = [];
   renderer.render(scene, state.mode === "plan" ? ortho : cam);
