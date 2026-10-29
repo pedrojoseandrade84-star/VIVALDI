@@ -102,6 +102,9 @@ html{-webkit-text-size-adjust:100%}button,summary,label,select{touch-action:mani
 @media (max-width:560px){#joy{bottom:118px;width:110px;height:110px}#walkHelp{left:12px;right:12px;bottom:auto;top:116px;max-width:none;text-align:center}}
 #walkHelp{transition:opacity .6s}#walkHelp.fade{opacity:0;pointer-events:none}
 dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;box-shadow:0 0 0 100vmax rgba(6,25,40,.5);max-height:92vh;overflow:auto}
+#loading{position:absolute;inset:0;display:grid;place-content:center;gap:6px;text-align:center;background:linear-gradient(#cfe3f3,#efe6d6);color:var(--nv);z-index:5;padding:24px;font-size:15px}
+#loading span{font-size:13px;color:var(--mut)}#loading[hidden]{display:none}#loading.err{background:#fff}
+#tourBtn.on{background:var(--nv);color:#fff}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -138,6 +141,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
 </aside>
 <section id="view">
   <canvas id="c" aria-label="Vista 3D de la construcción en el lote"></canvas>
+  <div id="loading"><b>Preparando la vista 3D…</b><span>Cargando el entorno del condominio</span></div>
   <div class="bar top">
     <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
     <div class="pill" id="floors"></div>
@@ -153,6 +157,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
         <label><input type="checkbox" name="caliente" checked><span class="sw" style="background:#e53935"></span>Agua caliente</label><label><input type="checkbox" name="desague" checked><span class="sw" style="background:#8d6e63"></span>Desagüe</label>
         <label><input type="checkbox" name="vecinos" checked>Vecinos</label>
       </div></details>
+    <div class="pill"><button id="tourBtn" type="button">▶ Presentar</button></div>
     <div class="pill" id="maqPill" hidden><button id="maqBtn" type="button">Plano del condominio</button></div>
     <span id="optTitle"></span>
   </div>
@@ -1680,7 +1685,13 @@ function generate() {
 
 /* ---------------- Three.js: escena realista ---------------- */
 const canvas = $("#c");
-const renderer = new THREE.WebGLRenderer({canvas, antialias: true, powerPreference: "high-performance"});
+let renderer;
+try { renderer = new THREE.WebGLRenderer({canvas, antialias: true, powerPreference: "high-performance"}); }
+catch (e) {   // equipo sin gráficos 3D disponibles: mensaje claro en vez de pantalla en blanco
+  $("#loading").innerHTML = "<b>Este equipo no pudo abrir la vista 3D.</b><span>Prueba en Chrome o Safari actualizados, o en otro celular. Configurar y Análisis siguen disponibles.</span>"; $("#loading").classList.add("err"); throw e;
+}
+canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); $("#loading").hidden = false; $("#loading").innerHTML = "<b>Recuperando la vista 3D…</b>"; });   // iPhone libera los gráficos al cambiar de app
+canvas.addEventListener("webglcontextrestored", () => { setTime(); $("#loading").hidden = true; });
 let PR = Math.min(devicePixelRatio || 1, 2); renderer.setPixelRatio(PR);
 const perf = {n: 0, t: 0};
 function adaptQuality(dt) {   // si el equipo va lento (celulares antiguos), baja un poco la resolución para mantener la fluidez
@@ -2552,7 +2563,8 @@ function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   resize();
   if (state.mode === "walk" && walk) stepWalk(dt); else if (state.mode !== "plan") { stepTween(Math.min(0.25, (now - (frame.prev || now)) / 1000)); frame.prev = now; controls.update(); }
-  animateScene(now / 1000, Math.min(0.1, dt * 2)); updateShadow(); adaptQuality((now - (frame.pt || now)) / 1000); frame.pt = now; if (groups.lugares) groups.lugares.children.forEach(s => { if (s.userData.pbase) s.scale.copy(s.userData.pbase).multiplyScalar(clamp(cam.aspect * 1.25, 0.6, 1)); });
+  animateScene(now / 1000, Math.min(0.1, dt * 2)); updateShadow(); adaptQuality((now - (frame.pt || now)) / 1000); frame.pt = now;
+  if (!frame.shown && design) { frame.n = (frame.n || 0) + 1; if (frame.n > 2) { frame.shown = true; $("#loading").hidden = true; } } if (groups.lugares) groups.lugares.children.forEach(s => { if (s.userData.pbase) s.scale.copy(s.userData.pbase).multiplyScalar(clamp(cam.aspect * 1.25, 0.6, 1)); });
   if (groups.lugares) groups.lugares.visible = state.mode === "site" || (state.mode === "ext" && cam.position.distanceTo(controls.target) > 60);
   renderer.clippingPlanes = [];
   renderer.render(scene, state.mode === "plan" ? ortho : cam);
@@ -2838,6 +2850,24 @@ $("#maqBtn").addEventListener("click", () => {
 $("#maqImg").addEventListener("click", e => { const r = e.target.getBoundingClientRect(); state.mark[state.proj] = {x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height}; pinMaq(); });
 $("#maqZoom").addEventListener("click", () => { maqZ = maqZ > 1 ? 1 : 2.2; zoomMaq(); });
 $("#maqClear").addEventListener("click", () => { delete state.mark[state.proj]; pinMaq(); });
+/* presentación automática: entorno, casa, vuelta completa, atardecer e interior; un toque la detiene */
+const tour = {on: false};
+const wait = ms => new Promise(r => { const t0 = performance.now(), chk = () => !tour.on ? r(false) : performance.now() - t0 >= ms ? r(true) : requestAnimationFrame(chk); chk(); });
+function stopTour() { if (!tour.on) return; tour.on = false; controls.autoRotate = false; $("#tourBtn").classList.remove("on"); $("#tourBtn").textContent = "▶ Presentar"; }
+$("#tourBtn").addEventListener("click", async () => {
+  if (tour.on) { stopTour(); return; }
+  tour.on = true; $("#tourBtn").classList.add("on"); $("#tourBtn").textContent = "■ Detener";
+  const t0 = state.time, go = m => { state.mode = m; applyMode(false); };
+  go("site"); if (!await wait(4500)) return;
+  go("ext"); flyTo(homeView(design), 3); if (!await wait(3600)) return;
+  controls.autoRotate = true; controls.autoRotateSpeed = 1.6; if (!await wait(9000)) return;
+  state.time = "tarde"; setTime(); if (!await wait(7000)) return;
+  controls.autoRotate = false; state.time = t0; setTime();
+  state.floor = 0; go("cut"); flyTo({pos: new THREE.Vector3(design.W / 2 - 4, 14 + design.pisos * 2, design.z0 - 6), tgt: new THREE.Vector3(design.W / 2, 0, design.z0 + design.fd / 2)}, 2.5); if (!await wait(5000)) return;
+  if (design.pisos > 1) { state.floor = 1; applyMode(false); $$("#floors button").forEach(b => b.classList.toggle("on", +b.dataset.f === 1)); if (!await wait(4500)) return; }
+  state.floor = 0; go("ext"); flyTo(homeView(design), 2.5); stopTour();
+});
+canvas.addEventListener("pointerdown", stopTour); $("#modes").addEventListener("click", e => { if (e.isTrusted) stopTour(); });
 /* ---------------- ficha para el cliente ---------------- */
 $("#ficha").addEventListener("click", async () => {
   const d = design, m = d.metrics, proj = PROJ.find(p => p.id === state.proj);

@@ -11,6 +11,7 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin inte
 - **Plano del condominio**: fotos de las maquetas de La Portada del Sol, La Esmeralda, La Planicie y La Bahía de Paracas. El asesor toca dónde está el lote del cliente y esa ubicación aparece en la ficha para WhatsApp.
 - Entorno según cada maqueta: en La Portada del Sol la playa está cruzando la Panamericana (Km 115.2); La Esmeralda está rodeada de áreas verdes, arboledas y chacras (Club House Resort Privado); se agregó La Bahía de Paracas.
 - Casas vecinas de distintos estilos y colores, con techos, tanques de agua, jardines, autos y carteles de "Lote disponible"; cielo, mar, huarangos y sombras suaves.
+- Botón **▶ Presentar**: recorrido automático para mostrar al cliente (condominio, llegada a la casa, vuelta completa, atardecer y ambientes por piso). Un toque en la pantalla lo detiene.
 - Vista **Día / Atardecer**, con luces encendidas al caer el sol.
 - Tres opciones por lote: Compacta, Equilibrada y Máximo aprovechamiento, respetando retiro frontal, área libre y pisos máximos (editables).
 - Vista 3D: exterior, recorrido en primera persona (se sube por la escalera), corte por piso, rayos X y plano con medidas.
