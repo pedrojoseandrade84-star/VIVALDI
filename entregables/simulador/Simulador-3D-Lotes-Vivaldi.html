@@ -2988,12 +2988,16 @@ setTimeout(() => { if (!store.get("viv_tip")) { toast("Arrastra para girar · Do
 /* ---------------- ficha para el cliente ---------------- */
 $("#ficha").addEventListener("click", async () => {
   const d = design, m = d.metrics, proj = PROJ.find(p => p.id === state.proj);
-  renderer.render(scene, state.mode === "plan" ? ortho : cam);
+  const view0 = {mode: state.mode, pos: cam.position.clone(), tgt: controls.target.clone()};   // la ficha lleva siempre una vista exterior de la casa
+  if (state.mode !== "ext") { state.mode = "ext"; applyMode(false); const v = homeView(d); cam.position.copy(v.pos); controls.target.copy(v.tgt); cam.lookAt(v.tgt); cam.rotation.order = "XYZ"; controls.update(); updateShadow(); }
+  renderer.render(scene, cam);
   const shot = new Image(); shot.src = renderer.domElement.toDataURL("image/jpeg", 0.92); await shot.decode();
   const keep = {mode: state.mode, floor: state.floor};   // plano del primer piso con los nombres de los ambientes
   state.mode = "plan"; state.floor = 0; applyMode(false); renderer.render(scene, ortho);
   const planImg = new Image(); planImg.src = renderer.domElement.toDataURL("image/jpeg", 0.9); await planImg.decode();
-  state.mode = keep.mode; state.floor = keep.floor; applyMode(false);
+  state.mode = keep.mode; state.floor = keep.floor;
+  if (view0.mode !== "ext") { state.mode = view0.mode; cam.position.copy(view0.pos); controls.target.copy(view0.tgt); }
+  applyMode(false);
   const c = document.createElement("canvas"); c.width = 1080; c.height = 2400; const g = c.getContext("2d");
   g.fillStyle = "#fff"; g.fillRect(0, 0, 1080, 2400);
   g.fillStyle = "#0A3856"; g.fillRect(0, 0, 1080, 150);

@@ -12,7 +12,8 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin inte
 - Entorno según cada maqueta: en La Portada del Sol la playa está cruzando la Panamericana (Km 115.2); La Esmeralda está rodeada de áreas verdes, arboledas y chacras (Club House Resort Privado); se agregó La Bahía de Paracas.
 - Casas vecinas de distintos estilos y colores, con techos, tanques de agua, jardines, autos y carteles de "Lote disponible"; cielo, mar, huarangos y sombras suaves.
 - Botón **▶ Presentar**: recorrido automático para mostrar al cliente (condominio, llegada a la casa, vuelta completa, atardecer y ambientes por piso). Un toque en la pantalla lo detiene.
-- **Doble toque** en cualquier punto del 3D para acercarse ahí.
+- **Doble toque** en cualquier punto del 3D para acercarse ahí; en Recorrer, doble toque en el piso para caminar hasta ese punto.
+- **Plano** con escala gráfica; **Rayos X** solo vuelve transparente la casa del cliente.
 - **Dictar** por voz lo que cuenta el cliente, con ejemplos rápidos para demostraciones. La propuesta aparece al instante y el asistente en línea la afina en segundo plano.
 - **Comparar opciones** (Compacta, Equilibrada, Máximo) en Análisis.
 - La **ficha cliente** incluye el plano del primer piso, la lista de ambientes y el nombre y WhatsApp del asesor (se configuran en ⚙).
