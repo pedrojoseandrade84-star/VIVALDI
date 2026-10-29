@@ -1821,11 +1821,12 @@ function rippleTex(base, hi, n) {   // ondas de luz sobre el agua; se desplazan 
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; return t;
 }
 const RIPPLE = rippleTex("#2aa6d6", "#e9fbff", 260), RIPPLE2 = rippleTex("#1d6a93", "#bfe6f5", 420); RIPPLE.repeat.set(2, 2);
-const anim = {palms: [], cars: []};
+const anim = {palms: [], cars: [], waves: []};
 const SIGNS = [];   // letreros que se iluminan al atardecer
 function animateScene(t, dt) {   // agua, palmeras con brisa y autos en la carretera
   RIPPLE.offset.set(t * 0.012, t * 0.018); RIPPLE2.offset.set(t * 0.004, -t * 0.006);
   anim.palms.forEach(p => { p.rotation.z = Math.sin(t * 1.3 + p.userData.ph) * 0.025; p.rotation.x = Math.cos(t * 0.9 + p.userData.ph) * 0.015; });
+  anim.waves.forEach(w => { const u = w.userData.wave, off = Math.sin(t * 0.5 + u.ph) * 2.2; if (u.ax === "z") w.position.z = u.z + off; else w.position.x = u.z - off; w.material.opacity = 0.45 + 0.3 * Math.sin(t * 0.5 + u.ph + 1.2); });
   anim.cars.forEach(c => { c.position.z += c.userData.v * dt; if (c.position.z > 600) c.position.z = -600; if (c.position.z < -600) c.position.z = 600; });
 }
 const M = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color, roughness: 0.85, metalness: 0, envMapIntensity: 0.45}, o));
@@ -1949,7 +1950,7 @@ function tree(x, z, s, layer = "entorno", rr = Math.random) {   // huarango: ár
 function build(keep) {
   scene.remove(root); const shared = new Set([...Object.values(TEX), FROND, TRUNK_TEX, RIPPLE, RIPPLE2, AO_TEX]), sharedGeo = SHARED_GEO; root.traverse(o => { if (o.geometry && !sharedGeo.has(o.geometry)) o.geometry.dispose(); [].concat(o.material || []).forEach(m => { if (m.map && !shared.has(m.map)) m.map.dispose(); }); });
   root = new THREE.Group(); scene.add(root); Object.keys(groups).forEach(k => delete groups[k]); Object.keys(metrado).forEach(k => delete metrado[k]);
-  walls = []; stairs = []; anim.palms.length = 0; anim.cars.length = 0; SIGNS.length = 0;
+  walls = []; stairs = []; anim.palms.length = 0; anim.cars.length = 0; anim.waves.length = 0; SIGNS.length = 0;
   const d = design, h = state.norm.h;
   buildSite(d);
   buildLot(d);
@@ -1977,7 +1978,7 @@ function mergeMeshes(container) {   // une las piezas que comparten material: mi
   container.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(container.matrixWorld).invert(), buckets = new Map();
   container.traverse(o => {
-    if (o === container || !o.isMesh || Array.isArray(o.material) || o.userData.keep) return;
+    if (o === container || !o.isMesh || Array.isArray(o.material) || o.userData.keep || o.userData.anim) return;
     for (let q = o.parent; q && q !== container; q = q.parent) if (q.userData.anim) return;
     const k = `${o.material.uuid}|${o.castShadow}|${o.receiveShadow}|${o.renderOrder}|${o.customDepthMaterial ? o.customDepthMaterial.uuid : ""}`;
     if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(o);
@@ -2006,7 +2007,7 @@ function buildSite(d) {
   box(x1 - x0, 0.14, 1.4, MAT.walk, x0, -0.07, -1.4, "entorno", {cast: false}); box(x1 - x0, 0.14, 1.4, MAT.walk, x0, -0.07, -S, "entorno", {cast: false});
   for (let x = x0 + 4; x < x1 - 4; x += 6) box(1.6, 0.012, 0.14, MAT.white, x, -0.02, -S / 2 - 0.07, "entorno", {cast: false});
   // fila del lote y fila del frente
-  for (let k = -NL; k <= NL; k++) if (k) neighborLot(k * W, 0, W, D, 1, rr, P);
+  for (let k = -NL; k <= NL; k++) if (k) neighborLot(k * W, 0, W, D, 1, rr, P, Math.abs(k) === 1);   // los vecinos de al lado, con casa
   if (P.front === "parque") park(x0 + 2, -S - opp - 1.4, x1 - x0 - 46, opp, rr);
   else for (let k = -NL; k <= NL; k++) neighborLot(k * W, -S, W, D, -1, rr, P);
   // postes de luz y palmeras en la vereda
@@ -2031,7 +2032,7 @@ function buildSite(d) {
     const bx = px - 8 - 55;
     plane(bx, -900, 55, 1800, -0.05, MC(0xe9dcbc, {map: makeTex("sand")}), "entorno", 3);
     const sea = plane(-2400, -900, bx + 2400, 1800, -0.03, MAT.sea, "entorno", 30); sea.receiveShadow = false;
-    for (let i = 0; i < 26; i++) box(0.5, 0.02, 20 + rr() * 30, MC(0xffffff, {transparent: true, opacity: 0.7}), bx - 4 - rr() * 14, -0.02, -300 + rr() * 600, "entorno", {cast: false});
+    for (let i = 0; i < 26; i++) { const f = box(0.5, 0.02, 20 + rr() * 30, MC(0xffffff, {transparent: true, opacity: 0.7}), bx - 4 - rr() * 14, -0.02, -300 + rr() * 600, "entorno", {cast: false}); f.userData.anim = true; f.userData.wave = {z: f.position.x, ph: rr() * 6, ax: "x"}; anim.waves.push(f); }
     for (let i = 0; i < 5; i++) { umbrella(bx + 25 + rr() * 20, -80 + i * 35 + rr() * 10); lounger(bx + 22 + rr() * 20, -76 + i * 35); }
     for (let i = 0; i < 14; i++) person(bx + 5 + rr() * 40, -100 + rr() * 200, rr() * 6, [0xe8553d, 0xf2c14e, 0x2a85c5, 0xffffff, 0x4caf7a][i % 5]);
   }
@@ -2039,7 +2040,7 @@ function buildSite(d) {
     const zs = D + P.sea;
     plane(-900, zs - 40, 1800, 40, -0.05, MC(0xe9dcbc, {map: makeTex("sand")}), "entorno", 3);
     const sea = plane(-1500, zs, 3000, 1600, -0.03, MAT.sea, "entorno", 30); sea.receiveShadow = false;
-    for (let i = 0; i < 26; i++) box(20 + rr() * 30, 0.02, 0.5, MC(0xffffff, {transparent: true, opacity: 0.7}), -400 + rr() * 800, -0.02, zs + 4 + rr() * 14, "entorno", {cast: false});
+    for (let i = 0; i < 26; i++) { const f = box(20 + rr() * 30, 0.02, 0.5, MC(0xffffff, {transparent: true, opacity: 0.7}), -400 + rr() * 800, -0.02, zs + 4 + rr() * 14, "entorno", {cast: false}); f.userData.anim = true; f.userData.wave = {z: f.position.z, ph: rr() * 6, ax: "z"}; anim.waves.push(f); }
     for (let i = 0; i < 6; i++) { umbrella(-60 + i * 25 + rr() * 8, zs - 22 + rr() * 8); person(-58 + i * 25 + rr() * 6, zs - 15 + rr() * 6, rr() * 6, [0xe8553d, 0xf2c14e, 0x2a85c5, 0xffffff][i % 4]); }
   }
   // lomas del desierto costero hacia el este
@@ -2099,8 +2100,8 @@ function car(x, z, rot, color, layer) {
   g.position.set(x, 0, z); g.rotation.y = rot;
   const sw = Math.abs(Math.sin(rot)) > 0.5; aoBlob(x, z, sw ? 5 : 2.6, sw ? 2.6 : 5, layer, 0.5); return add(g, layer);
 }
-function neighborLot(lx, fz, W, D, dir, rr, P) {
-  const t = rr(), L = "vecinos", zAt = (a, b) => dir > 0 ? fz + a : fz - b;   // a..b medido desde el frente
+function neighborLot(lx, fz, W, D, dir, rr, P, built) {
+  const t = built ? rr() * 0.49 : rr(), L = "vecinos", zAt = (a, b) => dir > 0 ? fz + a : fz - b;   // a..b medido desde el frente
   if (t < 0.5) {   // casa construida
     const floors = rr() < 0.2 ? 1 : rr() < 0.85 ? 2 : 3, dep = 9 + rr() * 4, setb = 3, H = 2.8, style = (rr() * 3) | 0;
     const base = MC(PAL[(rr() * PAL.length) | 0], {map: makeTex("plaster")}), acc = MC(ACC[(rr() * ACC.length) | 0], {map: makeTex("plaster")});
