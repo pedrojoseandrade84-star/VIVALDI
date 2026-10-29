@@ -2053,7 +2053,7 @@ function buildSite(d) {
     const crop = MC(0xffffff, {map: rows});
     for (let i = 0; i < 10; i++) { const w = 40 + rr() * 50, dd = 30 + rr() * 40; plane(x0 - 60 + (i % 5) * 95 + rr() * 10, zB + 25 + Math.floor(i / 5) * 55 + rr() * 10, w, dd, -0.06, crop, "entorno", 4); }
   }
-  for (let i = 0; i < 6; i++) { const r = 4 + rr() * 6, m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), MC(0xd2b98d, {map: makeTex("sand")})); m.scale.y = 0.18; m.position.set(-300 + rr() * 600, -0.1, zB + 20 + rr() * Math.max(20, (P.sea || 80) - 60)); m.receiveShadow = true; add(m, "entorno"); }
+  for (let i = 0; i < (verde ? 0 : 6); i++) { const r = 4 + rr() * 6, m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), MC(0xd2b98d, {map: makeTex("sand")})); m.scale.y = 0.18; m.position.set(-300 + rr() * 600, -0.1, zB + 20 + rr() * Math.max(20, (P.sea || 80) - 60)); m.receiveShadow = true; add(m, "entorno"); }
   // nombres de los lugares (vista Entorno)
   place("Tu lote", `${fmt(W)} × ${fmt(D)} m · ${fmt(W * D, 0)} m²`, W / 2, 14 + d.pisos * 3, D / 2, true);
   place("Ingreso al condominio", P.name, x0 - 1, 9, -S / 2);
