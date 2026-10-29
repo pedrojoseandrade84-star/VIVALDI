@@ -1764,6 +1764,7 @@ function setTime() {   // día o atardecer: sol, cielo, reflejos y luces encendi
   MAT.glass.emissive.set(tarde ? 0xffb35c : 0x000000); MAT.glass.emissiveIntensity = tarde ? 0.55 : 0;
   MAT.light.emissiveIntensity = tarde ? 3.2 : 0.6; MAT.bulb.emissiveIntensity = tarde ? 4 : 0.2;
   MAT.neighWin.emissive.set(tarde ? 0xffb35c : 0x000000);
+  SIGNS.forEach(m => { m.emissiveIntensity = tarde ? 0.95 : 0.12; });
   $$("#timeSw button").forEach(b => b.classList.toggle("on", b.dataset.t === state.time));
 }
 let root = new THREE.Group(); scene.add(root);
@@ -1814,6 +1815,7 @@ function rippleTex(base, hi, n) {   // ondas de luz sobre el agua; se desplazan 
 }
 const RIPPLE = rippleTex("#2aa6d6", "#e9fbff", 260), RIPPLE2 = rippleTex("#1d6a93", "#bfe6f5", 420); RIPPLE.repeat.set(2, 2);
 const anim = {palms: [], cars: []};
+const SIGNS = [];   // letreros que se iluminan al atardecer
 function animateScene(t, dt) {   // agua, palmeras con brisa y autos en la carretera
   RIPPLE.offset.set(t * 0.012, t * 0.018); RIPPLE2.offset.set(t * 0.004, -t * 0.006);
   anim.palms.forEach(p => { p.rotation.z = Math.sin(t * 1.3 + p.userData.ph) * 0.025; p.rotation.x = Math.cos(t * 0.9 + p.userData.ph) * 0.015; });
@@ -1940,7 +1942,7 @@ function tree(x, z, s, layer = "entorno", rr = Math.random) {   // huarango: ár
 function build(keep) {
   scene.remove(root); const shared = new Set([...Object.values(TEX), FROND, TRUNK_TEX, RIPPLE, RIPPLE2, AO_TEX]), sharedGeo = SHARED_GEO; root.traverse(o => { if (o.geometry && !sharedGeo.has(o.geometry)) o.geometry.dispose(); [].concat(o.material || []).forEach(m => { if (m.map && !shared.has(m.map)) m.map.dispose(); }); });
   root = new THREE.Group(); scene.add(root); Object.keys(groups).forEach(k => delete groups[k]); Object.keys(metrado).forEach(k => delete metrado[k]);
-  walls = []; stairs = []; anim.palms.length = 0; anim.cars.length = 0;
+  walls = []; stairs = []; anim.palms.length = 0; anim.cars.length = 0; SIGNS.length = 0;
   const d = design, h = state.norm.h;
   buildSite(d);
   buildLot(d);
@@ -2166,7 +2168,7 @@ function portico(x0, S, P) {
   box(1.4, 5.4, 1.4, MAT.stone, x0 - 0.7, 0, zA - 1.4, L); box(1.4, 5.4, 1.4, MAT.stone, x0 - 0.7, 0, zB, L);
   box(1.6, 1.1, zB - zA + 2.8, MAT.wood, x0 - 0.8, 5.4, zA - 1.4, L);
   const t = textCanvas([[P.name.toUpperCase(), 64, "#ffffff", 80], ["VIVALDI · Construyendo tu futuro juntos", 34, "#cfe4f3", 150, 600]], 1400, 210, "#0A3856");
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(zB - zA + 2.4, 1.4), MC(0xffffff, {map: t, roughness: 0.5}));
+  const sm = M(0xffffff, {map: t, roughness: 0.5, emissive: 0xffffff, emissiveMap: t}); SIGNS.push(sm); const sign = new THREE.Mesh(new THREE.PlaneGeometry(zB - zA + 2.4, 1.4), sm);
   sign.position.set(x0 - 0.82, 4.55, (zA + zB) / 2 + 0.0); sign.rotation.y = -Math.PI / 2; add(sign, L);
   const s2 = sign.clone(); s2.position.x = x0 + 0.82; s2.rotation.y = Math.PI / 2; add(s2, L);
   box(2.4, 2.6, 2.2, MAT.wallExt, x0 + 1.4, 0, zB + 1.8, L); box(2.0, 1.0, 0.04, MAT.neighWin, x0 + 1.6, 1.2, zB + 1.78, L, {cast: false});
@@ -2373,7 +2375,7 @@ function buildWalls(rooms, lvl, h) {
     if (biz) {
       const cols = {bodega: "#C62828", restaurante: "#0A3856", hospedaje: "#1F7A6D", comercio: "#3D4247"}, col = cols[state.prog.estilo] || "#0A3856";
       const tx = textCanvas([[biz.name.replace(/ · recepción$/, "").toUpperCase(), 88, "#ffffff", 95]], 1024, 190, col);
-      const face = M(0xffffff, {map: tx, emissive: 0xffffff, emissiveMap: tx, emissiveIntensity: 0.25}); face.userData.own = true;
+      const face = M(0xffffff, {map: tx, emissive: 0xffffff, emissiveMap: tx, emissiveIntensity: 0.25}); face.userData.own = true; SIGNS.push(face);
       const sg = new THREE.Mesh(new THREE.BoxGeometry(Math.min(W - 0.4, 5.5), 0.6, 0.08), [MAT.dark, MAT.dark, MAT.dark, MAT.dark, face, MAT.dark]);
       sg.position.set(W / 2, y + h - 0.15, fz0 - 0.32); add(sg, "muros");
       const aw = box(W - 0.2, 0.05, 1.3, M(new THREE.Color(col).getHex(), {roughness: 0.9, side: THREE.DoubleSide}), 0.1, y + 2.25, fz0 - 1.3, "muros"); aw.rotation.x = -0.28;
