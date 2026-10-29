@@ -171,7 +171,10 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 </section>
 <aside class="right" id="right"><h3>Análisis del diseño</h3><div id="analysis"></div></aside>
 </main>
-<dialog id="keyDlg"><h4>Asistente de diseño en línea (gratuito)</h4>
+<dialog id="keyDlg"><h4>Datos del asesor</h4>
+  <p>Aparecen en la ficha que se envía al cliente por WhatsApp.</p>
+  <div class="g2"><label>Tu nombre<input id="advName" type="text" autocomplete="name" maxlength="40" placeholder="Nombre y apellido"></label><label>Tu WhatsApp<input id="advPhone" type="tel" inputmode="tel" maxlength="15" placeholder="9xx xxx xxx"></label></div>
+  <h4>Asistente de diseño en línea (gratuito)</h4>
   <p><b>Ya funciona sin configurar nada:</b> con internet, el pedido del cliente se analiza con un servicio abierto y gratuito; sin internet, con la lectura automática del equipo. Si un servicio está saturado, la herramienta pasa sola al siguiente.</p>
   <p>Opcional: agrega claves gratuitas (sin tarjeta) para respuestas más rápidas y con más cupo. Con las dos, el asistente casi nunca se queda sin respuesta.</p>
   <ol class="steps"><li><b>Groq</b> (la más rápida): entra a <b>console.groq.com</b>, inicia sesión con Google y crea una clave en <b>API Keys</b>.</li><li><b>Gemini</b> de Google: entra a <b>aistudio.google.com</b> y toca <b>Get API key</b>.</li><li>Pégalas aquí y guarda. Quedan solo en este equipo; usa una cuenta de la empresa.</li></ol>
@@ -2890,8 +2893,8 @@ function summary() {
   if (p.piscina) parts.push("piscina"); if (p.cochera) parts.push("cochera"); if (p.terraza) parts.push("terraza"); if (p.servicio) parts.push("cuarto de servicio");
   return `Propuesta: ${parts.join(", ")}${biz ? "" : `, como ${USOS[p.estilo].toLowerCase()}`}. Opción ${OPTS[state.opt].toLowerCase()}. Puedes ajustar cualquier detalle en Configurar.`;
 }
-$("#gear").addEventListener("click", () => { $("#keyDlg").showModal(); $("#akey").value = store.get("viv_gk"); $("#qkey").value = store.get("viv_qk"); });
-$("#keySave").addEventListener("click", () => { store.set("viv_gk", $("#akey").value.trim()); store.set("viv_qk", $("#qkey").value.trim()); store.set("viv_gm", ""); $("#keyDlg").close(); });
+$("#gear").addEventListener("click", () => { $("#keyDlg").showModal(); $("#akey").value = store.get("viv_gk"); $("#qkey").value = store.get("viv_qk"); $("#advName").value = store.get("viv_an"); $("#advPhone").value = store.get("viv_ap"); });
+$("#keySave").addEventListener("click", () => { store.set("viv_an", $("#advName").value.trim()); store.set("viv_ap", $("#advPhone").value.replace(/[^\d+ ]/g, "").trim()); store.set("viv_gk", $("#akey").value.trim()); store.set("viv_qk", $("#qkey").value.trim()); store.set("viv_gm", ""); $("#keyDlg").close(); });
 /* plano de la maqueta del condominio: el asesor marca dónde está el lote */
 let maqZ = 1;
 function syncMaq() { $("#maqPill").hidden = !MAQ[state.proj]; }
@@ -2985,7 +2988,8 @@ $("#ficha").addEventListener("click", async () => {
   g.fillStyle = "#6B7A86"; g.font = "500 20px Manrope, Arial";
   wrap(g, "Simulación referencial para orientar la compra. El diseño definitivo requiere proyecto de arquitectura e ingeniería firmado por profesionales colegiados, estudio de suelos y licencia municipal.", 50, y, 980, 30);
   const H = Math.ceil(y + 110), c2 = document.createElement("canvas"); c2.width = 1080; c2.height = H; const g2 = c2.getContext("2d"); g2.drawImage(c, 0, 0);   // altura justa
-  g2.fillStyle = "#0A3856"; g2.fillRect(0, H - 70, 1080, 70); g2.fillStyle = "#fff"; g2.font = "700 26px Manrope, Arial"; g2.fillText("WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, H - 25);
+  g2.fillStyle = "#0A3856"; g2.fillRect(0, H - 70, 1080, 70); g2.fillStyle = "#fff"; g2.font = "700 26px Manrope, Arial"; const an = store.get("viv_an"), ap = store.get("viv_ap");   // asesor que atiende al cliente
+  g2.fillText(an || ap ? `Asesor: ${an}${an && ap ? " · " : ""}${ap ? "WhatsApp " + ap : ""}` : "WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, H - 25);
   const blob = await new Promise(r => c2.toBlob(r, "image/png"));
   const file = new File([blob], `simulacion-${state.proj}.png`, {type: "image/png"});
   if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: "Simulación Vivaldi", text: `Simulación de construcción en ${proj.name}`}); return; } catch (e) { if (e.name === "AbortError") return; } }
