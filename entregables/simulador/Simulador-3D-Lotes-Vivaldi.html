@@ -2892,12 +2892,16 @@ $("#ficha").addEventListener("click", async () => {
   const d = design, m = d.metrics, proj = PROJ.find(p => p.id === state.proj);
   renderer.render(scene, state.mode === "plan" ? ortho : cam);
   const shot = new Image(); shot.src = renderer.domElement.toDataURL("image/jpeg", 0.92); await shot.decode();
-  const c = document.createElement("canvas"); c.width = 1080; c.height = 1500; const g = c.getContext("2d");
-  g.fillStyle = "#fff"; g.fillRect(0, 0, 1080, 1500);
+  const keep = {mode: state.mode, floor: state.floor};   // plano del primer piso con los nombres de los ambientes
+  state.mode = "plan"; state.floor = 0; applyMode(false); renderer.render(scene, ortho);
+  const planImg = new Image(); planImg.src = renderer.domElement.toDataURL("image/jpeg", 0.9); await planImg.decode();
+  state.mode = keep.mode; state.floor = keep.floor; applyMode(false);
+  const c = document.createElement("canvas"); c.width = 1080; c.height = 2400; const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, 1080, 2400);
   g.fillStyle = "#0A3856"; g.fillRect(0, 0, 1080, 150);
   g.fillStyle = "#fff"; g.font = "800 46px Manrope, Arial"; g.fillText("VIVALDI", 50, 85); g.font = "600 24px Manrope, Arial"; g.fillStyle = "#BFE3FF"; g.fillText("Simulación de construcción en tu lote", 50, 122);
   g.textAlign = "right"; g.fillStyle = "#fff"; g.font = "700 26px Manrope, Arial"; g.fillText(proj.name, 1030, 85); g.font = "500 22px Manrope, Arial"; g.fillStyle = "#BFE3FF"; g.fillText(`Lote ${fmt(state.W)} × ${fmt(state.D)} m · ${fmt(m.lot, 0)} m²`, 1030, 122); g.textAlign = "left";
-  const sw = 1080, sh = sw * shot.height / shot.width, cropH = Math.min(sh, 700);
+  const sw = 1080, sh = sw * shot.height / shot.width, cropH = Math.min(sh, 560);
   g.drawImage(shot, 0, (sh - cropH) / 2 * shot.height / sh, shot.width, cropH * shot.height / sh, 0, 150, sw, cropH);
   const mk = state.mark[state.proj];
   if (mk && MAQ[state.proj]) {   // ubicación del lote en el plano del condominio
@@ -2913,11 +2917,23 @@ $("#ficha").addEventListener("click", async () => {
   k.forEach(([a, b], i) => { const x = 50 + i * 250; g.fillStyle = "#F3F6F8"; g.fillRect(x, y, 230, 120); g.fillStyle = "#0A3856"; g.font = "800 40px Manrope, Arial"; g.fillText(a, x + 20, y + 60); g.fillStyle = "#53686C"; g.font = "500 22px Manrope, Arial"; g.fillText(b, x + 20, y + 95); });
   y += 170; g.fillStyle = "#1F2A30"; g.font = "600 24px Manrope, Arial";
   const extras = [d.pool ? "piscina" : "", d.parking ? "cochera" : "", state.prog.terraza ? "terraza" : "", "instalaciones eléctricas y sanitarias trazadas"].filter(Boolean).join(" · ");
-  g.fillText("Incluye: " + extras, 50, y); y += 50;
+  g.fillText("Incluye: " + extras, 50, y); y += 40;
+  {   // plano del piso 1 a la izquierda y lista de ambientes a la derecha
+    const asp = (state.W + 3) / (state.D + 3), cw = Math.min(planImg.width, planImg.height * asp), cx = (planImg.width - cw) / 2;
+    const dh = 760, dw = Math.min(460, dh * cw / planImg.height);
+    g.fillStyle = "#0A3856"; g.font = "800 26px Manrope, Arial"; g.fillText("Distribución", 50, y + 26);
+    g.drawImage(planImg, cx, 0, cw, planImg.height, 50, y + 46, dw, dh);
+    let ly = y + 70; const lx = 50 + dw + 40;
+    for (let lv = 0; lv < design.pisos; lv++) {
+      g.fillStyle = "#1F7A99"; g.font = "800 20px Manrope, Arial"; g.fillText(`PISO ${lv + 1}`, lx, ly); ly += 32;
+      design.rooms.filter(r => r.lvl === lv && r.type !== "stair").forEach(r => { if (ly > y + 46 + dh) return; g.fillStyle = "#1F2A30"; g.font = "600 21px Manrope, Arial"; g.fillText(r.name, lx, ly); g.textAlign = "right"; g.fillStyle = "#53686C"; g.fillText(`${fmt(r.area, 1)} m²`, 1030, ly); g.textAlign = "left"; ly += 30; });
+      ly += 14; }
+    y += dh + 90; }
   g.fillStyle = "#6B7A86"; g.font = "500 20px Manrope, Arial";
   wrap(g, "Simulación referencial para orientar la compra. El diseño definitivo requiere proyecto de arquitectura e ingeniería firmado por profesionales colegiados, estudio de suelos y licencia municipal.", 50, y, 980, 30);
-  g.fillStyle = "#0A3856"; g.fillRect(0, 1430, 1080, 70); g.fillStyle = "#fff"; g.font = "700 26px Manrope, Arial"; g.fillText("WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, 1475);
-  const blob = await new Promise(r => c.toBlob(r, "image/png"));
+  const H = Math.ceil(y + 110), c2 = document.createElement("canvas"); c2.width = 1080; c2.height = H; const g2 = c2.getContext("2d"); g2.drawImage(c, 0, 0);   // altura justa
+  g2.fillStyle = "#0A3856"; g2.fillRect(0, H - 70, 1080, 70); g2.fillStyle = "#fff"; g2.font = "700 26px Manrope, Arial"; g2.fillText("WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, H - 25);
+  const blob = await new Promise(r => c2.toBlob(r, "image/png"));
   const file = new File([blob], `simulacion-${state.proj}.png`, {type: "image/png"});
   if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: "Simulación Vivaldi", text: `Simulación de construcción en ${proj.name}`}); return; } catch (e) { if (e.name === "AbortError") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
