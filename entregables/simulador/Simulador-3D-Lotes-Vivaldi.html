@@ -108,6 +108,7 @@ dialog:not([open]){display:none}dialog.pf{position:fixed;top:50%;left:50%;transf
 table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-child{text-align:center;font-weight:600}table.rooms.cmp td.on{font-weight:800}.cmp td:first-child{text-align:left;color:var(--mut)}.cmp td.on{background:#E3F0FA;font-weight:800}.cmp button{font:800 12px Manrope,sans-serif;border:0;background:none;color:var(--nv);padding:4px 2px;cursor:pointer;min-height:32px}
 #toast{position:absolute;left:50%;top:118px;transform:translateX(-50%);background:rgba(10,56,86,.94);color:#fff;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;z-index:4;max-width:calc(100% - 32px);text-align:center;transition:opacity .5s;box-shadow:0 6px 18px rgba(0,0,0,.2)}#toast.out{opacity:0}
 .aiRow{display:flex;gap:8px}.aiRow #aiGo{flex:1}#micBtn{flex:0 0 auto;padding:0 14px}#micBtn.rec{background:#C62828;color:#fff;border-color:#C62828}
+.ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.ex span{font-size:12px;color:var(--mut);font-weight:700}.ex button{font:700 12px Manrope,sans-serif;border:1px solid var(--line);background:#fff;color:var(--nv);border-radius:999px;padding:6px 10px;min-height:32px;cursor:pointer}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -118,6 +119,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
   <h3>Lo que cuenta el cliente</h3>
   <div class="ai">
     <textarea id="aiText" placeholder="Ej.: Somos una familia de 5 con dos niños y un perro, queremos casa de playa de 2 pisos con piscina y parrilla. / Quiero poner una cevichería llamada El Muelle con 2 pisos."></textarea>
+    <div class="ex" id="examples"><span>Ejemplos:</span><button type="button" data-t="Somos una familia de 5 con tres hijos y un perro, queremos una casa de playa de 2 pisos con piscina, parrilla y cochera.">Familia de playa</button><button type="button" data-t="Quiero poner una cevichería llamada El Muelle, de 2 pisos, con terraza arriba para ver el atardecer.">Cevichería</button><button type="button" data-t="Queremos un hospedaje de 6 habitaciones con baño propio para alquilar en verano y vivir en el último piso.">Hospedaje</button><button type="button" data-t="Una bodega en el primer piso y nuestra vivienda arriba, somos una pareja con nuestra mamá que usa bastón.">Bodega + vivienda</button></div>
     <div class="aiRow"><button id="micBtn" class="btn ghost" type="button" hidden aria-label="Dictar">🎤 Dictar</button><button id="aiGo" class="btn" type="button">Diseñar propuesta</button></div>
     <div id="aiOut"><p class="small">Escribe o dicta (micrófono del teclado) lo que el cliente cuenta: su familia, si quiere vivir, veranear o emprender un negocio. La herramienta arma la propuesta que mejor aprovecha su lote.</p></div>
   </div>
@@ -2867,6 +2869,7 @@ $("#aiGo").addEventListener("click", async () => {
   if (!t) { out.innerHTML = "<p>Escribe o dicta lo que el cliente quiere.</p>"; return; }
   btn.disabled = true; btn.textContent = "Afinando la propuesta…";
   const local = localParse(t);   // 1) propuesta inmediata con la lectura del equipo
+  state.prog = JSON.parse(JSON.stringify(PROG0)); state.opt = "equilibrada";   // cada pedido nuevo parte de cero (no arrastra datos del cliente anterior)
   applyParams(local); syncForm(); regen();
   const tagsHtml = () => { const tg = Object.keys(state.prog.amb || {}).map(k => `<span class="chip">${AMB[k]}</span>`).join(""); return tg ? `<p>${tg}</p>` : ""; };
   out.innerHTML = `<p class="tag">Propuesta preliminar</p><p>${summary()}</p>${tagsHtml()}<p class="small">Afinando con el asistente en línea…</p>`;
@@ -2944,6 +2947,8 @@ canvas.addEventListener("pointerdown", stopTour); $("#modes").addEventListener("
     rec.start(); b.classList.add("rec"); b.textContent = "■ Listo";
   });
 })();
+const PROG0 = {pisos: 2, dorm: 3, banos: 2, piscina: false, cochera: true, terraza: true, servicio: false, estilo: "playa", negocio: "", amb: {}};
+$("#examples").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; $("#aiText").value = b.dataset.t; $("#aiText").focus(); });
 /* ---------------- ficha para el cliente ---------------- */
 $("#ficha").addEventListener("click", async () => {
   const d = design, m = d.metrics, proj = PROJ.find(p => p.id === state.proj);
@@ -2993,7 +2998,7 @@ $("#ficha").addEventListener("click", async () => {
   g2.fillText(an || ap ? `Asesor: ${an}${an && ap ? " · " : ""}${ap ? "WhatsApp " + ap : ""}` : "WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, H - 25);
   const blob = await new Promise(r => c2.toBlob(r, "image/png"));
   const file = new File([blob], `simulacion-${state.proj}.png`, {type: "image/png"});
-  if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: "Simulación Vivaldi", text: `Simulación de construcción en ${proj.name}`}); return; } catch (e) { if (e.name === "AbortError") return; } }
+  if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: "Simulación Vivaldi", text: `Simulación de construcción en ${proj.name}. ${summary().replace(/ Puedes ajustar.*$/, "")}`}); return; } catch (e) { if (e.name === "AbortError") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 });
 function wrap(g, t, x, y, w, lh) { const ws = t.split(" "); let line = ""; ws.forEach(word => { const test = line ? line + " " + word : word; if (g.measureText(test).width > w) { g.fillText(line, x, y); y += lh; line = word; } else line = test; }); g.fillText(line, x, y); }
