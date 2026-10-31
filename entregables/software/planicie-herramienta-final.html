@@ -4971,7 +4971,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   form.addEventListener("submit", () => setTimeout(() => {
     if (!pending || !pending.name) return;
     const c = pending.edit ? CLIENTS.find(x => x.id === pending.edit) : CLIENTS.find(x => x.name === pending.name);
-    if (c) { c.src = pending.src || c.src || ""; c.plazo = pending.plazo || c.plazo || ""; if (!c.created) c.created = todayIso(); if (!pending.edit && !c.ts) c.ts = Date.now(); if (c.stage !== "Nuevo" && c.ts && !c.firstTs) c.firstTs = Date.now(); crmSave(); render(); }
+    if (c) { c.src = pending.src || c.src || ""; c.plazo = pending.plazo || c.plazo || ""; if (!c.created) c.created = todayIso(); if (!pending.edit && !c.ts) c.ts = Date.now(); if (!c.adv && adv()) c.adv = adv(); if (c.stage !== "Nuevo" && c.ts && !c.firstTs) c.firstTs = Date.now(); crmSave(); render(); }
     $("cSrc").value = ""; $("cPlazo").value = ""; pending = null;
   }, 0));
   const touch = c => { if (!c) return; if (c.ts && !c.firstTs) c.firstTs = Date.now(); c.touches = (c.touches || []).concat(Date.now()).slice(-40); logAct(); };
@@ -5095,7 +5095,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       const ex = phone && CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
       const note = [m.plazo && `Plazo de compra: ${m.plazo}`, m.pago && `Forma de pago: ${m.pago}`, m.visit && `Visita solicitada: ${m.visit}`, m.note && `Mensaje: ${m.note}`, m.camp && `Origen web: ${m.camp}`].filter(Boolean).join("\n");
       if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (m.proj) ex.proj = m.proj; if (m.plazo) ex.plazo = m.plazo; if (m.pago) ex.pago = m.pago; toast("Cliente existente actualizado"); }
-      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src, plazo: m.plazo || "", pago: m.pago || ""}); toast("Cliente registrado desde la web"); }
+      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src, plazo: m.plazo || "", pago: m.pago || "", adv: adv()}); toast("Cliente registrado desde la web"); }
       crmSave(); renderCrm(); return; }
     const rf = e.target.closest("[data-gx=ref]");
     if (rf) { const c = CLIENTS.find(x => x.id === rf.closest("[data-id]").dataset.id); if (!c) return;
@@ -5124,6 +5124,12 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const w4 = wb.addWorksheet("Prioridad"); let r4 = xlHead(wb, w4, 5, "PRIORIDAD DE CONTACTO", sub);
     xlTable(w4, r4, [{h: "Cliente", w: 26}, {h: "Proyecto", w: 28}, {h: "Etapa", w: 18}, {h: "Prioridad", w: 14}, {h: "Siguiente acción", w: 60}],
       L.act.map(({c, s}) => [c.name, c.proj || "", c.stage, s >= 70 ? "Alta" : s >= 45 ? "Media" : "Baja", nba(c, s)[0]]));
+    const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rk = st => ord.indexOf(st), A = {};   // por asesor (útil al consolidar al equipo)
+    CLIENTS.forEach(c => { const k = c.adv || "Sin asesor"; const a = A[k] = A[k] || {n: 0, ct: 0, vi: 0, se: 0, rt: []}; a.n++; if (rk(c.stage) >= 1) a.ct++; if (rk(c.stage) >= 2) a.vi++; if (rk(c.stage) >= 3) a.se++; if (c.ts && c.firstTs) a.rt.push((c.firstTs - c.ts) / 6e4); });
+    const medOf = v => { if (!v.length) return null; v = v.slice().sort((a, b) => a - b); const m = v.length >> 1; return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2; };
+    const w5 = wb.addWorksheet("Asesores"); let r5 = xlHead(wb, w5, 6, "INDICADORES POR ASESOR", sub);
+    xlTable(w5, r5, [{h: "Asesor", w: 26}, {h: "Clientes", w: 12, fmt: "#,##0"}, {h: "Contactados", w: 14, fmt: "#,##0"}, {h: "Visitas", w: 12, fmt: "#,##0"}, {h: "Separaciones y ventas", w: 22, fmt: "#,##0"}, {h: "Respuesta mediana (min)", w: 24, fmt: "#,##0"}],
+      Object.entries(A).sort((a, b) => b[1].se - a[1].se).map(([k, a]) => [k, a.n, a.ct, a.vi, a.se, medOf(a.rt) === null ? "" : Math.round(medOf(a.rt))]));
     await xlSave(wb, `indicadores-crecimiento-${todayIso()}.xlsx`);
   }
   const r0 = renderCrm; renderCrm = function () { r0.apply(this, arguments); render(); };
