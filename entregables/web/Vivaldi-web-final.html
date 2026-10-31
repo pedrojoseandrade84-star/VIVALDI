@@ -2517,6 +2517,12 @@ async function projectCard(p, g, photoEl){
       const cell = [...card.querySelectorAll(".proj-meta > div")].find(d => /Desde/.test(d.textContent)); if (!cell) return;
       const q = document.createElement("small"); q.className = "gx-q"; q.style.cssText = "display:block;font-weight:700;color:#1F7A3D;font-size:.78rem;margin-top:2px";
       q.textContent = `o S/ ${Math.round(p.price * 0.8 / 36).toLocaleString("es-PE")} al mes*`; cell.appendChild(q); });
+    grid.querySelectorAll("article.proj").forEach(card => {   // proyecto agotado: captar al interesado para la siguiente etapa
+      const st = card.querySelector(".status"); if (!st || !/vendido/i.test(st.textContent) || card.querySelector(".gx-next")) return;
+      const nm = (card.querySelector("h3") || {}).textContent || "este proyecto", body = card.querySelector(".proj-body");
+      const a = document.createElement("a"); a.className = "btn btn-line gx-next"; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "margin-top:10px;display:inline-flex";
+      a.textContent = "Avísame del próximo proyecto"; a.href = waLink(`Hola Vivaldi, me interesaba ${nm.trim()} pero ya está vendido. ¿Me avisan cuando lancen un proyecto parecido o una nueva etapa?`);
+      a.addEventListener("click", () => track("waitlist_join", {proyecto: nm.trim()})); body.appendChild(a); });
     if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.78rem;color:#6B7A86;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
   if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true}); }
   track("page_view_web", {origen: typeof SRC !== "undefined" ? SRC : ""});
