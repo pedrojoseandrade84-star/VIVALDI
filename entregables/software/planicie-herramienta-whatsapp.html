@@ -4942,6 +4942,8 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
 .gx-imp{margin:0 0 12px;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg)}.gx-imp summary{cursor:pointer;font-weight:800;min-height:36px;display:flex;align-items:center}.gx-imp textarea{width:100%;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:6px}
 .gx-k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}.gx-k div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px}.gx-k b{font-size:1.25rem}.gx-k span{font-size:.74rem;color:var(--muted);font-weight:600}
 @media (max-width:600px){.gx-k{grid-template-columns:1fr}}
+.gx-goal{margin:0 0 12px;font-size:.86rem}.gx-goal .bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:6px}.gx-goal .bar i{display:block;height:100%;background:#157A3D}
+.gx-lnk{font:inherit;font-size:.78rem;font-weight:700;border:0;background:none;color:var(--sea,#1F7A99);text-decoration:underline;cursor:pointer;margin-left:6px;min-height:32px}
 .gx-p{width:64px;font:inherit;font-size:16px;text-align:right;border:1px solid var(--line);border-radius:8px;padding:4px 6px}
 .gx-reac{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.gx-reac summary{cursor:pointer;font-weight:800;min-height:36px;display:flex;align-items:center}.gx-reac .gx-it{margin-top:8px}
 </style>
@@ -4967,8 +4969,21 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (c) { c.src = pending.src || c.src || ""; if (!c.created) c.created = todayIso(); if (!pending.edit && !c.ts) c.ts = Date.now(); if (c.stage !== "Nuevo" && c.ts && !c.firstTs) c.firstTs = Date.now(); crmSave(); render(); }
     $("cSrc").value = ""; pending = null;
   }, 0));
-  const touch = c => { if (c && c.ts && !c.firstTs) c.firstTs = Date.now(); };   // primer contacto del asesor: base del tiempo de respuesta
-  document.addEventListener("click", e => { const wb = e.target.closest("#crmList button, #hoyList button"); if (wb && /whatsapp|llamar/i.test(wb.textContent)) { const row = wb.closest("[data-id]"); const c = row && CLIENTS.find(x => x.id === row.dataset.id); if (c && !c.firstTs && c.ts) { touch(c); crmSave(); } } }, true);
+  const touch = c => { if (!c) return; if (c.ts && !c.firstTs) c.firstTs = Date.now(); c.touches = (c.touches || []).concat(Date.now()).slice(-40); logAct(); };
+  const ACT = "vivaldi-actividad", goalKey = "vivaldi-meta-contactos";
+  const logAct = () => { try { const a = JSON.parse(localStorage.getItem(ACT) || "{}"), d = todayIso(); a[d] = (a[d] || 0) + 1; localStorage.setItem(ACT, JSON.stringify(a)); } catch (e) {} };
+  const actToday = () => { try { return JSON.parse(localStorage.getItem(ACT) || "{}")[todayIso()] || 0; } catch (e) { return 0; } };
+  const goal = () => { try { return +localStorage.getItem(goalKey) || 20; } catch (e) { return 20; } };
+  /* secuencia de seguimiento: la mayoría de ventas se concreta después de varios contactos */
+  const SEQ = [
+    {d: 0, t: "Primer contacto", m: (n, a, p) => `Hola ${n}, soy ${a} de Vivaldi. Vi tu interés en ${p}. ¿Te envío la disponibilidad de lotes y tu cuota mensual?`},
+    {d: 1, t: "Seguimiento 2 de 6", m: (n, a, p) => `Hola ${n}, ¿pudiste revisar la información de ${p}? Si quieres, te envío el plano con los lotes disponibles y la ubicación exacta.`},
+    {d: 3, t: "Seguimiento 3 de 6", m: (n, a, p) => `Hola ${n}, una consulta frecuente es la cuota: en ${p} puedes pagar en soles y sin intereses. ¿Te calculo la tuya según la inicial que tengas pensada?`},
+    {d: 7, t: "Seguimiento 4 de 6", m: (n, a, p) => `Hola ${n}, este fin de semana tenemos visitas guiadas a ${p}. ¿Te reservo un horario para que conozcas el lote y las áreas comunes?`},
+    {d: 14, t: "Seguimiento 5 de 6", m: (n, a, p) => `Hola ${n}, te comparto cómo avanza ${p}. ¿Sigues buscando un lote de playa o prefieres que te escriba más adelante?`},
+    {d: 30, t: "Seguimiento 6 de 6", m: (n, a, p) => `Hola ${n}, para no incomodarte: ¿te escribo más adelante o prefieres que cierre tu consulta por ahora? Quedo atento a lo que necesites.`}];
+  const seqStep = c => { const k = Math.min((c.touches || []).length, SEQ.length - 1), st = SEQ[k]; return {k, st, due: daysAgo(c.created) >= st.d, done: (c.touches || []).length >= SEQ.length}; };   // primer contacto del asesor: base del tiempo de respuesta
+  document.addEventListener("click", e => { const wb = e.target.closest("#crmList button, #hoyList button"); if (wb && /whatsapp|llamar/i.test(wb.textContent)) { const row = wb.closest("[data-id]"); const c = row && CLIENTS.find(x => x.id === row.dataset.id); if (c) { touch(c); crmSave(); } } }, true);
   document.addEventListener("click", e => { if (e.target.closest("#crmList button")) setTimeout(() => { const c = typeof crmEdit !== "undefined" && crmEdit && CLIENTS.find(x => x.id === crmEdit); if (c) $("cSrc").value = c.src || ""; }, 0); });
 
   // 1b) registrar un cliente pegando el mensaje que llegó desde la web
@@ -4997,6 +5012,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (c.budget > 0) { s += 5; why.push("presupuesto definido"); }
     if (c.src === "Referido") { s += 10; why.push("viene referido"); }
     if (c.next && c.next < todayIso()) { s += 10; why.push("contacto atrasado"); }
+    if (["Nuevo", "Contactado"].includes(c.stage) && !proformas(c)) { const q = seqStep(c); if (q.due && !q.done && q.k > 0) { s += 12; why.push(q.st.t.toLowerCase() + " pendiente"); } }
     if (!c.phone) s -= 20;
     return {s, why};
   }
@@ -5005,6 +5021,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (c.stage === "Nuevo") return age <= 0
       ? ["Llamar de inmediato: la respuesta en los primeros minutos eleva la probabilidad de cierre.", `Hola ${n}, soy ${a} de Vivaldi. Vi tu interés en ${c.proj}. ¿Te llamo en 5 minutos para contarte disponibilidad y cuotas?`]
       : ["Realizar el primer contacto por WhatsApp con disponibilidad y cuota mensual.", `Hola ${n}, soy ${a} de Vivaldi. Te escribo por ${c.proj}: tenemos lotes disponibles con cuotas en soles y sin intereses. ¿Te envío el plano y tu cuota exacta?`];
+    if ((c.stage === "Contactado" || (c.stage === "Nuevo" && age > 0)) && !proformas(c)) { const q = seqStep(c); if (!q.done && q.k > 0) return [`${q.st.t}${q.due ? " · corresponde hoy" : ` · el día ${q.st.d}`}: ${q.k >= 5 ? "mensaje de cierre de la secuencia." : "mantener el contacto con información útil."}`, q.st.m(n, a, c.proj)]; }
     if (c.stage === "Contactado") return proformas(c)
       ? ["Cuenta con proforma: invitar a la visita guiada del fin de semana.", `Hola ${n}, ¿qué te pareció la proforma de ${c.proj}? Este sábado tenemos visitas guiadas: ¿te reservo un horario para que conozcas tu lote?`]
       : ["Invitar a la visita guiada: es la etapa que más acerca a la separación.", `Hola ${n}, este fin de semana tenemos visitas guiadas a ${c.proj}. ¿Te reservo un horario? Así ves el lote, el avance de obra y las áreas comunes.`];
@@ -5037,7 +5054,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const rt = CLIENTS.filter(c => c.ts && c.firstTs && Date.now() - c.ts < 30 * 864e5).map(c => (c.firstTs - c.ts) / 6e4).sort((a, b) => a - b);
     const med = rt.length ? (rt.length % 2 ? rt[(rt.length - 1) / 2] : (rt[rt.length / 2 - 1] + rt[rt.length / 2]) / 2) : null, fast = rt.length ? Math.round(rt.filter(m => m <= 60).length / rt.length * 100) : null;
     const mins = m => m < 60 ? `${Math.round(m)} min` : m < 1440 ? `${(m / 60).toFixed(1)} h` : `${(m / 1440).toFixed(1)} días`;
-    const kpis = `<div class="gx-k"><div><b>${med === null ? "—" : mins(med)}</b><span>Tiempo mediano de primera respuesta (30 días)</span></div><div><b>${fast === null ? "—" : fast + "%"}</b><span>Clientes nuevos atendidos en menos de 1 hora</span></div><div><b>${fmt(wsum)}</b><span>Pronóstico de ventas ponderado</span></div></div>`;
+    const ga = goal(), at = actToday(), gp = Math.min(100, Math.round(at / ga * 100));
+    const act0 = `<div class="gx-goal"><div><b>${at} de ${ga}</b> contactos realizados hoy <button type="button" class="gx-lnk" data-gx="goal">Cambiar meta</button></div><div class="bar"><i style="width:${gp}%"></i></div></div>`;
+    const kpis = act0 + `<div class="gx-k"><div><b>${med === null ? "—" : mins(med)}</b><span>Tiempo mediano de primera respuesta (30 días)</span></div><div><b>${fast === null ? "—" : fast + "%"}</b><span>Clientes nuevos atendidos en menos de 1 hora</span></div><div><b>${fmt(wsum)}</b><span>Pronóstico de ventas ponderado</span></div></div>`;
     const fc = `<details class="gx-imp"><summary>Detalle del pronóstico y supuestos</summary><div class="gx-src" style="margin-top:6px"><div class="h"><span>Etapa</span><span>Clientes</span><span>Valor</span><span>Prob. %</span><span>Ponderado</span></div>${pipe.map(x => `<div><span>${x.st}</span><span>${x.n}</span><span>${fmt(x.v)}</span><span><input class="gx-p" data-st="${x.st}" type="number" min="0" max="100" step="5" value="${P[x.st]}" aria-label="Probabilidad ${x.st}"></span><b>${fmt(x.w)}</b></div>`).join("")}</div><p class="gx-tip">Valor: presupuesto del cliente o, si no se registró, el precio desde del proyecto. Las probabilidades son supuestos editables; ajústelas con el historial real de cierre.</p></details>`;
     const cold = CLIENTS.filter(c => c.phone && ["Nuevo", "Contactado"].includes(c.stage) && daysAgo(c.stageAt || c.created) > 21).sort((a, b) => daysAgo(b.stageAt || b.created) - daysAgo(a.stageAt || a.created));
     const reac = cold.length ? `<details class="gx-reac"><summary>Reactivación: clientes sin avance en más de 21 días (${cold.length})</summary>${cold.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t f">${daysAgo(c.stageAt || c.created)} días</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="re">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">Revise y ajuste el mensaje sugerido antes de enviarlo.</p></details>` : "";
@@ -5057,6 +5076,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       const by = {}; n.forEach(c => { const k = c.src || "Sin dato"; by[k] = (by[k] || 0) + 1; });
       sendWa(`Resumen semanal${adv() ? " · " + adv() : ""}\nNuevos interesados: ${n.length}\nVisitas agendadas: ${st("Visita agendada")}\nSeparaciones: ${st("Separado")}\nVentas: ${st("Vendido")}\nOrigen de los nuevos: ${Object.entries(by).map(([k, v]) => k + " " + v).join(", ") || "sin datos"}`); return; }
     if (e.target.closest("[data-gx=xls]")) { exportXls(); return; }
+    if (e.target.closest("[data-gx=goal]")) { const v = prompt("Meta diaria de contactos por asesor:", goal()); if (v && +v > 0) { try { localStorage.setItem(goalKey, String(Math.round(+v))); } catch (er) {} render(); } return; }
     if (e.target.closest("[data-gx=imp]")) {
       const t = $("gxPaste").value.trim(); if (!t) { toast("Pegue el mensaje recibido"); return; }
       const m = parseMsg(t), phone = m.phone || $("gxPh").value.replace(/\D/g, "").slice(-9);
@@ -5069,7 +5089,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const re = e.target.closest("[data-gx=re]");
     if (re) { const c = CLIENTS.find(x => x.id === re.closest("[data-id]").dataset.id); if (!c) return;
       sendWa(`Hola ${first(c.name)}, ¿cómo estás? Soy ${first(adv()) || "tu asesor"} de Vivaldi. Hace un tiempo conversamos sobre ${c.proj}: el proyecto ha avanzado y tenemos novedades en disponibilidad y facilidades de pago. ¿Te envío fotos del avance y las opciones actuales?`, c.phone);
-      c.stageAt = todayIso(); c.next = todayIso(); c.notes = ((c.notes ? c.notes + "\n" : "") + `Reactivado por WhatsApp el ${todayIso()}`); crmSave(); renderCrm(); return; }
+      touch(c); c.stageAt = todayIso(); c.next = todayIso(); c.notes = ((c.notes ? c.notes + "\n" : "") + `Reactivado por WhatsApp el ${todayIso()}`); crmSave(); renderCrm(); return; }
     const b = e.target.closest("[data-gx=wa]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!c) return;
     const [, msg] = nba(c, score(c).s); sendWa(msg, c.phone); touch(c); if (c.stage === "Nuevo") { c.stage = "Contactado"; c.stageAt = todayIso(); } const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); c.next = n.toISOString().slice(0, 10); crmSave(); renderCrm(); });
   box.addEventListener("change", e => { const i = e.target.closest(".gx-p"); if (!i) return; const P = probs(); P[i.dataset.st] = Math.max(0, Math.min(100, +i.value || 0)); try { localStorage.setItem("vivaldi-probabilidades", JSON.stringify(P)); } catch (er) {} const open = [...box.querySelectorAll("details")].map(d => d.open); render(); box.querySelectorAll("details").forEach((d, k) => d.open = open[k]); });
