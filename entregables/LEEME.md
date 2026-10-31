@@ -11,6 +11,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | software/ejemplos-excel/ | Archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
 | simulador/ | Simulador-3D-Lotes-Vivaldi.html (≈1.6 MB) | Simulación 3D de construcción en el lote, para asesores |
 | crecimiento/ | Plan-Crecimiento-Comercial-Vivaldi.pdf | Plan de crecimiento comercial para la Gerencia |
+| crecimiento/ | Plan-Contenidos-Redes-Vivaldi.pdf | Plan de contenidos de 30 días para redes sociales |
 | propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
 | presentacion/ | Presentacion-Vivaldi.pdf | Presentación 16:9 para la reunión |
@@ -42,6 +43,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
   - tiempo de primera respuesta;
   - pronóstico ponderado;
   - registro de clientes desde el mensaje de la web;
+  - secuencia de seguimiento de 6 contactos y meta diaria de actividad;
   - exportación de indicadores a Excel.
 
 ## Simulador 3D
