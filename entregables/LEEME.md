@@ -16,6 +16,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
 | presentacion/ | Presentacion-Vivaldi.pdf | Presentación 16:9 para la reunión |
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
+| manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato; revisar con un abogado antes de firmar |
 | rotulado/ | PDF de diseños y archivos para imprenta | Rotulado de la flota: camionetas, van y sedanes |
 
