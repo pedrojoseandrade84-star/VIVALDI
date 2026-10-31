@@ -2409,10 +2409,10 @@ async function projectCard(p, g, photoEl){
 .gx-card p{margin:0 0 14px;color:#4C5E68;font-size:.95rem;line-height:1.45}
 .gx-card label{display:grid;gap:4px;font-size:.82rem;font-weight:700;color:#4C5E68;margin-bottom:10px}
 .gx-card input,.gx-card select{font:inherit;font-size:16px;padding:11px 12px;border:1px solid #D5DEE3;border-radius:12px;min-height:46px;width:100%;background:#fff}
-.gx-card .gx-go{width:100%;min-height:50px;border:0;border-radius:999px;background:#1FA855;color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer}
-.gx-card .gx-x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:#7A8A93;cursor:pointer;width:40px;height:40px}
+.gx-card .gx-go{width:100%;min-height:50px;border:0;border-radius:999px;background:#157A3D;color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer}
+.gx-card .gx-x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:#4C5E68;cursor:pointer;width:40px;height:40px}
 .gx-card ul{margin:0 0 14px 18px;padding:0;color:#13242E;font-size:.92rem;line-height:1.5}
-.gx-card small{display:block;margin-top:10px;color:#7A8A93;font-size:.75rem;line-height:1.4}
+.gx-card small{display:block;margin-top:10px;color:#4C5E68;font-size:.75rem;line-height:1.4}
 </style>
 <div class="gx-dlg" id="gxExit" hidden role="dialog" aria-modal="true" aria-labelledby="gxT">
   <div class="gx-card">
@@ -2470,6 +2470,7 @@ async function projectCard(p, g, photoEl){
   function updateWa() { $$("a.wa, a.wa-b").forEach(a => { a.href = waLink(waText()); }); }
   const waB = $("a.wa-b"); if (waB && AB === "B") waB.textContent = "Ver precios";
   updateWa();
+  const fab = $("a.wa"); if (fab && !fab.closest("main,header,footer,nav,aside")) { const as = document.createElement("aside"); as.setAttribute("aria-label", "Contacto rápido por WhatsApp"); fab.parentNode.insertBefore(as, fab); as.appendChild(fab); }   // accesibilidad: el botón flotante dentro de una región
   document.addEventListener("click", e => { const a = e.target.closest('a[href*="wa.me"]'); if (a) track("whatsapp_click", {lugar: a.className || a.id || "enlace"}); }, true);
 
   /* 4) embudo: secciones vistas, profundidad de lectura, simulador, visita y envío */
@@ -2486,7 +2487,7 @@ async function projectCard(p, g, photoEl){
     const url = (location.protocol.startsWith("http") ? location.origin + location.pathname : "https://vivaldiinmobiliaria.com/") + "?utm_source=referido&utm_medium=whatsapp";
     const msg = `Estoy viendo lotes de playa de Vivaldi${interest.name ? " en " + interest.name : ""}, en soles y con cuotas sin intereses. Míralo: ${url}`;
     const d = document.createElement("div"); d.className = "gx-ref"; d.style.cssText = "margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center";
-    d.innerHTML = `<span style="font-size:.9rem">¿Alguien de tu familia o tus amigos también busca playa?</span><a class="btn" style="background:#1FA855;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Compartir por WhatsApp</a>`;
+    d.innerHTML = `<span style="font-size:.9rem">¿Alguien de tu familia o tus amigos también busca playa?</span><a class="btn" style="background:#157A3D;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Compartir por WhatsApp</a>`;
     d.querySelector("a").addEventListener("click", () => track("referral_share")); box.appendChild(d); track("referral_offer");
   }
 
@@ -2523,7 +2524,7 @@ async function projectCard(p, g, photoEl){
       const a = document.createElement("a"); a.className = "btn btn-line gx-next"; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "margin-top:10px;display:inline-flex";
       a.textContent = "Avísame del próximo proyecto"; a.href = waLink(`Hola Vivaldi, me interesaba ${nm.trim()} pero ya está vendido. ¿Me avisan cuando lancen un proyecto parecido o una nueva etapa?`);
       a.addEventListener("click", () => track("waitlist_join", {proyecto: nm.trim()})); body.appendChild(a); });
-    if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.78rem;color:#6B7A86;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
+    if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.8rem;color:#33454F;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
   if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true}); }
   track("page_view_web", {origen: typeof SRC !== "undefined" ? SRC : ""});
 })();

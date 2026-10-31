@@ -1,24 +1,53 @@
 # Entregables · Vivaldi Inmobiliaria
 
-| Carpeta | Archivo | Para qué |
-|---|---|---|
-| web/ | Vivaldi-web-whatsapp.html (9.0 MB) | Enviar por WhatsApp (bajo 9 MB) |
-| web/ | Vivaldi-web-final.html (22.4 MB) | Máxima calidad: publicar o presentar en computadora |
-| software/ | planicie-herramienta-whatsapp.html (1.7 MB) | Enviar por WhatsApp a los asesores |
-| software/ | planicie-herramienta-final.html (2.8 MB) | Máxima calidad |
-| software/ejemplos-excel/ | 8 archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
-| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta formal con cuadro de precios |
-| propuesta/ | investigacion-mercado-y-diagnostico.md | Fuentes de precios y diagnóstico |
-| propuesta/fuente-editable/ | propuesta-*.html + style.css | Para editar textos o precios y regenerar el PDF |
-| manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso para asesores y jefatura |
-| presentacion/ | Presentacion-Vivaldi.pdf | 9 diapositivas 16:9 para la reunión |
-| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf + contrato-editable.html | Modelo de contrato (revisar con abogado antes de firmar) |
-| rotulado/ | Rotulado-Vehicular-Vivaldi.pdf + archivos SVG para imprenta | Diseños de adhesivos para camionetas, sedanes e imantados de asesores |
+Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 
-## Herramienta de ventas: 14 módulos
-Agenda "Hoy" (visitas, clientes, cuotas y firmas pendientes) · Visitas guiadas (agenda de tours con confirmación, recordatorio y asistencia) · Inventario de lotes · Proforma (PDF, imagen, Excel, QR, comparador de planes) · Constancia de separación · Cobranza · Panel comercial y metas · Reporte gerencial · Registro de proformas · Mis clientes · Mensajes · Objeciones · Análisis de competencia · Datos y respaldo.
+| Carpeta | Archivo | Uso |
+|---|---|---|
+| web/ | Vivaldi-web-whatsapp.html (≈9 MB) | Versión liviana para enviar por WhatsApp |
+| web/ | Vivaldi-web-final.html (≈22 MB) | Máxima calidad, para publicar o presentar en computadora |
+| software/ | planicie-herramienta-whatsapp.html (≈1.7 MB) | Herramienta comercial para los asesores, versión liviana |
+| software/ | planicie-herramienta-final.html (≈2.8 MB) | Herramienta comercial, máxima calidad |
+| software/ejemplos-excel/ | Archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
+| simulador/ | Simulador-3D-Lotes-Vivaldi.html (≈1.6 MB) | Simulación 3D de construcción en el lote, para asesores |
+| crecimiento/ | Plan-Crecimiento-Comercial-Vivaldi.pdf | Plan de crecimiento comercial para la Gerencia |
+| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
+| propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
+| presentacion/ | Presentacion-Vivaldi.pdf | Presentación 16:9 para la reunión |
+| manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
+| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato; revisar con un abogado antes de firmar |
+| rotulado/ | PDF de diseños y archivos para imprenta | Rotulado de la flota: camionetas, van y sedanes |
 
 ## Web
-Fotos reales (renders marcados como referenciales) · buscador "¿Qué lote me alcanza?" · invitación a la lista de precios por WhatsApp · Asistente Vivaldi · plano de lotes · simulador · comparador · fichas descargables · formulario a WhatsApp con origen del cliente · visita al calendario · Libro de Reclamaciones · accesibilidad sin errores (axe-core).
+- Proyectos con fotos reales; los renders están marcados como referenciales.
+- Plano interactivo de lotes, simulador de cuotas, buscador "¿Qué lote me alcanza?" y comparador de proyectos.
+- Formulario que se envía por WhatsApp con el origen del cliente, agenda de visitas, Asistente Vivaldi y Libro de Reclamaciones.
+- Capa de crecimiento:
+  - medición del embudo con consentimiento de cookies;
+  - WhatsApp con el proyecto que vio el cliente;
+  - recuperación de visitantes que se retiran sin escribir;
+  - cuota mensual referencial en cada proyecto;
+  - referidos y lista de espera;
+  - prueba A/B del botón de WhatsApp.
+- Accesibilidad verificada con axe-core: sin violaciones.
 
-En iPhone, la vista previa de WhatsApp no ejecuta las páginas: ábrelas desde un enlace publicado o en Chrome.
+## Herramienta comercial
+- Agenda del día, visitas, inventario de lotes, proforma, separación, cobranza, panel y reporte gerencial, clientes, mensajes, objeciones y respaldo de datos.
+- Gestión del crecimiento:
+  - origen de cada cliente;
+  - embudo con su conversión;
+  - ventas por canal;
+  - prioridad de contacto;
+  - reactivación de clientes sin avance;
+  - tiempo de primera respuesta;
+  - pronóstico ponderado;
+  - registro de clientes desde el mensaje de la web;
+  - exportación de indicadores a Excel.
+
+## Simulador 3D
+Entorno de cada proyecto y plano de su maqueta, casas y negocios, día y atardecer, recorrido interior, corte, rayos X y plano, presentación automática, ficha para WhatsApp y asistente de diseño en línea gratuito.
+
+## Notas
+- En iPhone, la vista previa de WhatsApp no ejecuta las páginas: ábralas desde un enlace publicado o en el navegador.
+- `propuesta/investigacion-mercado-y-diagnostico.md` es un documento interno de trabajo; no se envía al cliente.
+- Precios, cuotas y disponibilidad son referenciales y se confirman con la jefatura comercial.
