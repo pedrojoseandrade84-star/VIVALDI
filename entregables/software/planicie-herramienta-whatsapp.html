@@ -5072,6 +5072,11 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const refs = CLIENTS.filter(c => c.phone && ["Vendido", "Separado"].includes(c.stage) && daysAgo(c.stageAt || c.created) <= 60 && !c.refAsked);
     const refBox = refs.length ? `<details class="gx-reac"><summary>Solicitar recomendaciones a clientes que compraron (${refs.length})</summary>${refs.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">${esc(c.stage)}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="ref">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">Los clientes satisfechos son la mejor fuente de nuevas ventas. Registre a los recomendados con origen «Referido».</p></details>` : "";
     last = {ord, reach, by, act, pipe, wsum, med, fast, cold, P, mins};
+    const hk = document.getElementById("hoyKp");   // en la agenda Hoy: los clientes de prioridad alta
+    if (hk) { let hb = document.getElementById("gxHoy"); if (!hb) { hb = document.createElement("div"); hb.id = "gxHoy"; hb.className = "panel"; hb.style.marginBottom = "14px"; hk.parentNode.insertBefore(hb, hk.nextSibling); }
+      const hot = act.filter(x => x.s >= 70);
+      hb.hidden = !hot.length; hb.innerHTML = hot.length ? `<h3 style="margin-top:0">Prioridad alta de contacto (${hot.length})</h3><div class="gx-pri">${hot.slice(0, 5).map(({c, s}) => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">Prioridad alta</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="nba">→ ${esc(nba(c, s)[0])}</span></div>`).join("")}</div><p class="gx-tip"><a href="#clientes">Ver la prioridad completa en Mis clientes</a></p>` : "";
+      if (!hb.dataset.on) { hb.dataset.on = "1"; hb.addEventListener("click", e => onPanel(e)); } }
     const imp = `<details class="gx-imp"><summary>Registrar cliente desde un mensaje de la web</summary><textarea id="gxPaste" rows="4" placeholder="Pegue aquí el mensaje de WhatsApp recibido desde la web"></textarea><label class="inp" style="margin-top:6px">Celular (si el mensaje no lo incluye)<input id="gxPh" type="tel" inputmode="tel" placeholder="9XX XXX XXX"></label><div class="acts" style="margin-top:8px"><button class="btn pri sm" type="button" data-gx="imp">Registrar cliente</button></div></details>`;
     box.innerHTML = `<div class="panel"><h3>Prioridad de contacto</h3>${imp}<div class="gx-pri">${pri}</div><p class="gx-tip">La prioridad considera la etapa, la antigüedad del contacto, la proforma emitida, la visita realizada, el presupuesto declarado y el origen referido.</p>${reac}${refBox}</div>
       <div class="panel"><h3>Embudo de ventas</h3>${kpis}<div class="gx-fun">${fun}</div>
@@ -5079,7 +5084,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       <p class="gx-tip">Registre el origen de cada cliente para medir las ventas por canal.</p>
       ${fc}<div class="acts" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><button class="btn ghost sm" type="button" data-gx="link">Copiar mi enlace de la web</button><button class="btn ghost sm" type="button" data-gx="week">Enviar resumen de la semana</button><button class="btn ghost sm" type="button" data-gx="xls">Exportar indicadores (Excel)</button></div></div>`;
   }
-  box.addEventListener("click", e => {
+  const onPanel = e => {
     const L = e.target.closest("[data-gx=link]"), W = e.target.closest("[data-gx=week]");
     if (L) { const a = adv().trim(); if (!a) { toast("Escribe tu nombre de asesor en la Proforma primero"); return; }
       copyText(`https://vivaldiinmobiliaria.com/?utm_source=asesor&utm_medium=whatsapp&utm_campaign=${encodeURIComponent(a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "-"))}`); return; }   // con este enlace, los mensajes que llegan de la web dicen qué asesor trajo al cliente
@@ -5106,7 +5111,8 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       sendWa(`Hola ${first(c.name)}, ¿cómo estás? Soy ${first(adv()) || "tu asesor"} de Vivaldi. Hace un tiempo conversamos sobre ${c.proj}: el proyecto ha avanzado y tenemos novedades en disponibilidad y facilidades de pago. ¿Te envío fotos del avance y las opciones actuales?`, c.phone);
       touch(c); c.stageAt = todayIso(); c.next = todayIso(); c.notes = ((c.notes ? c.notes + "\n" : "") + `Reactivado por WhatsApp el ${todayIso()}`); crmSave(); renderCrm(); return; }
     const b = e.target.closest("[data-gx=wa]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!c) return;
-    const [, msg] = nba(c, score(c).s); sendWa(msg, c.phone); touch(c); if (c.stage === "Nuevo") { c.stage = "Contactado"; c.stageAt = todayIso(); } const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); c.next = n.toISOString().slice(0, 10); crmSave(); renderCrm(); });
+    const [, msg] = nba(c, score(c).s); sendWa(msg, c.phone); touch(c); if (c.stage === "Nuevo") { c.stage = "Contactado"; c.stageAt = todayIso(); } const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); c.next = n.toISOString().slice(0, 10); crmSave(); renderCrm(); };
+  box.addEventListener("click", onPanel);
   box.addEventListener("change", e => { const i = e.target.closest(".gx-p"); if (!i) return; const P = probs(); P[i.dataset.st] = Math.max(0, Math.min(100, +i.value || 0)); try { localStorage.setItem("vivaldi-probabilidades", JSON.stringify(P)); } catch (er) {} const open = [...box.querySelectorAll("details")].map(d => d.open); render(); box.querySelectorAll("details").forEach((d, k) => d.open = open[k]); });
   async function exportXls() {   // indicadores de crecimiento para la Gerencia, con el mismo formato del reporte gerencial
     if (!window.ExcelJS || !last) { toast("No se pudo generar el Excel"); return; }
