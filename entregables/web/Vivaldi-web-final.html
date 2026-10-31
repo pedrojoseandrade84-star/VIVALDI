@@ -2468,7 +2468,7 @@ async function projectCard(p, g, photoEl){
   const waText = () => interest.name ? `Hola Vivaldi, vi ${interest.name} en su web. ¿Me pueden enviar disponibilidad de lotes, precio y cuota mensual?` : "Hola Vivaldi, quiero información de sus lotes de playa: disponibilidad, precios y cuotas.";
   const waLink = t => typeof waUrl === "function" ? waUrl(t) : `https://wa.me/${CFG.phone}?text=${encodeURIComponent(t)}`;   // conserva "Vengo de: Facebook/Google…" para medir qué canal vende
   function updateWa() { $$("a.wa, a.wa-b").forEach(a => { a.href = waLink(waText()); }); }
-  const waB = $("a.wa-b"); if (waB && AB === "B") waB.textContent = "Precios por WhatsApp";
+  const waB = $("a.wa-b"); if (waB && AB === "B") waB.textContent = "Ver precios";
   updateWa();
   document.addEventListener("click", e => { const a = e.target.closest('a[href*="wa.me"]'); if (a) track("whatsapp_click", {lugar: a.className || a.id || "enlace"}); }, true);
 
@@ -2510,6 +2510,15 @@ async function projectCard(p, g, photoEl){
     track("exit_offer_whatsapp"); ss.set("vv_wa", "1"); dlg.hidden = true;
     window.open(waLink(msg), "_blank", "noopener");
   });
+  /* 8) precio en cuota mensual en cada tarjeta: el lote se siente alcanzable */
+  const grid = $("#projGrid");
+  const addQuota = () => { if (typeof PROJ === "undefined") return; grid.querySelectorAll("article.proj").forEach(card => {
+      if (card.querySelector(".gx-q")) return; const h = card.querySelector("h3"), p = h && PROJ.find(x => x.name === h.textContent.trim()); if (!p || !p.price) return;
+      const cell = [...card.querySelectorAll(".proj-meta > div")].find(d => /Desde/.test(d.textContent)); if (!cell) return;
+      const q = document.createElement("small"); q.className = "gx-q"; q.style.cssText = "display:block;font-weight:700;color:#1F7A3D;font-size:.78rem;margin-top:2px";
+      q.textContent = `o S/ ${Math.round(p.price * 0.8 / 36).toLocaleString("es-PE")} al mes*`; cell.appendChild(q); });
+    if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.78rem;color:#6B7A86;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
+  if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true}); }
   track("page_view_web", {origen: typeof SRC !== "undefined" ? SRC : ""});
 })();
 </script>
