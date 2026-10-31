@@ -5010,9 +5010,17 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     box.innerHTML = `<div class="panel"><h3>A quién llamar primero</h3><div class="gx-pri">${pri}</div><p class="gx-tip">La temperatura sube con el interés reciente, la proforma, la visita, el presupuesto definido y los referidos.</p></div>
       <div class="panel"><h3>Embudo de ventas</h3><div class="gx-fun">${fun}</div>
       <div class="gx-src"><div class="h"><span>Origen</span><span>Clientes</span><span>Visitas</span><span>Ventas</span><span>Cierre</span></div>${src || `<div><span>Aún sin datos</span></div>`}</div>
-      <p class="gx-tip">Registra el origen de cada cliente para saber qué canal trae ventas y dónde conviene invertir en publicidad.</p></div>`;
+      <p class="gx-tip">Registra el origen de cada cliente para saber qué canal trae ventas y dónde conviene invertir en publicidad.</p>
+      <div class="acts" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><button class="btn ghost sm" type="button" data-gx="link">Copiar mi enlace de la web</button><button class="btn ghost sm" type="button" data-gx="week">Enviar resumen de la semana</button></div></div>`;
   }
-  box.addEventListener("click", e => { const b = e.target.closest("[data-gx=wa]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!c) return;
+  box.addEventListener("click", e => {
+    const L = e.target.closest("[data-gx=link]"), W = e.target.closest("[data-gx=week]");
+    if (L) { const a = adv().trim(); if (!a) { toast("Escribe tu nombre de asesor en la Proforma primero"); return; }
+      copyText(`https://vivaldiinmobiliaria.com/?utm_source=asesor&utm_medium=whatsapp&utm_campaign=${encodeURIComponent(a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "-"))}`); return; }   // con este enlace, los mensajes que llegan de la web dicen qué asesor trajo al cliente
+    if (W) { const wk = c => daysAgo(c.created) <= 7, n = CLIENTS.filter(wk), st = s => CLIENTS.filter(c => c.stage === s && daysAgo(c.stageAt || c.created) <= 7).length;
+      const by = {}; n.forEach(c => { const k = c.src || "Sin dato"; by[k] = (by[k] || 0) + 1; });
+      sendWa(`Resumen semanal${adv() ? " · " + adv() : ""}\nNuevos interesados: ${n.length}\nVisitas agendadas: ${st("Visita agendada")}\nSeparaciones: ${st("Separado")}\nVentas: ${st("Vendido")}\nOrigen de los nuevos: ${Object.entries(by).map(([k, v]) => k + " " + v).join(", ") || "sin datos"}`); return; }
+    const b = e.target.closest("[data-gx=wa]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!c) return;
     const [, msg] = nba(c, score(c).s); sendWa(msg, c.phone); if (c.stage === "Nuevo") { c.stage = "Contactado"; c.stageAt = todayIso(); } const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); c.next = n.toISOString().slice(0, 10); crmSave(); renderCrm(); });
   const r0 = renderCrm; renderCrm = function () { r0.apply(this, arguments); render(); };
   render();

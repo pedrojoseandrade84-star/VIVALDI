@@ -2479,7 +2479,16 @@ async function projectCard(p, g, photoEl){
   let simT = null; ["#sIni", "#sProj"].forEach(s => { const el = $(s); if (el) el.addEventListener("input", () => { clearTimeout(simT); simT = setTimeout(() => track("simulator_used"), 1200); }); });
   document.addEventListener("click", e => { if (e.target.closest("#visitSlots [role=radio], #visitSlots button")) track("visit_selected"); if (e.target.closest("#aiFab")) track("assistant_open"); }, true);
   const form = $("#leadForm");
-  if (form) form.addEventListener("submit", () => setTimeout(() => { const ok = $("#fOk"); if (ok && !ok.hidden) { track("lead_submit", {proyecto: (names[$("#fProj").value] || "")}); ls.set("vv_lead", "1"); ["fName", "fPhone", "fMsg"].forEach(k => ls.del("vv_f_" + k)); } }, 60));
+  if (form) form.addEventListener("submit", () => setTimeout(() => { const ok = $("#fOk"); if (ok && !ok.hidden) { track("lead_submit", {proyecto: (names[$("#fProj").value] || "")}); ls.set("vv_lead", "1"); ["fName", "fPhone", "fMsg"].forEach(k => ls.del("vv_f_" + k)); referral(ok); } }, 60));
+  /* 7) referidos: justo después de cotizar, invitar a compartir con familia y amigos */
+  function referral(box) {
+    if (box.querySelector(".gx-ref")) return;
+    const url = (location.protocol.startsWith("http") ? location.origin + location.pathname : "https://vivaldiinmobiliaria.com/") + "?utm_source=referido&utm_medium=whatsapp";
+    const msg = `Estoy viendo lotes de playa de Vivaldi${interest.name ? " en " + interest.name : ""}, en soles y con cuotas sin intereses. Míralo: ${url}`;
+    const d = document.createElement("div"); d.className = "gx-ref"; d.style.cssText = "margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center";
+    d.innerHTML = `<span style="font-size:.9rem">¿Alguien de tu familia o tus amigos también busca playa?</span><a class="btn" style="background:#1FA855;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Compartir por WhatsApp</a>`;
+    d.querySelector("a").addEventListener("click", () => track("referral_share")); box.appendChild(d); track("referral_offer");
+  }
 
   /* 5) el formulario no se pierde si el cliente sale a medias */
   ["fName", "fPhone", "fMsg"].forEach(k => { const el = document.getElementById(k); if (!el) return; const v = ls.get("vv_f_" + k); if (v && !el.value) el.value = v; el.addEventListener("input", () => ls.set("vv_f_" + k, el.value)); });
