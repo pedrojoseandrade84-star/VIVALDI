@@ -2537,6 +2537,10 @@ async function projectCard(p, g, photoEl){
       a.addEventListener("click", () => track("waitlist_join", {proyecto: nm.trim()})); body.appendChild(a); });
     if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.8rem;color:#33454F;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
   if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true}); }
+  /* 8b) preguntas frecuentes de compra segura */
+  const faq = document.querySelector("#faq .faq");
+  if (faq && !$("#gxFaq1")) faq.insertAdjacentHTML("beforeend", `<details id="gxFaq1"><summary>¿Cómo puedo verificar a Vivaldi?</summary><p>Somos Inmobiliaria &amp; Constructora Vivaldi S.A.C., RUC 20604145458, con oficina en Av. El Derby 121, Santiago de Surco. Puede revisar los antecedentes de los proveedores inmobiliarios en la Central de Información de Promotores Inmobiliarios y en el portal Mira a Quién le Compras del Indecopi.</p></details>
+    <details id="gxFaq2"><summary>¿Qué debo revisar antes de separar un lote?</summary><p>La partida registral del lote en SUNARP, la documentación municipal del proyecto (habilitación urbana y plano de lotización), el área y las medidas del lote, y el precio total con su cronograma de pagos por escrito. Su asesor se los muestra antes de separar.</p></details>`);
   /* 9) información al consumidor (Leyes 29203 y 30534) y compra segura, en el pie de página */
   const fg = document.querySelector("footer.site .foot-grid");
   if (fg && !$("#gxLegal")) fg.insertAdjacentHTML("afterend", `<div id="gxLegal" style="margin-top:22px;padding:16px 18px;border:1px solid rgba(255,255,255,.22);border-radius:14px;font-size:.84rem;line-height:1.55">

@@ -3038,8 +3038,8 @@ $("#ficha").addEventListener("click", async () => {
       ly += 14; }
     y += dh + 90; }
   g.fillStyle = "#6B7A86"; g.font = "500 20px Manrope, Arial";
-  wrap(g, "Simulación referencial para orientar la compra. El diseño definitivo requiere proyecto de arquitectura e ingeniería firmado por profesionales colegiados, estudio de suelos y licencia municipal.", 50, y, 980, 30);
-  const H = Math.ceil(y + 110), c2 = document.createElement("canvas"); c2.width = 1080; c2.height = H; const g2 = c2.getContext("2d"); g2.drawImage(c, 0, 0);   // altura justa
+  wrap(g, "Simulación referencial para orientar la compra. El diseño definitivo requiere proyecto de arquitectura e ingeniería firmado por profesionales colegiados, estudio de suelos y licencia municipal. Antecedentes del proveedor: portal Mira a Quién le Compras del Indecopi.", 50, y, 980, 30);
+  const H = Math.ceil(y + 145), c2 = document.createElement("canvas"); c2.width = 1080; c2.height = H; const g2 = c2.getContext("2d"); g2.drawImage(c, 0, 0);   // altura justa
   g2.fillStyle = "#0A3856"; g2.fillRect(0, H - 70, 1080, 70); g2.fillStyle = "#fff"; g2.font = "700 26px Manrope, Arial"; const an = store.get("viv_an"), ap = store.get("viv_ap");   // asesor que atiende al cliente
   g2.fillText(an || ap ? `Asesor: ${an}${an && ap ? " · " : ""}${ap ? "WhatsApp " + ap : ""}` : "WhatsApp 922 549 723 · vivaldiinmobiliaria.com", 50, H - 25);
   const blob = await new Promise(r => c2.toBlob(r, "image/png"));
