@@ -27,6 +27,8 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
   - medición del embudo con consentimiento de cookies;
   - WhatsApp con el proyecto que vio el cliente;
   - recuperación de visitantes que se retiran sin escribir;
+  - preguntas de calificación (plazo de compra y forma de pago);
+  - información al consumidor (Leyes 29203 y 30534) y lista de compra segura;
   - cuota mensual referencial en cada proyecto;
   - referidos y lista de espera;
   - prueba A/B del botón de WhatsApp.
@@ -44,6 +46,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
   - pronóstico ponderado;
   - registro de clientes desde el mensaje de la web;
   - secuencia de seguimiento de 6 contactos y meta diaria de actividad;
+  - calificación por plazo de compra y forma de pago;
   - exportación de indicadores a Excel.
 
 ## Simulador 3D
