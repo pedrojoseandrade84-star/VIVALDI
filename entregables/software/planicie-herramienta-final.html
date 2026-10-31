@@ -3785,7 +3785,7 @@ function renderPf(){
     ${c.term ? `<div class="doc-schedwrap"><h4>Cronograma de pagos</h4><div class="doc-sched ${c.term <= 12 ? "one" : ""}">${c.term <= 12 ? pfSchedTable(c.sched) : pfSchedTable(c.sched.slice(0, half)) + pfSchedTable(c.sched.slice(half))}</div></div>` : ""}
     <div><h4>Condiciones</h4><ol>
       <li>Precios en soles (S/). Financiamiento directo con ${CO.name}, sin intereses: la suma de la inicial y las cuotas es igual al precio final.</li>
-      <li>Proforma referencial válida hasta el ${dLong(c.valid)}. El precio y la disponibilidad del lote se confirman al momento de la separación.</li>
+      <li>Proforma referencial válida hasta el ${dLong(c.valid)}. El precio y la disponibilidad del lote se confirman al momento de la separación. Antecedentes del proveedor: Central de Información de Promotores Inmobiliarios y portal Mira a Quién le Compras del Indecopi.</li>
       <li>${c.term ? "La cuota inicial se abona a la firma del contrato y las cuotas vencen en las fechas del cronograma." : "El pago total se abona a la firma del contrato."} Pagos solo en las cuentas a nombre de la empresa.</li>
       <li>El lote cuenta con título independizado; la partida registral (SUNARP) se entrega al cliente para su verificación antes de firmar.</li>
       <li>Este documento es informativo y no constituye contrato ni reserva del lote.</li></ol></div>
@@ -3856,7 +3856,7 @@ async function pfImage(){
   // benefits + footer
   y += hh + 54;
   ["✓  Precio en soles, sin riesgo cambiario", "✓  Título independizado e inscrito en SUNARP", "✓  Financiamiento directo, sin bancos ni intereses"].forEach(t => { T(t, P, y, {s: 22, w: 600, col: GR}); y += 38; });
-  y += 8; T(`Proforma referencial: precio y disponibilidad se confirman al separar el lote.`, P, y, {s: 18, col: MU, max: W - 2 * P});
+  y += 8; T(`Proforma referencial: precio y disponibilidad se confirman al separar.\nAntecedentes del proveedor: Mira a Quién le Compras (Indecopi).`, P, y, {s: 18, col: MU, max: W - 2 * P});
   box(0, H - 86, W, 86, 0, NV);
   T(`${CO.name} · RUC ${CO.ruc}`, P, H - 50, {s: 18, w: 700, col: "#fff", max: W - 2 * P});
   T(`${CO.tel} · ${CO.mail} · ${CO.web}`, P, H - 22, {s: 17, col: "#CFE3F4", max: W - 2 * P});
@@ -3978,7 +3978,7 @@ async function xlsxProforma(c){
     const rows = [Object.assign(["—", "Inicial a la firma", null, c.down, c.fin], {tint: "FFE3EEF8"}), ...c.sched.map(s => [s.i, "Cuota mensual", s.d, s.amt, s.bal])];
     r = xlTable(ws, r, [{h:"N°", w:10, al:"center"}, {h:"Concepto", w:26}, {h:"Vencimiento", w:18, fmt:XL.date, al:"center"}, {h:"Importe", w:18, fmt:XL.money}, {h:"Saldo", w:20, fmt:XL.money}], rows, {total:{label:"TOTAL A PAGAR", sum:[3]}});
   }
-  r++; xlNote(ws, r, 5, `Precios en soles, sin intereses. Proforma referencial válida hasta el ${dLong(c.valid)}; precio y disponibilidad se confirman al separar. ${CO.name} · RUC ${CO.ruc} · ${CO.addr} · ${CO.tel}`);
+  r++; xlNote(ws, r, 5, `Precios en soles, sin intereses. Proforma referencial válida hasta el ${dLong(c.valid)}; precio y disponibilidad se confirman al separar. Antecedentes del proveedor: Central de Información de Promotores Inmobiliarios y portal Mira a Quién le Compras del Indecopi. ${CO.name} · RUC ${CO.ruc} · ${CO.addr} · ${CO.tel}`);
   await xlSave(wb, pfFile(c, "xlsx"));
 }
 // 2) clients / pipeline
