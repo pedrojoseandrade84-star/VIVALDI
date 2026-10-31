@@ -2400,5 +2400,110 @@ async function projectCard(p, g, photoEl){
   t.addEventListener("scroll", upd, {passive:true}); addEventListener("resize", upd); upd();
 })();
 </script>
+<!--growth-start-->
+<style id="growth-css">
+.gx-dlg{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(6,25,40,.55);padding:16px}
+.gx-dlg[hidden]{display:none}
+.gx-card{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;font:inherit;color:#13242E}
+.gx-card h3{margin:0 0 6px;font-size:1.35rem;line-height:1.2;color:#0A3856}
+.gx-card p{margin:0 0 14px;color:#4C5E68;font-size:.95rem;line-height:1.45}
+.gx-card label{display:grid;gap:4px;font-size:.82rem;font-weight:700;color:#4C5E68;margin-bottom:10px}
+.gx-card input,.gx-card select{font:inherit;font-size:16px;padding:11px 12px;border:1px solid #D5DEE3;border-radius:12px;min-height:46px;width:100%;background:#fff}
+.gx-card .gx-go{width:100%;min-height:50px;border:0;border-radius:999px;background:#1FA855;color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer}
+.gx-card .gx-x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:#7A8A93;cursor:pointer;width:40px;height:40px}
+.gx-card ul{margin:0 0 14px 18px;padding:0;color:#13242E;font-size:.92rem;line-height:1.5}
+.gx-card small{display:block;margin-top:10px;color:#7A8A93;font-size:.75rem;line-height:1.4}
+</style>
+<div class="gx-dlg" id="gxExit" hidden role="dialog" aria-modal="true" aria-labelledby="gxT">
+  <div class="gx-card">
+    <button class="gx-x" type="button" aria-label="Cerrar" data-gx-close>×</button>
+    <h3 id="gxT">Antes de irte: tu lote, cotizado por WhatsApp</h3>
+    <p>Un asesor te envía hoy, sin compromiso:</p>
+    <ul><li>Lotes disponibles y su ubicación en el plano</li><li>Tu cuota mensual exacta, en soles y sin intereses</li><li>Horarios para una visita guiada</li></ul>
+    <label>Tu nombre<input id="gxName" autocomplete="name" placeholder="Nombre"></label>
+    <label>Proyecto<select id="gxProj"></select></label>
+    <button class="gx-go" type="button" id="gxGo">Recibir por WhatsApp</button>
+    <small>Se abre WhatsApp con tu mensaje listo; tú decides si lo envías.</small>
+  </div>
+</div>
+<script id="growth">
+/* Capa de crecimiento: medición del embudo, WhatsApp con contexto, recuperación de visitantes y formularios.
+   Para medir campañas, completa los identificadores (vacíos = no se carga nada externo). */
+(() => {
+  const CFG = {ga4: "", metaPixel: "", tiktokPixel: "", phone: "51922549723"};
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const ls = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} }};
+  const ss = {get: k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} }};
+
+  /* 1) medición: un solo punto que reparte a Google Analytics 4, Meta y TikTok si están configurados */
+  window.dataLayer = window.dataLayer || [];
+  const load = src => { const s = document.createElement("script"); s.async = true; s.src = src; document.head.appendChild(s); };
+  const consent = () => ls.get("vv-cookies") === "all";   // los píxeles de publicidad solo se cargan si el visitante acepta todas las cookies
+  let pixelsOn = false;
+  const startPixels = () => { if (pixelsOn || !consent()) return; pixelsOn = true;
+  if (CFG.ga4) { load("https://www.googletagmanager.com/gtag/js?id=" + CFG.ga4); window.gtag = function () { dataLayer.push(arguments); }; gtag("js", new Date()); gtag("config", CFG.ga4); }
+  if (CFG.metaPixel) { !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CFG.metaPixel); fbq("track", "PageView"); }
+  if (CFG.tiktokPixel) { !function (w, d, t) { w.TiktokAnalyticsObject = t; const ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify"]; ttq.setAndDefer = (o, m) => { o[m] = function () { o.push([m].concat([].slice.call(arguments, 0))); }; }; ttq.methods.forEach(m => ttq.setAndDefer(ttq, m)); ttq.load = e => { const s = d.createElement("script"); s.async = !0; s.src = "https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=" + e + "&lib=" + t; d.head.appendChild(s); }; ttq.load(CFG.tiktokPixel); ttq.page(); }(window, document, "ttq"); }
+  };
+  startPixels(); document.addEventListener("click", e => { if (e.target.closest("[data-ck]")) setTimeout(startPixels, 50); });
+  const AB = (() => { let v = ls.get("vv_ab"); if (!v) { v = Math.random() < 0.5 ? "A" : "B"; ls.set("vv_ab", v); } return v; })();
+  const track = (name, p = {}) => {
+    const data = Object.assign({event: name, ab: AB, proyecto: interest.name || undefined}, p);
+    dataLayer.push(data);
+    if (window.gtag && CFG.ga4) gtag("event", name, data);
+    if (window.fbq && CFG.metaPixel) { const map = {lead_submit: "Lead", whatsapp_click: "Contact", visit_selected: "Schedule", simulator_used: "CustomizeProduct"}; map[name] ? fbq("track", map[name], data) : fbq("trackCustom", name, data); }
+    if (window.ttq && CFG.tiktokPixel) ttq.track(name, data);
+    const log = JSON.parse(ls.get("vv_events") || "[]"); log.push([Date.now(), name, data.proyecto || ""]); ls.set("vv_events", JSON.stringify(log.slice(-60)));   // historial local para revisar en el navegador
+  };
+  window.vivaldiTrack = track;
+
+  /* 2) interés del visitante: el último proyecto que miró o tocó */
+  const names = {}; $$("#fProj option, #sProj option").forEach(o => { if (o.value) names[o.value] = o.textContent.split(" · ")[0].trim(); });
+  const interest = {id: ls.get("vv_int") || "", get name() { return names[this.id] || ""; }};
+  const setInterest = (id, why) => { if (!id || !names[id] || interest.id === id) return; interest.id = id; ls.set("vv_int", id); updateWa(); track("project_interest", {via: why}); };
+  document.addEventListener("click", e => { const el = e.target.closest("[data-proj],[data-sheet],[data-sim]"); if (el) setInterest(el.dataset.proj || el.dataset.sheet || el.dataset.sim, "clic"); }, true);
+  ["#sProj", "#fProj"].forEach(s => { const el = $(s); if (el) el.addEventListener("change", () => setInterest(el.value, s === "#sProj" ? "simulador" : "formulario")); });
+
+  /* 3) WhatsApp con contexto (y prueba A/B del texto del botón) */
+  const waText = () => interest.name ? `Hola Vivaldi, vi ${interest.name} en su web. ¿Me pueden enviar disponibilidad de lotes, precio y cuota mensual?` : "Hola Vivaldi, quiero información de sus lotes de playa: disponibilidad, precios y cuotas.";
+  const waLink = t => typeof waUrl === "function" ? waUrl(t) : `https://wa.me/${CFG.phone}?text=${encodeURIComponent(t)}`;   // conserva "Vengo de: Facebook/Google…" para medir qué canal vende
+  function updateWa() { $$("a.wa, a.wa-b").forEach(a => { a.href = waLink(waText()); }); }
+  const waB = $("a.wa-b"); if (waB && AB === "B") waB.textContent = "Precios por WhatsApp";
+  updateWa();
+  document.addEventListener("click", e => { const a = e.target.closest('a[href*="wa.me"]'); if (a) track("whatsapp_click", {lugar: a.className || a.id || "enlace"}); }, true);
+
+  /* 4) embudo: secciones vistas, profundidad de lectura, simulador, visita y envío */
+  const seen = new Set(); const io = "IntersectionObserver" in window && new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting && !seen.has(en.target.id)) { seen.add(en.target.id); track("section_view", {seccion: en.target.id}); } }), {threshold: 0.35});
+  if (io) ["proyectos", "plano", "financiamiento", "testimonios", "faq", "contacto"].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+  let maxScroll = 0; addEventListener("scroll", () => { const p = Math.round((scrollY + innerHeight) / document.documentElement.scrollHeight * 100); [50, 90].forEach(m => { if (p >= m && maxScroll < m) { maxScroll = m; track("scroll_depth", {porcentaje: m}); } }); }, {passive: true});
+  let simT = null; ["#sIni", "#sProj"].forEach(s => { const el = $(s); if (el) el.addEventListener("input", () => { clearTimeout(simT); simT = setTimeout(() => track("simulator_used"), 1200); }); });
+  document.addEventListener("click", e => { if (e.target.closest("#visitSlots [role=radio], #visitSlots button")) track("visit_selected"); if (e.target.closest("#aiFab")) track("assistant_open"); }, true);
+  const form = $("#leadForm");
+  if (form) form.addEventListener("submit", () => setTimeout(() => { const ok = $("#fOk"); if (ok && !ok.hidden) { track("lead_submit", {proyecto: (names[$("#fProj").value] || "")}); ls.set("vv_lead", "1"); ["fName", "fPhone", "fMsg"].forEach(k => ls.del("vv_f_" + k)); } }, 60));
+
+  /* 5) el formulario no se pierde si el cliente sale a medias */
+  ["fName", "fPhone", "fMsg"].forEach(k => { const el = document.getElementById(k); if (!el) return; const v = ls.get("vv_f_" + k); if (v && !el.value) el.value = v; el.addEventListener("input", () => ls.set("vv_f_" + k, el.value)); });
+  const fp = $("#fProj"); if (fp && interest.id && names[interest.id] && !ls.get("vv_lead")) fp.value = interest.id;
+
+  /* 6) visitante que se va sin escribir: ofrecerle la cotización por WhatsApp (una vez por semana, nunca a quien ya escribió) */
+  const dlg = $("#gxExit"), gp = $("#gxProj");
+  if (gp) gp.innerHTML = Object.entries(names).map(([id, n]) => `<option value="${id}">${n}</option>`).join("");
+  const canOffer = () => !ls.get("vv_lead") && !ss.get("vv_wa") && Date.now() - (+ls.get("vv_exit") || 0) > 7 * 864e5 && dlg && dlg.hidden && !document.querySelector("dialog[open]");
+  const offer = why => { if (!canOffer()) return; if (interest.id) gp.value = interest.id; $("#gxName").value = ls.get("vv_f_fName") || ""; dlg.hidden = false; ls.set("vv_exit", Date.now()); track("exit_offer_shown", {motivo: why}); };
+  document.addEventListener("click", e => { if (e.target.closest('a[href*="wa.me"]')) ss.set("vv_wa", "1"); }, true);
+  document.addEventListener("mouseout", e => { if (!e.relatedTarget && e.clientY < 8 && seen.size >= 1) offer("salida"); });
+  let t0 = Date.now(); addEventListener("scroll", () => { if (matchMedia("(pointer:coarse)").matches && Date.now() - t0 > 45000 && maxScroll >= 50 && scrollY < 400 && seen.has("proyectos")) offer("regreso"); }, {passive: true});   // en celular: tras leer, vuelve arriba
+  dlg && dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest("[data-gx-close]")) { dlg.hidden = true; track("exit_offer_closed"); } });
+  addEventListener("keydown", e => { if (e.key === "Escape" && dlg && !dlg.hidden) dlg.hidden = true; });
+  $("#gxGo") && $("#gxGo").addEventListener("click", () => {
+    const n = $("#gxName").value.trim(), pid = gp.value; setInterest(pid, "oferta");
+    const msg = `Hola Vivaldi${n ? ", soy " + n : ""}. Me interesa ${names[pid] || "un lote"}: ¿me envían los lotes disponibles, mi cuota mensual y horarios para visitarlo?`;
+    track("exit_offer_whatsapp"); ss.set("vv_wa", "1"); dlg.hidden = true;
+    window.open(waLink(msg), "_blank", "noopener");
+  });
+  track("page_view_web", {origen: typeof SRC !== "undefined" ? SRC : ""});
+})();
+</script>
+<!--growth-end-->
 </body>
 </html>
