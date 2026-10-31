@@ -4919,5 +4919,105 @@ new MutationObserver(drawAll).observe(document.documentElement, {attributes:true
 let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if ((innerWidth < 600) !== (lastW < 600) && window.Chart) drawAll(); else drawRuler(); lastW = innerWidth; }, 150); });
 </script>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!--growth-crm-start-->
+<style id="gx-crm-css">
+.gx-crm{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin:0 0 14px}
+@media (max-width:900px){.gx-crm{grid-template-columns:1fr}}
+.gx-crm .panel h3{margin-top:0}
+.gx-fun{display:grid;gap:6px}
+.gx-fun .r{display:grid;grid-template-columns:120px 1fr 64px;gap:8px;align-items:center;font-size:.84rem}
+.gx-fun .bar{height:22px;border-radius:6px;background:var(--line);overflow:hidden}.gx-fun .bar i{display:block;height:100%;background:var(--sea,#1F7A99);border-radius:6px}
+.gx-fun .pc{font-weight:800;text-align:right}
+.gx-src{display:grid;margin-top:10px;font-size:.82rem}.gx-src>div{display:grid;grid-template-columns:1.6fr repeat(4,1fr);gap:6px;padding:7px 2px;border-top:1px solid var(--line)}.gx-src>div>*:not(:first-child){text-align:right}.gx-src .h{font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.gx-pri{display:grid;gap:8px}
+.gx-it{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.gx-it .t{font-size:.7rem;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.gx-it .t.c{background:#FDE2DC;color:#A3321C}.gx-it .t.ti{background:#FFF1D6;color:#8A5A00}.gx-it .t.f{background:#E3EEF5;color:#2F5C78}
+.gx-it b{overflow-wrap:anywhere}.gx-it .why{grid-column:2/4;font-size:.8rem;color:var(--muted)}.gx-it .nba{grid-column:1/4;font-size:.84rem}
+.gx-it .acts{display:flex;gap:6px}.gx-it button{font:inherit;font-size:.8rem;font-weight:700;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;min-height:36px;cursor:pointer}
+.gx-it button.w{background:#1FA855;border-color:#1FA855;color:#fff}
+.gx-tip{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+</style>
+<script id="growth-crm">
+/* Socio de crecimiento para el equipo: origen de cada cliente, embudo con conversión por etapa,
+   ventas por canal y lista "a quién llamar primero" con temperatura y siguiente acción. */
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("crmForm")) return;
+  const SRCS = ["Facebook", "Instagram", "TikTok", "Google", "Web", "Referido", "Caseta / feria", "Volante", "Llamada", "Otro"];
+  const day = s => s ? new Date(s + "T12:00") : null, daysAgo = s => s ? Math.floor((Date.now() - day(s)) / 864e5) : 99;
+  const first = n => String(n || "").trim().split(" ")[0];
+  const adv = () => { try { return localStorage.getItem("vivaldi-asesor") || ""; } catch (e) { return ""; } };
+
+  // 1) campo Origen en el formulario de cliente
+  const form = document.getElementById("crmForm"), grid = form.querySelector(".form");
+  const lab = document.createElement("label"); lab.className = "inp"; lab.innerHTML = `Origen<select id="cSrc"><option value="">Sin dato</option>${SRCS.map(s => `<option>${s}</option>`).join("")}</select>`;
+  grid.insertBefore(lab, grid.querySelector("label.full"));
+  let pending = null;
+  form.addEventListener("submit", () => { pending = {name: $("cName").value.trim(), src: $("cSrc").value, edit: typeof crmEdit !== "undefined" ? crmEdit : null}; }, true);
+  form.addEventListener("submit", () => setTimeout(() => {
+    if (!pending || !pending.name) return;
+    const c = pending.edit ? CLIENTS.find(x => x.id === pending.edit) : CLIENTS.find(x => x.name === pending.name);
+    if (c) { c.src = pending.src || c.src || ""; if (!c.created) c.created = todayIso(); crmSave(); render(); }
+    $("cSrc").value = ""; pending = null;
+  }, 0));
+  document.addEventListener("click", e => { if (e.target.closest("#crmList button")) setTimeout(() => { const c = typeof crmEdit !== "undefined" && crmEdit && CLIENTS.find(x => x.id === crmEdit); if (c) $("cSrc").value = c.src || ""; }, 0); });
+
+  // 2) temperatura y siguiente mejor acción
+  const same = (a, b) => a && b && a.trim().toLowerCase() === b.trim().toLowerCase(), samePh = (a, b) => a && b && String(a).replace(/\D/g, "").slice(-9) === String(b).replace(/\D/g, "").slice(-9);
+  const proformas = c => PFLOG.filter(r => same(r.name, c.name) || samePh(r.phone, c.phone)).length;
+  const visited = c => (typeof VISITS === "undefined" ? [] : VISITS).some(v => v.st === "ok" && v.name && c.name && v.name.toLowerCase() === c.name.toLowerCase());
+  function score(c) {
+    let s = {"Nuevo": 30, "Contactado": 35, "Visita agendada": 60}[c.stage] || 0; const why = [];
+    const age = daysAgo(c.stageAt || c.created);
+    if (c.stage === "Nuevo" && daysAgo(c.created) <= 0) { s += 20; why.push("llegó hoy: responder rápido"); }
+    if (age <= 1) { s += 25; why.push("interés reciente"); } else if (age <= 3) s += 15; else if (age <= 7) s += 5; else if (age > 30) { s -= 15; why.push(`${age} días sin avanzar`); }
+    if (proformas(c)) { s += 15; why.push("ya pidió proforma"); }
+    if (visited(c)) { s += 15; why.push("visitó el proyecto"); }
+    if (c.budget > 0) { s += 5; why.push("presupuesto definido"); }
+    if (c.src === "Referido") { s += 10; why.push("viene referido"); }
+    if (c.next && c.next < todayIso()) { s += 10; why.push("contacto atrasado"); }
+    if (!c.phone) s -= 20;
+    return {s, why};
+  }
+  function nba(c, sc) {
+    const age = daysAgo(c.created), n = first(c.name), a = first(adv()) || "tu asesor de Vivaldi";
+    if (c.stage === "Nuevo") return age <= 0
+      ? ["Llámalo ahora: responder en los primeros minutos multiplica la probabilidad de cierre.", `Hola ${n}, soy ${a} de Vivaldi. Vi tu interés en ${c.proj}. ¿Te llamo en 5 minutos para contarte disponibilidad y cuotas?`]
+      : ["Primer contacto por WhatsApp con disponibilidad y cuota mensual.", `Hola ${n}, soy ${a} de Vivaldi. Te escribo por ${c.proj}: tenemos lotes disponibles con cuotas en soles y sin intereses. ¿Te envío el plano y tu cuota exacta?`];
+    if (c.stage === "Contactado") return proformas(c)
+      ? ["Ya tiene proforma: invítalo a ver el lote este fin de semana.", `Hola ${n}, ¿qué te pareció la proforma de ${c.proj}? Este sábado tenemos visitas guiadas: ¿te reservo un horario para que conozcas tu lote?`]
+      : ["Invítalo a una visita guiada: es el paso que más acerca a la separación.", `Hola ${n}, este fin de semana tenemos visitas guiadas a ${c.proj}. ¿Te reservo un horario? Así ves el lote, el avance de obra y las áreas comunes.`];
+    if (c.stage === "Visita agendada") return visited(c)
+      ? ["Visitó: envía la proforma del lote elegido y los pasos para separar.", `Hola ${n}, gracias por visitar ${c.proj}. Te envío la proforma del lote que viste y los pasos para separarlo. ¿Lo conversamos hoy?`]
+      : ["Confirma la visita un día antes y envía la ubicación.", `Hola ${n}, te confirmo tu visita a ${c.proj}. ¿Sigue en pie? Te envío la ubicación para llegar sin problemas.`];
+    return ["", ""];
+  }
+
+  // 3) panel: embudo, canales y prioridad
+  const box = document.createElement("div"); box.className = "gx-crm"; box.id = "gxCrm";
+  const stats = document.getElementById("crmStats"); stats.parentNode.insertBefore(box, stats.nextSibling);
+  function render() {
+    const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rank = s => ord.indexOf(s);
+    const all = CLIENTS.filter(c => c.stage !== "Descartado" || true), tot = CLIENTS.length || 1;
+    const reach = ord.map((s, i) => CLIENTS.filter(c => rank(c.stage) >= i || (c.stage === "Descartado" && i === 0)).length);
+    const fun = ord.map((s, i) => `<div class="r"><span>${s === "Nuevo" ? "Interesados" : s}</span><div class="bar"><i style="width:${Math.round(reach[i] / Math.max(1, reach[0]) * 100)}%"></i></div><span class="pc">${reach[i]}${i ? ` · ${reach[i - 1] ? Math.round(reach[i] / reach[i - 1] * 100) : 0}%` : ""}</span></div>`).join("");
+    const by = {}; CLIENTS.forEach(c => { const k = c.src || "Sin dato"; by[k] = by[k] || {n: 0, v: 0, s: 0}; by[k].n++; if (rank(c.stage) >= 2) by[k].v++; if (rank(c.stage) >= 3) by[k].s++; });
+    const src = Object.entries(by).sort((a, b) => b[1].s - a[1].s || b[1].n - a[1].n).map(([k, x]) => `<div><span>${esc(k)}</span><span>${x.n}</span><span>${x.v}</span><span>${x.s}</span><b>${x.n ? Math.round(x.s / x.n * 100) : 0}%</b></div>`).join("");
+    const act = CLIENTS.filter(c => ["Nuevo", "Contactado", "Visita agendada"].includes(c.stage)).map(c => ({c, ...score(c)})).sort((a, b) => b.s - a.s).slice(0, 8);
+    const pri = act.length ? act.map(({c, s, why}) => { const [txt] = nba(c, s), t = s >= 70 ? ["c", "Caliente"] : s >= 45 ? ["ti", "Tibio"] : ["f", "Frío"];
+      return `<div class="gx-it" data-id="${esc(c.id)}"><span class="t ${t[0]}">${t[1]}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="why">${esc(c.stage)}${why.length ? " · " + esc(why.join(", ")) : ""}</span><span class="nba">→ ${esc(txt)}</span></div>`; }).join("")
+      : `<p class="gx-tip">Registra a tus interesados en el formulario de abajo y aquí verás a quién llamar primero.</p>`;
+    box.innerHTML = `<div class="panel"><h3>A quién llamar primero</h3><div class="gx-pri">${pri}</div><p class="gx-tip">La temperatura sube con el interés reciente, la proforma, la visita, el presupuesto definido y los referidos.</p></div>
+      <div class="panel"><h3>Embudo de ventas</h3><div class="gx-fun">${fun}</div>
+      <div class="gx-src"><div class="h"><span>Origen</span><span>Clientes</span><span>Visitas</span><span>Ventas</span><span>Cierre</span></div>${src || `<div><span>Aún sin datos</span></div>`}</div>
+      <p class="gx-tip">Registra el origen de cada cliente para saber qué canal trae ventas y dónde conviene invertir en publicidad.</p></div>`;
+  }
+  box.addEventListener("click", e => { const b = e.target.closest("[data-gx=wa]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (!c) return;
+    const [, msg] = nba(c, score(c).s); sendWa(msg, c.phone); if (c.stage === "Nuevo") { c.stage = "Contactado"; c.stageAt = todayIso(); } const n = new Date(); n.setDate(n.getDate() + 2); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); c.next = n.toISOString().slice(0, 10); crmSave(); renderCrm(); });
+  const r0 = renderCrm; renderCrm = function () { r0.apply(this, arguments); render(); };
+  render();
+})();
+</script>
+<!--growth-crm-end-->
 </body>
 </html>
