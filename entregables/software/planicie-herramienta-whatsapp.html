@@ -4961,13 +4961,15 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   const form = document.getElementById("crmForm"), grid = form.querySelector(".form");
   const lab = document.createElement("label"); lab.className = "inp"; lab.innerHTML = `Origen<select id="cSrc"><option value="">Sin dato</option>${SRCS.map(s => `<option>${s}</option>`).join("")}</select>`;
   grid.insertBefore(lab, grid.querySelector("label.full"));
+  const lab2 = document.createElement("label"); lab2.className = "inp"; lab2.innerHTML = `Plazo de compra<select id="cPlazo"><option value="">Sin dato</option><option>Este mes</option><option>En 1 a 3 meses</option><option>En más de 3 meses</option><option>Solo me estoy informando</option></select>`;
+  grid.insertBefore(lab2, grid.querySelector("label.full"));
   let pending = null;
-  form.addEventListener("submit", () => { pending = {name: $("cName").value.trim(), src: $("cSrc").value, edit: typeof crmEdit !== "undefined" ? crmEdit : null}; }, true);
+  form.addEventListener("submit", () => { pending = {name: $("cName").value.trim(), src: $("cSrc").value, plazo: $("cPlazo").value, edit: typeof crmEdit !== "undefined" ? crmEdit : null}; }, true);
   form.addEventListener("submit", () => setTimeout(() => {
     if (!pending || !pending.name) return;
     const c = pending.edit ? CLIENTS.find(x => x.id === pending.edit) : CLIENTS.find(x => x.name === pending.name);
-    if (c) { c.src = pending.src || c.src || ""; if (!c.created) c.created = todayIso(); if (!pending.edit && !c.ts) c.ts = Date.now(); if (c.stage !== "Nuevo" && c.ts && !c.firstTs) c.firstTs = Date.now(); crmSave(); render(); }
-    $("cSrc").value = ""; pending = null;
+    if (c) { c.src = pending.src || c.src || ""; c.plazo = pending.plazo || c.plazo || ""; if (!c.created) c.created = todayIso(); if (!pending.edit && !c.ts) c.ts = Date.now(); if (c.stage !== "Nuevo" && c.ts && !c.firstTs) c.firstTs = Date.now(); crmSave(); render(); }
+    $("cSrc").value = ""; $("cPlazo").value = ""; pending = null;
   }, 0));
   const touch = c => { if (!c) return; if (c.ts && !c.firstTs) c.firstTs = Date.now(); c.touches = (c.touches || []).concat(Date.now()).slice(-40); logAct(); };
   const ACT = "vivaldi-actividad", goalKey = "vivaldi-meta-contactos";
@@ -4984,7 +4986,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     {d: 30, t: "Seguimiento 6 de 6", m: (n, a, p) => `Hola ${n}, para no incomodarte: ¿te escribo más adelante o prefieres que cierre tu consulta por ahora? Quedo atento a lo que necesites.`}];
   const seqStep = c => { const k = Math.min((c.touches || []).length, SEQ.length - 1), st = SEQ[k]; return {k, st, due: daysAgo(c.created) >= st.d, done: (c.touches || []).length >= SEQ.length}; };   // primer contacto del asesor: base del tiempo de respuesta
   document.addEventListener("click", e => { const wb = e.target.closest("#crmList button, #hoyList button"); if (wb && /whatsapp|llamar/i.test(wb.textContent)) { const row = wb.closest("[data-id]"); const c = row && CLIENTS.find(x => x.id === row.dataset.id); if (c) { touch(c); crmSave(); } } }, true);
-  document.addEventListener("click", e => { if (e.target.closest("#crmList button")) setTimeout(() => { const c = typeof crmEdit !== "undefined" && crmEdit && CLIENTS.find(x => x.id === crmEdit); if (c) $("cSrc").value = c.src || ""; }, 0); });
+  document.addEventListener("click", e => { if (e.target.closest("#crmList button")) setTimeout(() => { const c = typeof crmEdit !== "undefined" && crmEdit && CLIENTS.find(x => x.id === crmEdit); if (c) { $("cSrc").value = c.src || ""; $("cPlazo").value = c.plazo || ""; } }, 0); });
 
   // 1b) registrar un cliente pegando el mensaje que llegó desde la web
   const srcOf = t => { const m = t.match(/Vengo de:\s*([^)\n]+)/i), v = (m ? m[1] : "").toLowerCase();
@@ -4995,8 +4997,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const phone = (g(/\*?Celular:\*?\s*([\d +]+)/i) || "").replace(/\D/g, "").slice(-9);
     const proj = (VIV.find(v => t.toLowerCase().includes(v.name.toLowerCase()) || t.toLowerCase().includes(v.name.toLowerCase().replace(/^la |^las |^los /, ""))) || {}).name || "";
     const visit = g(/\*?Visita guiada:\*?\s*([^\n]+)/i) || g(/visitarlo el ([^.\n]+)/i);
-    const note = g(/\*?Mensaje:\*?\s*([^\n]+)/i), camp = g(/Vengo de:\s*([^)\n]+)/i);
-    return {name, phone, proj, visit, note, src: srcOf(t), camp};
+    const note = g(/\*?Mensaje:\*?\s*([^\n]+)/i).replace(/\s*\[(Plazo de compra|Forma de pago):[^\]]*\]/g, "").trim(), camp = g(/Vengo de:\s*([^)\n]+)/i);
+    const plazo = g(/Plazo de compra:\s*([^\]\n]+)/i), pago = g(/Forma de pago:\s*([^\]\n]+)/i);
+    return {name, phone, proj, visit, note, src: srcOf(t), camp, plazo, pago};
   }
   // 2) temperatura y siguiente mejor acción
   const same = (a, b) => a && b && a.trim().toLowerCase() === b.trim().toLowerCase(), samePh = (a, b) => a && b && String(a).replace(/\D/g, "").slice(-9) === String(b).replace(/\D/g, "").slice(-9);
@@ -5011,6 +5014,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (visited(c)) { s += 15; why.push("visitó el proyecto"); }
     if (c.budget > 0) { s += 5; why.push("presupuesto definido"); }
     if (c.src === "Referido") { s += 10; why.push("viene referido"); }
+    const pz = String(c.plazo || "") + " " + String(c.notes || "").match(/Plazo de compra: [^\n]*/i);
+    if (/este mes/i.test(pz)) { s += 20; why.push("quiere comprar este mes"); } else if (/1 a 3 meses/i.test(pz)) { s += 8; why.push("compra en 1 a 3 meses"); } else if (/solo me estoy informando/i.test(pz)) s -= 10;
+    if (/al contado/i.test(String(c.pago || "") + String(c.notes || ""))) { s += 5; why.push("pago al contado"); }
     if (c.next && c.next < todayIso()) { s += 10; why.push("contacto atrasado"); }
     if (["Nuevo", "Contactado"].includes(c.stage) && !proformas(c)) { const q = seqStep(c); if (q.due && !q.done && q.k > 0) { s += 12; why.push(q.st.t.toLowerCase() + " pendiente"); } }
     if (!c.phone) s -= 20;
@@ -5082,9 +5088,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       const m = parseMsg(t), phone = m.phone || $("gxPh").value.replace(/\D/g, "").slice(-9);
       if (!m.name && !phone) { toast("No se encontró nombre ni celular en el mensaje"); return; }
       const ex = phone && CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
-      const note = [m.visit && `Visita solicitada: ${m.visit}`, m.note && `Mensaje: ${m.note}`, m.camp && `Origen web: ${m.camp}`].filter(Boolean).join("\n");
-      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (m.proj) ex.proj = m.proj; toast("Cliente existente actualizado"); }
-      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src}); toast("Cliente registrado desde la web"); }
+      const note = [m.plazo && `Plazo de compra: ${m.plazo}`, m.pago && `Forma de pago: ${m.pago}`, m.visit && `Visita solicitada: ${m.visit}`, m.note && `Mensaje: ${m.note}`, m.camp && `Origen web: ${m.camp}`].filter(Boolean).join("\n");
+      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (m.proj) ex.proj = m.proj; if (m.plazo) ex.plazo = m.plazo; if (m.pago) ex.pago = m.pago; toast("Cliente existente actualizado"); }
+      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src, plazo: m.plazo || "", pago: m.pago || ""}); toast("Cliente registrado desde la web"); }
       crmSave(); renderCrm(); return; }
     const re = e.target.closest("[data-gx=re]");
     if (re) { const c = CLIENTS.find(x => x.id === re.closest("[data-id]").dataset.id); if (!c) return;

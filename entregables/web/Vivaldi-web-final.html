@@ -2491,6 +2491,17 @@ async function projectCard(p, g, photoEl){
     d.querySelector("a").addEventListener("click", () => track("referral_share")); box.appendChild(d); track("referral_offer");
   }
 
+  /* 4b) preguntas de calificación: el asesor sabe a quién atender primero */
+  const msgF = $("#fMsg");
+  if (form && msgF && !$("#gxPlazo")) {
+    msgF.closest(".field").insertAdjacentHTML("beforebegin", `<div class="two"><div class="field"><label for="gxPlazo">¿Cuándo piensa comprar?</label><select id="gxPlazo"><option value="">Prefiero no indicar</option><option>Este mes</option><option>En 1 a 3 meses</option><option>En más de 3 meses</option><option>Solo me estoy informando</option></select></div>
+      <div class="field"><label for="gxPago">¿Cómo piensa pagar?</label><select id="gxPago"><option value="">Prefiero no indicar</option><option>Financiado con Vivaldi</option><option>Al contado</option><option>Aún no lo sé</option></select></div></div>`);
+    form.addEventListener("submit", () => {   // se suma al mensaje que llega por WhatsApp
+      const pl = $("#gxPlazo").value, pg = $("#gxPago").value, base = msgF.value.replace(/\s*\[(Plazo de compra|Forma de pago):[^\]]*\]/g, "").trim();
+      const extra = [pl && `[Plazo de compra: ${pl}]`, pg && `[Forma de pago: ${pg}]`].filter(Boolean).join(" ");
+      msgF.value = (base + (extra ? " " + extra : "")).trim(); if (pl || pg) track("lead_qualified", {plazo: pl, pago: pg});
+    }, true);
+  }
   /* 5) el formulario no se pierde si el cliente sale a medias */
   ["fName", "fPhone", "fMsg"].forEach(k => { const el = document.getElementById(k); if (!el) return; const v = ls.get("vv_f_" + k); if (v && !el.value) el.value = v; el.addEventListener("input", () => ls.set("vv_f_" + k, el.value)); });
   const fp = $("#fProj"); if (fp && interest.id && names[interest.id] && !ls.get("vv_lead")) fp.value = interest.id;
