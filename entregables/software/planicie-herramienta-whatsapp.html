@@ -3984,17 +3984,17 @@ async function xlsxProforma(c){
 // 2) clients / pipeline
 async function xlsxClients(list){
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Clientes", {properties:{tabColor:{argb:XL.bl}}});
-  let r = xlHead(wb, ws, 8, "CARTERA DE CLIENTES", `${pf("Adv").value.trim() ? "Asesor: " + pf("Adv").value.trim() + " · " : ""}Reporte al ${dNum(new Date())} · ${list.length} clientes`);
+  let r = xlHead(wb, ws, 10, "CARTERA DE CLIENTES", `${pf("Adv").value.trim() ? "Asesor: " + pf("Adv").value.trim() + " · " : ""}Reporte al ${dNum(new Date())} · ${list.length} clientes`);
   // summary by stage
   const counts = STAGES.map(s => [s, list.filter(c => c.stage === s).length, list.filter(c => c.stage === s).reduce((a, c) => a + (+c.budget || 0), 0)]);
   r = xlTable(ws, r, [{h:"Etapa", w:28}, {h:"Clientes", w:13, fmt:"0"}, {h:"Presupuesto", w:22, fmt:XL.money}], counts, {total:{label:"TOTAL", sum:[1, 2]}});
   r += 1;
-  const rows = list.map(c => { const row = [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.notes, c.created ? new Date(c.created + "T12:00") : null];
+  const rows = list.map(c => { const row = [c.name, c.phone, c.proj, c.stage, c.next ? new Date(c.next + "T12:00") : null, +c.budget || null, c.src || "", c.plazo || "", c.notes, c.created ? new Date(c.created + "T12:00") : null];
     if (isActive(c) && c.next && c.next < todayIso()) row.tint = "FFFBE3DF"; return row; });
   const top = r;
-  r = xlTable(ws, r, [{h:"Nombre", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date, al:"center"}, {h:"Presupuesto", w:15, fmt:XL.money}, {h:"Notas", w:52, wrap:true}, {h:"Registrado", w:13, fmt:XL.date, al:"center"}], rows);
-  if (list.length) ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:8}};
-  xlNote(ws, r + 1, 8, "En rojo: clientes con el contacto atrasado. Generado con la herramienta de ventas Vivaldi.");
+  r = xlTable(ws, r, [{h:"Nombre", w:28}, {h:"Celular", w:13}, {h:"Proyecto", w:22}, {h:"Etapa", w:16}, {h:"Próximo contacto", w:15, fmt:XL.date, al:"center"}, {h:"Presupuesto", w:15, fmt:XL.money}, {h:"Origen", w:14}, {h:"Plazo de compra", w:18}, {h:"Notas", w:52, wrap:true}, {h:"Registrado", w:13, fmt:XL.date, al:"center"}], rows);
+  if (list.length) ws.autoFilter = {from:{row:top, column:1}, to:{row:r - 1, column:10}};
+  xlNote(ws, r + 1, 10, "En rojo: clientes con el contacto atrasado. Generado con la herramienta de ventas Vivaldi.");
   await xlSave(wb, `clientes-vivaldi-${iso(new Date())}.xlsx`);
 }
 // 3) competitor price comparison
