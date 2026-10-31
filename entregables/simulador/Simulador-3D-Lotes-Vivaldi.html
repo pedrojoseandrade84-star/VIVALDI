@@ -110,6 +110,10 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 .aiRow{display:flex;gap:8px}.aiRow #aiGo{flex:1}#micBtn{flex:0 0 auto;padding:0 14px}#micBtn.rec{background:#C62828;color:#fff;border-color:#C62828}
 .ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.ex span{font-size:12px;color:var(--mut);font-weight:700}.ex button{font:700 12px Manrope,sans-serif;border:1px solid var(--line);background:#fff;color:var(--nv);border-radius:999px;padding:6px 10px;min-height:32px;cursor:pointer}
 #scaleBar{position:absolute;right:14px;top:122px;background:rgba(255,255,255,.92);border-radius:10px;padding:6px 10px;font:800 12px Manrope,sans-serif;color:var(--nv);display:flex;flex-direction:column;align-items:flex-start;gap:4px;z-index:3}#scaleBar i{display:block;height:6px;border:2px solid var(--nv);border-top:0;background:repeating-linear-gradient(90deg,var(--nv) 0 50%,#fff 50% 100%)}#scaleBar[hidden]{display:none}
+#loading .nojs{display:block;max-width:340px;margin:18px auto 0;text-align:left;font-size:13px;line-height:1.45;color:#33454F;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 20px rgba(10,56,86,.15);opacity:0;animation:nojs .4s 14s forwards}
+#loading .nojs b{color:var(--nv)}@keyframes nojs{to{opacity:1}}
+.nojs-bar{position:fixed;left:0;right:0;top:0;z-index:99;background:#C62828;color:#fff;font:700 14px Manrope,Arial,sans-serif;padding:12px 16px;text-align:center}
+#toast{pointer-events:none}
 </style></head>
 <body data-tab="view">
 <header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
@@ -149,7 +153,9 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
   <canvas id="c" aria-label="Vista 3D de la construcción en el lote"></canvas>
   <div id="toast" hidden role="status"></div>
   <div id="scaleBar" hidden><i></i><span></span></div>
-  <div id="loading"><b>Preparando la vista 3D…</b><span>Cargando el entorno del condominio</span></div>
+  <div id="loading"><b>Preparando la vista 3D…</b><span>Cargando el entorno del condominio</span>
+    <div class="nojs"><b>¿No avanza?</b> Este visor no ejecuta el simulador (pasa con la vista previa de WhatsApp y con algunos visores de archivos).<br><br><b>Android:</b> descargue el archivo y elija <i>Abrir con → Chrome</i>.<br><b>iPhone:</b> guárdelo en Archivos y ábralo con <i>Safari</i>, o use el enlace publicado.</div></div>
+  <noscript><div class="nojs-bar">Este visor no ejecuta el simulador. Ábralo con Chrome (Android) o Safari (iPhone).</div></noscript>
   <div class="bar top">
     <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
     <div class="pill" id="floors"></div>

@@ -36,5 +36,12 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin inte
 ## Por confirmar
 - La Bahía de Paracas: las medidas del lote (8 × 20 m) y las áreas del club son referenciales; ajustarlas con el plano oficial.
 
+## Cómo abrirlo en el celular
+La vista previa de WhatsApp y algunos visores de archivos muestran la página pero no la ejecutan, y en ese caso los botones no responden. Para usarlo:
+- **Android:** descargue el archivo y elija *Abrir con → Chrome*.
+- **iPhone:** guárdelo en Archivos y ábralo con *Safari*, o use un enlace publicado.
+
+Si se abre en un visor que no lo ejecuta, el propio simulador muestra estas instrucciones.
+
 ## Importante
 Es una simulación referencial para orientar la compra. No reemplaza el proyecto de arquitectura e ingeniería firmado por profesionales colegiados, el estudio de suelos ni la licencia de edificación. Las medidas de cada lote, los parámetros urbanísticos y los usos permitidos (comercio u hospedaje) deben confirmarse con el plano, el Certificado de Parámetros de la municipalidad y el reglamento del condominio.
