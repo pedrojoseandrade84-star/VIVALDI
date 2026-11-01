@@ -5155,5 +5155,170 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
 })();
 </script>
 <!--growth-crm-end-->
+<!--growth-sync-start-->
+<style id="nube-css">
+#nubeBtn{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink,#13242E);border-radius:999px;padding:7px 12px;font:600 12px Manrope,Arial,sans-serif;min-height:36px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+#nubeBtn i{width:9px;height:9px;border-radius:50%;background:#9AA7AE;display:block}
+#nubeBtn.ok i{background:#1F8A4C}#nubeBtn.busy i{background:#E8A93A}#nubeBtn.err i{background:#C62828}
+#nubeDlg{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(6,25,40,.5);padding:16px}#nubeDlg[hidden]{display:none}
+#nubeDlg .card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:20px;display:grid;gap:10px;color:#13242E;font:14px Manrope,Arial,sans-serif;max-height:92vh;overflow:auto}
+#nubeDlg h3{margin:0;font-size:1.15rem}#nubeDlg p{margin:0;color:#4C5E68;font-size:.86rem;line-height:1.45}
+#nubeDlg label{display:grid;gap:4px;font-size:.8rem;font-weight:700;color:#4C5E68}
+#nubeDlg input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #D5DEE3;border-radius:10px;min-height:44px}
+#nubeDlg .row{display:flex;gap:8px;flex-wrap:wrap}#nubeDlg button{font:inherit;font-weight:700;border-radius:999px;min-height:42px;padding:0 16px;cursor:pointer;border:1px solid #D5DEE3;background:#fff}
+#nubeDlg button.pri{background:#0A3856;border-color:#0A3856;color:#fff}#nubeDlg details summary{cursor:pointer;font-weight:700;font-size:.82rem;min-height:32px;display:flex;align-items:center}
+#nubeMsg{font-size:.84rem}
+</style>
+<button id="nubeBtn" type="button" aria-label="Base de datos"><i></i><span>Sin conectar</span></button>
+<div id="nubeDlg" hidden role="dialog" aria-modal="true" aria-labelledby="nubeT"><div class="card">
+  <h3 id="nubeT">Base de datos de Vivaldi</h3>
+  <p id="nubeInfo">Entra con tu usuario para guardar tus clientes, proformas y cobranzas en la base de datos de la empresa. Sin internet sigues trabajando y se sincroniza al volver la señal.</p>
+  <div id="nubeLogin"><label>Correo<input id="nubeMail" type="email" autocomplete="username" inputmode="email"></label><label style="margin-top:8px">Contraseña<input id="nubePass" type="password" autocomplete="current-password"></label></div>
+  <div id="nubeMsg" role="status"></div>
+  <div class="row"><button class="pri" type="button" id="nubeGo">Entrar</button><button type="button" id="nubeSync" hidden>Sincronizar ahora</button><button type="button" id="nubeOut" hidden>Cerrar sesión</button><button type="button" id="nubeX">Cerrar</button></div>
+  <details><summary>Servidor (solo administrador)</summary><label>URL del proyecto<input id="nubeUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label><label style="margin-top:8px">Clave pública (anon)<input id="nubeKey" autocomplete="off"></label><div class="row" style="margin-top:8px"><button type="button" id="nubeSave">Guardar servidor</button></div></details>
+</div></div>
+<script id="growth-sync">
+/* Sincronización con la base de datos (Supabase). Sigue funcionando sin internet: guarda en el equipo y sube los cambios al volver la señal.
+   El administrador puede dejar fijos la URL y la clave pública aquí abajo antes de entregar el archivo a los asesores. */
+(() => {
+  const SERVIDOR = {url: "", key: ""};
+  const $q = s => document.querySelector(s);
+  const L = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} }};
+  // claves sin el prefijo "vivaldi-": no entran en el respaldo en archivo (no se comparten credenciales)
+  const cfg = () => { try { return Object.assign({}, SERVIDOR, JSON.parse(L.get("nube-config") || "{}")); } catch (e) { return SERVIDOR; } };
+  let ses = null; try { ses = JSON.parse(L.get("nube-sesion") || "null"); } catch (e) {}
+  const COLS = {
+    clientes:     {ls: "vivaldi-clientes-v1",     key: r => r.id,                      get: () => CLIENTS, set: a => { CLIENTS = a; }},
+    proformas:    {ls: "vivaldi-proformas-v1",    key: r => (r.no || "") + "|" + (r.adv || ""), get: () => PFLOG, set: a => { PFLOG = a; }},
+    separaciones: {ls: "vivaldi-separaciones-v1", key: r => r.no,                      get: () => SEPS, set: a => { SEPS = a; }},
+    cobranza:     {ls: "vivaldi-cobranza-v1",     key: r => r.id,                      get: () => COB, set: a => { COB = a; }},
+    visitas:      {ls: "vivaldi-visitas-v1",      key: r => r.id,                      get: () => VISITS, set: a => { VISITS = a; }},
+    lotes:        {ls: "vivaldi-lotes-v1",        key: r => r.id,                      get: () => INV, set: a => { INV = a; }},
+  };
+  // estado: por cada registro conocido, su id en el servidor y la huella del contenido ya sincronizado
+  let ST = {}; try { ST = JSON.parse(L.get("nube-estado") || "{}"); } catch (e) {} ST.rows = ST.rows || {}; ST.since = ST.since || "1970-01-01T00:00:00Z";
+  const saveST = () => L.set("nube-estado", JSON.stringify(ST));
+  const hash = o => { const s = JSON.stringify(o); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length; };
+  const btn = $q("#nubeBtn"), msg = t => { $q("#nubeMsg").textContent = t || ""; };
+  const status = (cls, t) => { btn.className = cls || ""; btn.querySelector("span").textContent = t; };
+
+  async function api(path, opt = {}, retry = true) {
+    const c = cfg(); if (!c.url || !c.key) throw new Error("Falta configurar el servidor");
+    const h = Object.assign({apikey: c.key, "Content-Type": "application/json"}, ses ? {Authorization: "Bearer " + ses.access_token} : {}, opt.headers || {});
+    const r = await fetch(c.url.replace(/\/$/, "") + path, Object.assign({}, opt, {headers: h}));
+    if (r.status === 401 && retry && ses && ses.refresh_token) { await refresh(); return api(path, opt, false); }
+    if (!r.ok) { let m = ""; try { const j = await r.json(); m = j.message || j.msg || j.error_description || j.error || ""; } catch (e) {} throw new Error(m || "Error " + r.status); }
+    return r.status === 204 ? null : r.json().catch(() => null);
+  }
+  async function login(mail, pass) {
+    const j = await api("/auth/v1/token?grant_type=password", {method: "POST", body: JSON.stringify({email: mail, password: pass})}, false);
+    ses = {access_token: j.access_token, refresh_token: j.refresh_token, user: {id: j.user.id, email: j.user.email}};
+    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=nombre,rol,activo`, {method: "GET"});
+    if (!p || !p.length || p[0].activo === false) { ses = null; throw new Error("Tu usuario no está habilitado. Pide acceso a la jefatura."); }
+    ses.nombre = p[0].nombre; ses.rol = p[0].rol;
+    if (ST.user && ST.user !== ses.user.id) {
+      // equipo compartido: los datos del usuario anterior ya están en la base; se quitan de este equipo para no mezclarlos
+      if (!confirm(`Este equipo tiene los datos de ${ST.nombre || "otro usuario"}. Para entrar como ${ses.nombre} se quitarán de este equipo (siguen guardados en la base de datos). ¿Continuar?`)) { ses = null; throw new Error("Ingreso cancelado."); }
+      quiet(() => Object.values(COLS).forEach(C => { C.set([]); L.set(C.ls, "[]"); })); rerender();
+      ST = {rows: {}, since: "1970-01-01T00:00:00Z"};
+    }
+    L.set("nube-sesion", JSON.stringify(ses)); ST.user = ses.user.id; ST.nombre = ses.nombre; saveST();
+    try { if (!localStorage.getItem("vivaldi-asesor") && ses.rol === "asesor") localStorage.setItem("vivaldi-asesor", ses.nombre); } catch (e) {}
+  }
+  async function refresh() {
+    const j = await api("/auth/v1/token?grant_type=refresh_token", {method: "POST", body: JSON.stringify({refresh_token: ses.refresh_token})}, false);
+    ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
+  }
+
+  let busy = false, again = false;
+  async function sync() {
+    if (!ses) { status("", "Sin conectar"); return; }
+    if (busy) { again = true; return; } busy = true; status("busy", "Sincronizando…");
+    try {
+      // 1) bajar lo nuevo del servidor
+      let changed = new Set(), page = 0;
+      while (true) {
+        const rows = await api(`/rest/v1/registros?select=id,coleccion,asesor,contenido,eliminado,actualizado&actualizado=gt.${encodeURIComponent(new Date(Date.parse(ST.since) - 120000).toISOString())}&order=actualizado.asc&limit=500&offset=${page * 500}`, {method: "GET"});
+        for (const row of rows || []) {
+          const C = COLS[row.coleccion]; if (!C) continue;
+          // el registro se reconoce por su id en el servidor; si es nuevo para este equipo, por su clave
+          let mk = Object.keys(ST.rows).find(m => ST.rows[m].id === row.id);
+          if (!mk) { if (row.eliminado) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; } mk = row.coleccion + "|" + C.key(row.contenido || {}); }
+          const key = mk.slice(mk.indexOf("|") + 1), known = ST.rows[mk], arr = C.get().slice(), idx = arr.findIndex(x => C.key(x) === key);
+          if (known && !row.eliminado && known.h === hash(row.contenido)) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; }   // nada nuevo (o borrado aquí, pendiente de subir)
+          const localDirty = idx >= 0 && known && hash(arr[idx]) !== known.h;
+          if (localDirty) { /* el cambio hecho en este equipo es más reciente: se sube a continuación */ }
+          else if (row.eliminado) { if (idx >= 0) { arr.splice(idx, 1); C.set(arr); changed.add(row.coleccion); } delete ST.rows[mk]; }
+          else if (idx >= 0 && hash(arr[idx]) === hash(row.contenido)) ST.rows[mk] = {id: row.id, h: hash(row.contenido)};
+          else { if (idx >= 0) arr[idx] = row.contenido; else arr.unshift(row.contenido); C.set(arr); changed.add(row.coleccion); ST.rows[mk] = {id: row.id, h: hash(row.contenido)}; }
+          if (row.actualizado > ST.since) ST.since = row.actualizado;
+        }
+        if (!rows || rows.length < 500) break; page++;
+      }
+      for (const c of changed) quiet(() => L.set(COLS[c].ls, JSON.stringify(COLS[c].get())));
+      saveST();
+      // 2) subir lo que cambió en este equipo
+      const up = [];
+      for (const [name, C] of Object.entries(COLS)) {
+        const arr = C.get() || [], seen = new Set();
+        for (const r of arr) { const k = C.key(r); if (!k || k === "|") continue; const mk = name + "|" + k; seen.add(mk); const h = hash(r), kn = ST.rows[mk];
+          if (!kn || kn.h !== h) up.push({mk, h, body: {id: kn ? kn.id : `${name}:${name === "lotes" ? "" : ses.user.id + ":"}${k}`, coleccion: name, contenido: r, eliminado: false}}); }
+        const gone = Object.entries(ST.rows).filter(([mk]) => mk.startsWith(name + "|") && !seen.has(mk));
+        // protección: si una lista entera quedó vacía de golpe no se borra nada en el servidor
+        if (!arr.length && gone.length > 3) { gone.forEach(([mk]) => delete ST.rows[mk]); ST.since = "1970-01-01T00:00:00Z"; continue; }
+        for (const [mk, kn] of gone) up.push({mk, del: true, body: {id: kn.id}});
+      }
+      // lo borrado en el equipo se marca como eliminado (el contenido queda en el servidor y en el historial)
+      for (const u of up.filter(u => u.del)) {
+        const res = await api(`/rest/v1/registros?id=eq.${encodeURIComponent(u.body.id)}`, {method: "PATCH", headers: {Prefer: "return=representation"}, body: JSON.stringify({eliminado: true})});
+        delete ST.rows[u.mk]; (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; }); saveST();
+      }
+      const ups = up.filter(u => !u.del);
+      for (let i = 0; i < ups.length; i += 200) {
+        const chunk = ups.slice(i, i + 200);
+        const res = await api("/rest/v1/registros?on_conflict=id", {method: "POST", headers: {Prefer: "resolution=merge-duplicates,return=representation"}, body: JSON.stringify(chunk.map(u => u.body))});
+        chunk.forEach(u => { ST.rows[u.mk] = {id: u.body.id, h: u.h}; });
+        (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; });
+        saveST();
+      }
+      if (changed.size) rerender();
+      L.set("nube-ultima", new Date().toISOString());
+      status("ok", "Sincronizado"); msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"})}`);
+    } catch (e) {
+      const off = !navigator.onLine || /fetch|network|Failed/i.test(e.message);
+      status(off ? "" : "err", off ? "Sin señal: guardado en el equipo" : "Error al sincronizar"); msg(off ? "No hay conexión. Todo queda guardado en este equipo y se subirá al volver la señal." : "No se pudo sincronizar: " + e.message);
+    } finally { busy = false; if (again) { again = false; setTimeout(sync, 300); } }
+  }
+  let quietOn = false; const quiet = f => { quietOn = true; try { f(); } finally { quietOn = false; } };
+  function rerender() { ["renderCrm", "renderSep", "renderCob", "renderInv", "renderVis", "renderPanel", "renderNumbers", "renderRank", "renderHoy", "renderPfLog"].forEach(n => { try { if (typeof window[n] === "function") window[n](); } catch (e) {} }); }
+  // cada vez que la herramienta guarda algo, se programa la subida
+  const tracked = new Set(Object.values(COLS).map(c => c.ls)); let tmr = null;
+  const _set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) { _set.call(this, k, v); if (!quietOn && this === window.localStorage && tracked.has(k) && ses) { clearTimeout(tmr); tmr = setTimeout(sync, 2500); } };
+  addEventListener("online", () => sync()); document.addEventListener("visibilitychange", () => { if (!document.hidden) sync(); });
+  setInterval(() => { if (!document.hidden) sync(); }, 60000);
+
+  // interfaz
+  const dlg = $q("#nubeDlg"), view = () => {
+    const on = !!ses; $q("#nubeLogin").hidden = on; $q("#nubeGo").hidden = on; $q("#nubeSync").hidden = !on; $q("#nubeOut").hidden = !on;
+    const c = cfg(); $q("#nubeUrl").value = c.url || ""; $q("#nubeKey").value = c.key || "";
+    if (!on) msg(c.url ? "" : "Falta configurar el servidor (lo hace el administrador una sola vez).");
+  };
+  btn.addEventListener("click", () => { view(); dlg.hidden = false; });
+  $q("#nubeX").addEventListener("click", () => dlg.hidden = true);
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.hidden = true; });
+  $q("#nubeSave").addEventListener("click", () => { L.set("nube-config", JSON.stringify({url: $q("#nubeUrl").value.trim(), key: $q("#nubeKey").value.trim()})); msg("Servidor guardado."); });
+  $q("#nubeGo").addEventListener("click", async () => {
+    const m = $q("#nubeMail").value.trim(), p = $q("#nubePass").value; if (!m || !p) { msg("Escribe tu correo y contraseña."); return; }
+    msg("Entrando…"); try { await login(m, p); $q("#nubePass").value = ""; view(); await sync(); } catch (e) { msg(/invalid|credentials/i.test(e.message) ? "Correo o contraseña incorrectos." : e.message); status("err", "Sin conectar"); }
+  });
+  $q("#nubeSync").addEventListener("click", () => sync());
+  $q("#nubeOut").addEventListener("click", async () => { if (!confirm("¿Cerrar sesión en este equipo? Antes se suben los cambios pendientes.")) return; await sync(); ses = null; L.del("nube-sesion"); view(); status("", "Sin conectar"); msg("Sesión cerrada."); });
+  window.vivaldiNube = {sync, get sesion() { return ses; }, get estado() { return ST; }};
+  if (ses) setTimeout(sync, 800); else status("", "Sin conectar");
+})();
+</script>
+<!--growth-sync-end-->
 </body>
 </html>

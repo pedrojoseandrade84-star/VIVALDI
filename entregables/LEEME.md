@@ -8,6 +8,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | web/ | Vivaldi-web-final.html (≈22 MB) | Máxima calidad, para publicar o presentar en computadora |
 | software/ | planicie-herramienta-whatsapp.html (≈1.7 MB) | Herramienta comercial para los asesores, versión liviana |
 | software/ | planicie-herramienta-final.html (≈2.8 MB) | Herramienta comercial, máxima calidad |
+| base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios y seguridad |
 | software/ejemplos-excel/ | Archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
 | simulador/ | Simulador-3D-Lotes-Vivaldi.html (≈1.6 MB) | Simulación 3D de construcción en el lote, para asesores |
 | crecimiento/ | Plan-Crecimiento-Comercial-Vivaldi.pdf | Plan de crecimiento comercial para la Gerencia |
@@ -49,6 +50,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
   - secuencia de seguimiento de 6 contactos y meta diaria de actividad;
   - calificación por plazo de compra y forma de pago;
   - exportación de indicadores a Excel.
+- Base de datos de la empresa (opcional, ver `base-de-datos/LEEME.md`): cada asesor entra con su usuario, todo se guarda en el servidor de Vivaldi, funciona sin internet y se sincroniza al volver la señal; la jefatura ve todo y queda un historial de cambios.
 
 ## Simulador 3D
 Entorno de cada proyecto y plano de su maqueta, casas y negocios, día y atardecer, recorrido interior, corte, rayos X y plano, presentación automática, ficha para WhatsApp y asistente de diseño en línea gratuito.
