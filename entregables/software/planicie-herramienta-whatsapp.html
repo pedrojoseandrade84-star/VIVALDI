@@ -5167,7 +5167,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
 #nubeDlg input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #D5DEE3;border-radius:10px;min-height:44px}
 #nubeDlg .row{display:flex;gap:8px;flex-wrap:wrap}#nubeDlg button{font:inherit;font-weight:700;border-radius:999px;min-height:42px;padding:0 16px;cursor:pointer;border:1px solid #D5DEE3;background:#fff}
 #nubeDlg button.pri{background:#0A3856;border-color:#0A3856;color:#fff}#nubeDlg details summary{cursor:pointer;font-weight:700;font-size:.82rem;min-height:32px;display:flex;align-items:center}
-#nubeMsg{font-size:.84rem}
+#nubeMsg{font-size:.84rem;white-space:pre-line;line-height:1.45}
 </style>
 <button id="nubeBtn" type="button" aria-label="Base de datos"><i></i><span>Sin conectar</span></button>
 <div id="nubeDlg" hidden role="dialog" aria-modal="true" aria-labelledby="nubeT"><div class="card">
@@ -5319,7 +5319,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       L.set("nube-ultima", new Date().toISOString());
       const hoyIso = todayIso(), rtxt = RECL.length ? ` Libro de Reclamaciones: ${RECL.length} sin responder; el más próximo vence el ${RECL[0].vence.split("-").reverse().join("/")} (${RECL[0].codigo}, ${RECL[0].nombre})${RECL.some(r => r.vence <= hoyIso) ? ". Hay plazos vencidos o que vencen hoy." : "."}` : "";
       status(ALERTA || RECL.some(r => r.vence <= hoyIso) ? "busy" : "ok", ALERTA ? "Clientes sin atender" : "Sincronizado");
-      msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}).replace(/\.$/, "")}.` + (ALERTA ? " " + ALERTA : "") + rtxt);
+      msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}).replace(/\.$/, "")}.` + (ALERTA ? "\n\n⚠ " + ALERTA : "") + (rtxt ? "\n\n" + rtxt.trim() : ""));
     } catch (e) {
       const off = !navigator.onLine || /fetch|network|Failed/i.test(e.message);
       status(off ? "" : "err", off ? "Sin señal: guardado en el equipo" : "Error al sincronizar"); msg(off ? "No hay conexión. Todo queda guardado en este equipo y se subirá al volver la señal." : "No se pudo sincronizar: " + e.message);
