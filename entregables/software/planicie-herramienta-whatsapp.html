@@ -5011,32 +5011,32 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   function score(c) {
     let s = {"Nuevo": 30, "Contactado": 35, "Visita agendada": 60}[c.stage] || 0; const why = [];
     const age = daysAgo(c.stageAt || c.created);
-    if (c.stage === "Nuevo" && daysAgo(c.created) <= 0) { s += 20; why.push("llegó hoy: responder rápido"); }
-    if (age <= 1) { s += 25; why.push("interés reciente"); } else if (age <= 3) s += 15; else if (age <= 7) s += 5; else if (age > 30) { s -= 15; why.push(`${age} días sin avanzar`); }
-    if (proformas(c)) { s += 15; why.push("ya pidió proforma"); }
-    if (visited(c)) { s += 15; why.push("visitó el proyecto"); }
-    if (c.budget > 0) { s += 5; why.push("presupuesto definido"); }
-    if (c.src === "Referido") { s += 10; why.push("viene referido"); }
+    if (c.stage === "Nuevo" && daysAgo(c.created) <= 0) { s += 20; why.push("llegó hoy"); }
+    if (age <= 1) { s += 25; if (!why.length) why.push("reciente"); } else if (age <= 3) s += 15; else if (age <= 7) s += 5; else if (age > 30) { s -= 15; why.push(`${age} días sin avance`); }
+    if (proformas(c)) { s += 15; why.push("tiene proforma"); }
+    if (visited(c)) { s += 15; why.push("ya visitó"); }
+    if (c.budget > 0) { s += 5; why.push("tiene presupuesto"); }
+    if (c.src === "Referido") { s += 10; why.push("referido"); }
     const pz = String(c.plazo || "") + " " + String(c.notes || "").match(/Plazo de compra: [^\n]*/i);
-    if (/este mes/i.test(pz)) { s += 20; why.push("quiere comprar este mes"); } else if (/1 a 3 meses/i.test(pz)) { s += 8; why.push("compra en 1 a 3 meses"); } else if (/solo me estoy informando/i.test(pz)) s -= 10;
-    if (/al contado/i.test(String(c.pago || "") + String(c.notes || ""))) { s += 5; why.push("pago al contado"); }
-    if (c.next && c.next < todayIso()) { s += 10; why.push("contacto atrasado"); }
-    if (["Nuevo", "Contactado"].includes(c.stage) && !proformas(c)) { const q = seqStep(c); if (q.due && !q.done && q.k > 0) { s += 12; why.push(q.st.t.toLowerCase() + " pendiente"); } }
+    if (/este mes/i.test(pz)) { s += 20; why.push("compra este mes"); } else if (/1 a 3 meses/i.test(pz)) { s += 8; why.push("compra en 1 a 3 meses"); } else if (/solo me estoy informando/i.test(pz)) s -= 10;
+    if (/al contado/i.test(String(c.pago || "") + String(c.notes || ""))) { s += 5; why.push("al contado"); }
+    if (c.next && c.next < todayIso()) { s += 10; why.push("atrasado"); }
+    if (["Nuevo", "Contactado"].includes(c.stage) && !proformas(c)) { const q = seqStep(c); if (q.due && !q.done && q.k > 0) { s += 12; why.push("le toca seguimiento"); } }
     if (!c.phone) s -= 20;
     return {s, why};
   }
   function nba(c, sc) {
     const age = daysAgo(c.created), n = first(c.name), a = first(adv()) || "tu asesor de Vivaldi";
     if (c.stage === "Nuevo") return age <= 0
-      ? ["Llamar de inmediato: la respuesta en los primeros minutos eleva la probabilidad de cierre.", `Hola ${n}, soy ${a} de Vivaldi. Vi tu interés en ${c.proj}. ¿Te llamo en 5 minutos para contarte disponibilidad y cuotas?`]
-      : ["Realizar el primer contacto por WhatsApp con disponibilidad y cuota mensual.", `Hola ${n}, soy ${a} de Vivaldi. Te escribo por ${c.proj}: tenemos lotes disponibles con cuotas en soles y sin intereses. ¿Te envío el plano y tu cuota exacta?`];
-    if ((c.stage === "Contactado" || (c.stage === "Nuevo" && age > 0)) && !proformas(c)) { const q = seqStep(c); if (!q.done && q.k > 0) return [`${q.st.t}${q.due ? " · corresponde hoy" : ` · el día ${q.st.d}`}: ${q.k >= 5 ? "mensaje de cierre de la secuencia." : "mantener el contacto con información útil."}`, q.st.m(n, a, c.proj)]; }
+      ? ["Llamar ya: llegó hace poco.", `Hola ${n}, soy ${a} de Vivaldi. Vi tu interés en ${c.proj}. ¿Te llamo en 5 minutos para contarte disponibilidad y cuotas?`]
+      : ["Escribirle con disponibilidad y cuota.", `Hola ${n}, soy ${a} de Vivaldi. Te escribo por ${c.proj}: tenemos lotes disponibles con cuotas en soles y sin intereses. ¿Te envío el plano y tu cuota exacta?`];
+    if ((c.stage === "Contactado" || (c.stage === "Nuevo" && age > 0)) && !proformas(c)) { const q = seqStep(c); if (!q.done && q.k > 0) return [q.due ? `Hoy le toca el seguimiento ${q.k + 1} de 6.` : `Seguimiento ${q.k + 1} de 6 el día ${q.st.d}.`, q.st.m(n, a, c.proj)]; }
     if (c.stage === "Contactado") return proformas(c)
-      ? ["Cuenta con proforma: invitar a la visita guiada del fin de semana.", `Hola ${n}, ¿qué te pareció la proforma de ${c.proj}? Este sábado tenemos visitas guiadas: ¿te reservo un horario para que conozcas tu lote?`]
-      : ["Invitar a la visita guiada: es la etapa que más acerca a la separación.", `Hola ${n}, este fin de semana tenemos visitas guiadas a ${c.proj}. ¿Te reservo un horario? Así ves el lote, el avance de obra y las áreas comunes.`];
+      ? ["Ya tiene proforma: invitarlo a la visita del sábado.", `Hola ${n}, ¿qué te pareció la proforma de ${c.proj}? Este sábado tenemos visitas guiadas: ¿te reservo un horario para que conozcas tu lote?`]
+      : ["Invitarlo a la visita guiada.", `Hola ${n}, este fin de semana tenemos visitas guiadas a ${c.proj}. ¿Te reservo un horario? Así ves el lote, el avance de obra y las áreas comunes.`];
     if (c.stage === "Visita agendada") return visited(c)
-      ? ["Visitó el proyecto: enviar la proforma del lote elegido y los pasos para separar.", `Hola ${n}, gracias por visitar ${c.proj}. Te envío la proforma del lote que viste y los pasos para separarlo. ¿Lo conversamos hoy?`]
-      : ["Confirmar la visita un día antes y enviar la ubicación.", `Hola ${n}, te confirmo tu visita a ${c.proj}. ¿Sigue en pie? Te envío la ubicación para llegar sin problemas.`];
+      ? ["Ya visitó: mandarle la proforma del lote que vio.", `Hola ${n}, gracias por visitar ${c.proj}. Te envío la proforma del lote que viste y los pasos para separarlo. ¿Lo conversamos hoy?`]
+      : ["Confirmar la visita y mandarle la ubicación.", `Hola ${n}, te confirmo tu visita a ${c.proj}. ¿Sigue en pie? Te envío la ubicación para llegar sin problemas.`];
     return ["", ""];
   }
 
@@ -5048,7 +5048,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   let last = null;
   function fixOk() {   // si no hay fechas vencidas pero sí clientes de prioridad alta, la agenda no debe decir "Todo al día"
     const ok = document.querySelector("#hoyList .hoy-ok"), hb = document.getElementById("gxHoy"); if (!ok || !hb || hb.hidden || ok.dataset.gx) return;
-    ok.dataset.gx = "1"; ok.innerHTML = "<b>Sin fechas vencidas.</b><br>Atienda primero la prioridad alta de contacto indicada arriba.";
+    ok.dataset.gx = "1"; ok.innerHTML = "<b>No hay fechas vencidas.</b><br>Empieza por los clientes de arriba.";
   }
   function render() {
     const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rank = s => ord.indexOf(s);
@@ -5058,9 +5058,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const by = {}; CLIENTS.forEach(c => { const k = c.src || "Sin dato"; by[k] = by[k] || {n: 0, v: 0, s: 0}; by[k].n++; if (rank(c.stage) >= 2) by[k].v++; if (rank(c.stage) >= 3) by[k].s++; });
     const src = Object.entries(by).sort((a, b) => b[1].s - a[1].s || b[1].n - a[1].n).map(([k, x]) => `<div><span>${esc(k)}</span><span>${x.n}</span><span>${x.v}</span><span>${x.s}</span><b>${x.n ? Math.round(x.s / x.n * 100) : 0}%</b></div>`).join("");
     const act = CLIENTS.filter(c => ["Nuevo", "Contactado", "Visita agendada"].includes(c.stage)).map(c => ({c, ...score(c)})).sort((a, b) => b.s - a.s).slice(0, 8);
-    const pri = act.length ? act.map(({c, s, why}) => { const [txt] = nba(c, s), t = s >= 70 ? ["c", "Prioridad alta"] : s >= 45 ? ["ti", "Prioridad media"] : ["f", "Prioridad baja"];
-      return `<div class="gx-it" data-id="${esc(c.id)}"><span class="t ${t[0]}">${t[1]}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="why">${esc(c.stage)}${why.length ? " · " + esc(why.join(", ")) : ""}</span><span class="nba">→ ${esc(txt)}</span></div>`; }).join("")
-      : `<p class="gx-tip">Registre a los interesados en el formulario inferior para ver aquí el orden de contacto.</p>`;
+    const pri = act.length ? act.map(({c, s, why}) => { const [txt] = nba(c, s), t = s >= 70 ? ["c", "Llamar hoy"] : s >= 45 ? ["ti", "Esta semana"] : ["f", "Más adelante"];
+      return `<div class="gx-it" data-id="${esc(c.id)}"><span class="t ${t[0]}">${t[1]}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="why">${esc(c.stage)}${why.length ? " · " + esc(why.join(", ")) : ""}</span><span class="nba">${esc(txt)}</span></div>`; }).join("")
+      : `<p class="gx-tip">Cuando registres clientes, aquí verás a quién llamar primero.</p>`;
     const P = probs(), val = c => c.budget > 0 ? c.budget : ((VIV.find(v => v.name === c.proj) || {}).pen || 0);
     const stg = ["Nuevo", "Contactado", "Visita agendada", "Separado"], pipe = stg.map(st => { const l = CLIENTS.filter(c => c.stage === st), v = l.reduce((a, c) => a + val(c), 0); return {st, n: l.length, v, w: v * (P[st] || 0) / 100}; });
     const wsum = pipe.reduce((a, x) => a + x.w, 0);
@@ -5068,30 +5068,30 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const med = rt.length ? (rt.length % 2 ? rt[(rt.length - 1) / 2] : (rt[rt.length / 2 - 1] + rt[rt.length / 2]) / 2) : null, fast = rt.length ? Math.round(rt.filter(m => m <= 60).length / rt.length * 100) : null;
     const mins = m => m < 60 ? `${Math.round(m)} min` : m < 1440 ? `${(m / 60).toFixed(1)} h` : `${(m / 1440).toFixed(1)} días`;
     const ga = goal(), at = actToday(), gp = Math.min(100, Math.round(at / ga * 100));
-    const act0 = `<div class="gx-goal"><div><b>${at} de ${ga}</b> contactos realizados hoy <button type="button" class="gx-lnk" data-gx="goal">Cambiar meta</button></div><div class="bar"><i style="width:${gp}%"></i></div></div>`;
-    const kpis = act0 + `<div class="gx-k"><div><b>${med === null ? "—" : mins(med)}</b><span>Tiempo mediano de primera respuesta (30 días)</span></div><div><b>${fast === null ? "—" : fast + "%"}</b><span>Clientes nuevos atendidos en menos de 1 hora</span></div><div><b>${fmt(wsum)}</b><span>Pronóstico de ventas ponderado</span></div></div>`;
-    const fc = `<details class="gx-imp"><summary>Detalle del pronóstico y supuestos</summary><div class="gx-src" style="margin-top:6px"><div class="h"><span>Etapa</span><span>Clientes</span><span>Valor</span><span>Prob. %</span><span>Ponderado</span></div>${pipe.map(x => `<div><span>${x.st}</span><span>${x.n}</span><span>${fmt(x.v)}</span><span><input class="gx-p" data-st="${x.st}" type="number" min="0" max="100" step="5" value="${P[x.st]}" aria-label="Probabilidad ${x.st}"></span><b>${fmt(x.w)}</b></div>`).join("")}</div><p class="gx-tip">Valor: presupuesto del cliente o, si no se registró, el precio desde del proyecto. Las probabilidades son supuestos editables; ajústelas con el historial real de cierre.</p></details>`;
+    const act0 = `<div class="gx-goal"><div>Hoy: <b>${at} de ${ga}</b> contactos <button type="button" class="gx-lnk" data-gx="goal">Cambiar meta</button></div><div class="bar"><i style="width:${gp}%"></i></div></div>`;
+    const kpis = act0 + `<div class="gx-k"><div><b>${med === null ? "—" : mins(med)}</b><span>Respuesta a clientes nuevos</span></div><div><b>${fast === null ? "—" : fast + "%"}</b><span>Atendidos en menos de 1 hora</span></div><div><b>${fmt(wsum)}</b><span>Ventas proyectadas</span></div></div>`;
+    const fc = `<details class="gx-imp"><summary>Cómo se calcula la proyección</summary><div class="gx-src" style="margin-top:6px"><div class="h"><span>Etapa</span><span>Clientes</span><span>Valor</span><span>Prob. %</span><span>Ponderado</span></div>${pipe.map(x => `<div><span>${x.st}</span><span>${x.n}</span><span>${fmt(x.v)}</span><span><input class="gx-p" data-st="${x.st}" type="number" min="0" max="100" step="5" value="${P[x.st]}" aria-label="Probabilidad ${x.st}"></span><b>${fmt(x.w)}</b></div>`).join("")}</div><p class="gx-tip">Se usa el presupuesto del cliente o, si no lo tiene, el precio del proyecto. Ajusta los porcentajes con lo que realmente cierra el equipo.</p></details>`;
     const cold = CLIENTS.filter(c => c.phone && ["Nuevo", "Contactado"].includes(c.stage) && daysAgo(c.stageAt || c.created) > 21).sort((a, b) => daysAgo(b.stageAt || b.created) - daysAgo(a.stageAt || a.created));
-    const reac = cold.length ? `<details class="gx-reac"><summary>Reactivación: clientes sin avance en más de 21 días (${cold.length})</summary>${cold.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t f">${daysAgo(c.stageAt || c.created)} días</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="re">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">Revise y ajuste el mensaje sugerido antes de enviarlo.</p></details>` : "";
+    const reac = cold.length ? `<details class="gx-reac"><summary>Clientes que se enfriaron (${cold.length})</summary>${cold.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t f">${daysAgo(c.stageAt || c.created)} días</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="re">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">Revisa el mensaje antes de enviarlo.</p></details>` : "";
     const refs = CLIENTS.filter(c => c.phone && ["Vendido", "Separado"].includes(c.stage) && daysAgo(c.stageAt || c.created) <= 60 && !c.refAsked);
-    const refBox = refs.length ? `<details class="gx-reac"><summary>Solicitar recomendaciones a clientes que compraron (${refs.length})</summary>${refs.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">${esc(c.stage)}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="ref">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">Los clientes satisfechos son la mejor fuente de nuevas ventas. Registre a los recomendados con origen «Referido».</p></details>` : "";
+    const refBox = refs.length ? `<details class="gx-reac"><summary>Pedir referidos a quienes compraron (${refs.length})</summary>${refs.slice(0, 15).map(c => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">${esc(c.stage)}</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts"><button type="button" class="w" data-gx="ref">WhatsApp</button></div></div>`).join("")}<p class="gx-tip">A los recomendados regístralos con origen «Referido».</p></details>` : "";
     last = {ord, reach, by, act, pipe, wsum, med, fast, cold, P, mins};
     const hk = document.getElementById("hoyKp");   // en la agenda Hoy: los clientes de prioridad alta
     if (hk) { let hb = document.getElementById("gxHoy"); if (!hb) { hb = document.createElement("div"); hb.id = "gxHoy"; hb.className = "panel"; hb.style.marginBottom = "14px"; hk.parentNode.insertBefore(hb, hk.nextSibling); }
       const hot = act.filter(x => x.s >= 70);
-      hb.hidden = !hot.length; hb.innerHTML = hot.length ? `<h3 style="margin-top:0">Prioridad alta de contacto (${hot.length})</h3><div class="gx-pri">${hot.slice(0, 5).map(({c, s}) => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">Prioridad alta</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="nba">→ ${esc(nba(c, s)[0])}</span></div>`).join("")}</div><p class="gx-tip"><a href="#clientes">Ver la prioridad completa en Mis clientes</a></p>` : "";
+      hb.hidden = !hot.length; hb.innerHTML = hot.length ? `<h3 style="margin-top:0">Para llamar hoy (${hot.length})</h3><div class="gx-pri">${hot.slice(0, 5).map(({c, s}) => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">Llamar hoy</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="nba">${esc(nba(c, s)[0])}</span></div>`).join("")}</div><p class="gx-tip"><a href="#clientes">Ver todos en Mis clientes</a></p>` : "";
       if (!hb.dataset.on) { hb.dataset.on = "1"; hb.addEventListener("click", e => onPanel(e)); const hl = document.getElementById("hoyList"); if (hl) new MutationObserver(fixOk).observe(hl, {childList: true}); }
       fixOk(); }
-    const imp = `<details class="gx-imp"><summary>Registrar cliente desde un mensaje de la web</summary><textarea id="gxPaste" rows="4" placeholder="Pegue aquí el mensaje de WhatsApp recibido desde la web"></textarea><label class="inp" style="margin-top:6px">Celular (si el mensaje no lo incluye)<input id="gxPh" type="tel" inputmode="tel" placeholder="9XX XXX XXX"></label><div class="acts" style="margin-top:8px"><button class="btn pri sm" type="button" data-gx="imp">Registrar cliente</button></div></details>`;
-    box.innerHTML = `<div class="panel"><h3>Prioridad de contacto</h3>${imp}<div class="gx-pri">${pri}</div><p class="gx-tip">La prioridad considera la etapa, la antigüedad del contacto, la proforma emitida, la visita realizada, el presupuesto declarado y el origen referido.</p>${reac}${refBox}</div>
+    const imp = `<details class="gx-imp"><summary>Pegar mensaje que llegó de la web</summary><textarea id="gxPaste" rows="4" placeholder="Pega aquí el mensaje de WhatsApp"></textarea><label class="inp" style="margin-top:6px">Celular (si el mensaje no lo incluye)<input id="gxPh" type="tel" inputmode="tel" placeholder="9XX XXX XXX"></label><div class="acts" style="margin-top:8px"><button class="btn pri sm" type="button" data-gx="imp">Registrar cliente</button></div></details>`;
+    box.innerHTML = `<div class="panel"><h3>A quién llamar</h3>${imp}<div class="gx-pri">${pri}</div>${reac}${refBox}</div>
       <div class="panel"><h3>Embudo de ventas</h3>${kpis}<div class="gx-fun">${fun}</div>
       <div class="gx-src"><div class="h"><span>Origen</span><span>Clientes</span><span>Visitas</span><span>Ventas</span><span>Cierre</span></div>${src || `<div><span>Aún sin datos</span></div>`}</div>
-      <p class="gx-tip">Registre el origen de cada cliente para medir las ventas por canal.</p>
+      
       ${fc}<div class="acts" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><button class="btn ghost sm" type="button" data-gx="link">Copiar mi enlace de la web</button><button class="btn ghost sm" type="button" data-gx="week">Enviar resumen de la semana</button><button class="btn ghost sm" type="button" data-gx="xls">Exportar indicadores (Excel)</button></div></div>`;
   }
   const onPanel = e => {
     const L = e.target.closest("[data-gx=link]"), W = e.target.closest("[data-gx=week]");
-    if (L) { const a = adv().trim(); if (!a) { toast("Escribe tu nombre de asesor en la Proforma primero"); return; }
+    if (L) { const a = adv().trim(); if (!a) { toast("Primero pon tu nombre en la Proforma"); return; }
       copyText(`https://vivaldiinmobiliaria.com/?utm_source=asesor&utm_medium=whatsapp&utm_campaign=${encodeURIComponent(a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "-"))}`); return; }   // con este enlace, los mensajes que llegan de la web dicen qué asesor trajo al cliente
     if (W) { const wk = c => daysAgo(c.created) <= 7, n = CLIENTS.filter(wk), st = s => CLIENTS.filter(c => c.stage === s && daysAgo(c.stageAt || c.created) <= 7).length;
       const by = {}; n.forEach(c => { const k = c.src || "Sin dato"; by[k] = (by[k] || 0) + 1; });
@@ -5099,13 +5099,13 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (e.target.closest("[data-gx=xls]")) { exportXls(); return; }
     if (e.target.closest("[data-gx=goal]")) { const v = prompt("Meta diaria de contactos por asesor:", goal()); if (v && +v > 0) { try { localStorage.setItem(goalKey, String(Math.round(+v))); } catch (er) {} render(); } return; }
     if (e.target.closest("[data-gx=imp]")) {
-      const t = $("gxPaste").value.trim(); if (!t) { toast("Pegue el mensaje recibido"); return; }
+      const t = $("gxPaste").value.trim(); if (!t) { toast("Pega el mensaje primero"); return; }
       const m = parseMsg(t), phone = m.phone || $("gxPh").value.replace(/\D/g, "").slice(-9);
       if (!m.name && !phone) { toast("No se encontró nombre ni celular en el mensaje"); return; }
       const ex = phone && CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
       const note = [m.plazo && `Plazo de compra: ${m.plazo}`, m.pago && `Forma de pago: ${m.pago}`, m.visit && `Visita solicitada: ${m.visit}`, m.note && `Mensaje: ${m.note}`, m.camp && `Origen web: ${m.camp}`].filter(Boolean).join("\n");
-      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (m.proj) ex.proj = m.proj; if (m.plazo) ex.plazo = m.plazo; if (m.pago) ex.pago = m.pago; toast("Cliente existente actualizado"); }
-      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src, plazo: m.plazo || "", pago: m.pago || "", adv: adv()}); toast("Cliente registrado desde la web"); }
+      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (m.proj) ex.proj = m.proj; if (m.plazo) ex.plazo = m.plazo; if (m.pago) ex.pago = m.pago; toast("Ya estaba registrado: se actualizó"); }
+      else { CLIENTS.unshift({id: Date.now().toString(36), created: todayIso(), ts: Date.now(), name: m.name || "Cliente web", phone, proj: m.proj || (VIV[0] || {}).name || "", stage: m.visit ? "Visita agendada" : "Nuevo", stageAt: todayIso(), next: todayIso(), budget: 0, notes: note, src: m.src, plazo: m.plazo || "", pago: m.pago || "", adv: adv()}); toast("Cliente registrado"); }
       crmSave(); renderCrm(); return; }
     const rf = e.target.closest("[data-gx=ref]");
     if (rf) { const c = CLIENTS.find(x => x.id === rf.closest("[data-id]").dataset.id); if (!c) return;

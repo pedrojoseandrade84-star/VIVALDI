@@ -2396,19 +2396,17 @@ async function projectCard(p, g, photoEl){
 .gx-card input,.gx-card select{font:inherit;font-size:16px;padding:11px 12px;border:1px solid #D5DEE3;border-radius:12px;min-height:46px;width:100%;background:#fff}
 .gx-card .gx-go{width:100%;min-height:50px;border:0;border-radius:999px;background:#157A3D;color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer}
 .gx-card .gx-x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:#4C5E68;cursor:pointer;width:40px;height:40px}
-.gx-card ul{margin:0 0 14px 18px;padding:0;color:#13242E;font-size:.92rem;line-height:1.5}
 .gx-card small{display:block;margin-top:10px;color:#4C5E68;font-size:.75rem;line-height:1.4}
 </style>
 <div class="gx-dlg" id="gxExit" hidden role="dialog" aria-modal="true" aria-labelledby="gxT">
   <div class="gx-card">
     <button class="gx-x" type="button" aria-label="Cerrar" data-gx-close>×</button>
-    <h3 id="gxT">Antes de irte: tu lote, cotizado por WhatsApp</h3>
-    <p>Un asesor te envía hoy, sin compromiso:</p>
-    <ul><li>Lotes disponibles y su ubicación en el plano</li><li>Tu cuota mensual exacta, en soles y sin intereses</li><li>Horarios para una visita guiada</li></ul>
+    <h3 id="gxT">¿Te mandamos la cotización por WhatsApp?</h3>
+    <p>Te escribimos con los lotes disponibles, cuánto pagarías al mes y los horarios para visitar el proyecto. Sin compromiso.</p>
     <label>Tu nombre<input id="gxName" autocomplete="name" placeholder="Nombre"></label>
     <label>Proyecto<select id="gxProj"></select></label>
-    <button class="gx-go" type="button" id="gxGo">Recibir por WhatsApp</button>
-    <small>Se abre WhatsApp con tu mensaje listo; tú decides si lo envías.</small>
+    <button class="gx-go" type="button" id="gxGo">Sí, por WhatsApp</button>
+    <small>Se abre WhatsApp con el mensaje listo. Tú decides si lo envías.</small>
   </div>
 </div>
 <script id="growth">
@@ -2450,7 +2448,7 @@ async function projectCard(p, g, photoEl){
   ["#sProj", "#fProj"].forEach(s => { const el = $(s); if (el) el.addEventListener("change", () => setInterest(el.value, s === "#sProj" ? "simulador" : "formulario")); });
 
   /* 3) WhatsApp con contexto (y prueba A/B del texto del botón) */
-  const waText = () => interest.name ? `Hola Vivaldi, vi ${interest.name} en su web. ¿Me pueden enviar disponibilidad de lotes, precio y cuota mensual?` : "Hola Vivaldi, quiero información de sus lotes de playa: disponibilidad, precios y cuotas.";
+  const waText = () => interest.name ? `Hola, vi ${interest.name} en su web. ¿Me pasan la disponibilidad, el precio y la cuota mensual?` : "Hola, quisiera información de sus lotes de playa: disponibilidad, precios y cuotas.";
   const waLink = t => typeof waUrl === "function" ? waUrl(t) : `https://wa.me/${CFG.phone}?text=${encodeURIComponent(t)}`;   // conserva "Vengo de: Facebook/Google…" para medir qué canal vende
   function updateWa() { $$("a.wa, a.wa-b").forEach(a => { a.href = waLink(waText()); }); }
   const waB = $("a.wa-b"); if (waB && AB === "B") waB.textContent = "Ver precios";
@@ -2470,9 +2468,9 @@ async function projectCard(p, g, photoEl){
   function referral(box) {
     if (box.querySelector(".gx-ref")) return;
     const url = (location.protocol.startsWith("http") ? location.origin + location.pathname : "https://vivaldiinmobiliaria.com/") + "?utm_source=referido&utm_medium=whatsapp";
-    const msg = `Estoy viendo lotes de playa de Vivaldi${interest.name ? " en " + interest.name : ""}, en soles y con cuotas sin intereses. Míralo: ${url}`;
+    const msg = `Mira estos lotes de playa de Vivaldi${interest.name ? " en " + interest.name : ""}, en soles y sin intereses: ${url}`;
     const d = document.createElement("div"); d.className = "gx-ref"; d.style.cssText = "margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center";
-    d.innerHTML = `<span style="font-size:.9rem">¿Alguien de tu familia o tus amigos también busca playa?</span><a class="btn" style="background:#157A3D;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Compartir por WhatsApp</a>`;
+    d.innerHTML = `<span style="font-size:.9rem">¿Alguien de tu familia también busca un lote de playa?</span><a class="btn" style="background:#157A3D;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">Pasarle el dato</a>`;
     d.querySelector("a").addEventListener("click", () => track("referral_share")); box.appendChild(d); track("referral_offer");
   }
 
@@ -2503,7 +2501,7 @@ async function projectCard(p, g, photoEl){
   addEventListener("keydown", e => { if (e.key === "Escape" && dlg && !dlg.hidden) dlg.hidden = true; });
   $("#gxGo") && $("#gxGo").addEventListener("click", () => {
     const n = $("#gxName").value.trim(), pid = gp.value; setInterest(pid, "oferta");
-    const msg = `Hola Vivaldi${n ? ", soy " + n : ""}. Me interesa ${names[pid] || "un lote"}: ¿me envían los lotes disponibles, mi cuota mensual y horarios para visitarlo?`;
+    const msg = `Hola${n ? ", soy " + n : ""}. Me interesa ${names[pid] || "un lote"}. ¿Me pasan los lotes disponibles, la cuota mensual y los horarios de visita?`;
     track("exit_offer_whatsapp"); ss.set("vv_wa", "1"); dlg.hidden = true;
     window.open(waLink(msg), "_blank", "noopener");
   });
@@ -2518,9 +2516,9 @@ async function projectCard(p, g, photoEl){
       const st = card.querySelector(".status"); if (!st || !/vendido/i.test(st.textContent) || card.querySelector(".gx-next")) return;
       const nm = (card.querySelector("h3") || {}).textContent || "este proyecto", body = card.querySelector(".proj-body");
       const a = document.createElement("a"); a.className = "btn btn-line gx-next"; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "margin-top:10px;display:inline-flex";
-      a.textContent = "Avísame del próximo proyecto"; a.href = waLink(`Hola Vivaldi, me interesaba ${nm.trim()} pero ya está vendido. ¿Me avisan cuando lancen un proyecto parecido o una nueva etapa?`);
+      a.textContent = "Avísenme del próximo proyecto"; a.href = waLink(`Hola, me interesaba ${nm.trim()} pero ya se vendió. ¿Me avisan cuando salga algo parecido?`);
       a.addEventListener("click", () => track("waitlist_join", {proyecto: nm.trim()})); body.appendChild(a); });
-    if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.8rem;color:#33454F;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
+    if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.8rem;color:#33454F;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. El plan final lo confirmas con tu asesor.</p>`); };
   if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true});
     grid.addEventListener("click", e => { if (!e.target.closest(".gx-q")) return; setTimeout(() => { const b36 = document.querySelector('#financiamiento [data-v="36"]'), ini = $("#sIni"); if (ini) { ini.value = 20; ini.dispatchEvent(new Event("input")); } if (b36) b36.click(); track("card_quota_click"); }, 30); }); }
   /* 8b) preguntas frecuentes de compra segura */
