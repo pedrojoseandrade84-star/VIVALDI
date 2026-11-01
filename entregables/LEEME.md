@@ -16,7 +16,8 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | automatizacion/ | Plan-Automatizacion-Vivaldi.pdf | Plan de automatización de procesos comerciales y de cobranza, por fases |
 | propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
-| presentacion/ | Presentacion-Vivaldi.pdf | Presentación 16:9 para la reunión (10 diapositivas) |
+| presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (15 diapositivas). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
+| presentacion/ | Presentacion-Propuesta-Integral-Vivaldi.pdf | La misma presentación en PDF, para enviar o imprimir |
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
 | manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato; revisar con un abogado antes de firmar |
