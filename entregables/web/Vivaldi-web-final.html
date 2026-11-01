@@ -2512,7 +2512,7 @@ async function projectCard(p, g, photoEl){
   const addQuota = () => { if (typeof PROJ === "undefined") return; grid.querySelectorAll("article.proj").forEach(card => {
       if (card.querySelector(".gx-q")) return; const h = card.querySelector("h3"), p = h && PROJ.find(x => x.name === h.textContent.trim()); if (!p || !p.price) return;
       const cell = [...card.querySelectorAll(".proj-meta > div")].find(d => /Desde/.test(d.textContent)); if (!cell) return;
-      const q = document.createElement("small"); q.className = "gx-q"; q.style.cssText = "display:block;font-weight:700;color:#1F7A3D;font-size:.78rem;margin-top:2px";
+      const q = document.createElement("a"); q.className = "gx-q"; q.href = "#financiamiento"; q.dataset.sim = p.id; q.style.cssText = "display:block;font-weight:700;color:#1F6B37;font-size:.78rem;margin-top:2px;text-decoration:underline;text-underline-offset:2px";
       q.textContent = `o S/ ${Math.round(p.price * 0.8 / 36).toLocaleString("es-PE")} al mes*`; cell.appendChild(q); });
     grid.querySelectorAll("article.proj").forEach(card => {   // proyecto agotado: captar al interesado para la siguiente etapa
       const st = card.querySelector(".status"); if (!st || !/vendido/i.test(st.textContent) || card.querySelector(".gx-next")) return;
@@ -2521,7 +2521,8 @@ async function projectCard(p, g, photoEl){
       a.textContent = "Avísame del próximo proyecto"; a.href = waLink(`Hola Vivaldi, me interesaba ${nm.trim()} pero ya está vendido. ¿Me avisan cuando lancen un proyecto parecido o una nueva etapa?`);
       a.addEventListener("click", () => track("waitlist_join", {proyecto: nm.trim()})); body.appendChild(a); });
     if (!$("#gxQnote") && grid.querySelector(".gx-q")) grid.insertAdjacentHTML("afterend", `<p id="gxQnote" style="font-size:.8rem;color:#33454F;margin:10px 0 0">*Cuota referencial con 20% de inicial y 36 cuotas sin intereses. Confirma el plan de pago con tu asesor.</p>`); };
-  if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true}); }
+  if (grid) { addQuota(); new MutationObserver(addQuota).observe(grid, {childList: true});
+    grid.addEventListener("click", e => { if (!e.target.closest(".gx-q")) return; setTimeout(() => { const b36 = document.querySelector('#financiamiento [data-v="36"]'), ini = $("#sIni"); if (ini) { ini.value = 20; ini.dispatchEvent(new Event("input")); } if (b36) b36.click(); track("card_quota_click"); }, 30); }); }
   /* 8b) preguntas frecuentes de compra segura */
   const faq = document.querySelector("#faq .faq");
   if (faq && !$("#gxFaq1")) faq.insertAdjacentHTML("beforeend", `<details id="gxFaq1"><summary>¿Cómo puedo verificar a Vivaldi?</summary><p>Somos Inmobiliaria &amp; Constructora Vivaldi S.A.C., RUC 20604145458, con oficina en Av. El Derby 121, Santiago de Surco. Puede revisar los antecedentes de los proveedores inmobiliarios en la Central de Información de Promotores Inmobiliarios y en el portal Mira a Quién le Compras del Indecopi.</p></details>
