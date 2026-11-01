@@ -4978,6 +4978,12 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   const ACT = "vivaldi-actividad", goalKey = "vivaldi-meta-contactos";
   const logAct = () => { try { const a = JSON.parse(localStorage.getItem(ACT) || "{}"), d = todayIso(); a[d] = (a[d] || 0) + 1; localStorage.setItem(ACT, JSON.stringify(a)); } catch (e) {} };
   const actToday = () => { try { return JSON.parse(localStorage.getItem(ACT) || "{}")[todayIso()] || 0; } catch (e) { return 0; } };
+  const streak = () => {   // días seguidos cumpliendo la meta (hoy cuenta si ya se cumplió)
+    let a = {}; try { a = JSON.parse(localStorage.getItem(ACT) || "{}"); } catch (e) {}
+    const g = goal(), d = new Date(); let n = 0; if ((a[todayIso()] || 0) < g) d.setDate(d.getDate() - 1);
+    for (let i = 0; i < 365; i++) { const k = new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); if ((a[k] || 0) >= g) { n++; d.setDate(d.getDate() - 1); } else if (d.getDay() === 0) { d.setDate(d.getDate() - 1); } else break; }   // el domingo no corta la racha
+    return n;
+  };
   const goal = () => { try { return +localStorage.getItem(goalKey) || 20; } catch (e) { return 20; } };
   /* secuencia de seguimiento: la mayoría de ventas se concreta después de varios contactos */
   const SEQ = [
@@ -5068,7 +5074,8 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     const med = rt.length ? (rt.length % 2 ? rt[(rt.length - 1) / 2] : (rt[rt.length / 2 - 1] + rt[rt.length / 2]) / 2) : null, fast = rt.length ? Math.round(rt.filter(m => m <= 60).length / rt.length * 100) : null;
     const mins = m => m < 60 ? `${Math.round(m)} min` : m < 1440 ? `${(m / 60).toFixed(1)} h` : `${(m / 1440).toFixed(1)} días`;
     const ga = goal(), at = actToday(), gp = Math.min(100, Math.round(at / ga * 100));
-    const act0 = `<div class="gx-goal"><div>Hoy: <b>${at} de ${ga}</b> contactos <button type="button" class="gx-lnk" data-gx="goal">Cambiar meta</button></div><div class="bar"><i style="width:${gp}%"></i></div></div>`;
+    const rs = streak();
+    const act0 = `<div class="gx-goal"><div>Hoy: <b>${at} de ${ga}</b> contactos${rs ? ` · <b>${rs} ${rs === 1 ? "día" : "días"}</b> seguidos cumpliendo la meta` : ""} <button type="button" class="gx-lnk" data-gx="goal">Cambiar meta</button></div><div class="bar"><i style="width:${gp}%"></i></div></div>`;
     const kpis = act0 + `<div class="gx-k"><div><b>${med === null ? "—" : mins(med)}</b><span>Respuesta a clientes nuevos</span></div><div><b>${fast === null ? "—" : fast + "%"}</b><span>Atendidos en menos de 1 hora</span></div><div><b>${fmt(wsum)}</b><span>Ventas proyectadas</span></div></div>`;
     const fc = `<details class="gx-imp"><summary>Cómo se calcula la proyección</summary><div class="gx-src" style="margin-top:6px"><div class="h"><span>Etapa</span><span>Clientes</span><span>Valor</span><span>Prob. %</span><span>Ponderado</span></div>${pipe.map(x => `<div><span>${x.st}</span><span>${x.n}</span><span>${fmt(x.v)}</span><span><input class="gx-p" data-st="${x.st}" type="number" min="0" max="100" step="5" value="${P[x.st]}" aria-label="Probabilidad ${x.st}"></span><b>${fmt(x.w)}</b></div>`).join("")}</div><p class="gx-tip">Se usa el presupuesto del cliente o, si no lo tiene, el precio del proyecto. Ajusta los porcentajes con lo que realmente cierra el equipo.</p></details>`;
     const cold = CLIENTS.filter(c => c.phone && ["Nuevo", "Contactado"].includes(c.stage) && daysAgo(c.stageAt || c.created) > 21).sort((a, b) => daysAgo(b.stageAt || b.created) - daysAgo(a.stageAt || a.created));
