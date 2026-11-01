@@ -5046,6 +5046,10 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
   const box = document.createElement("div"); box.className = "gx-crm"; box.id = "gxCrm";
   const stats = document.getElementById("crmStats"); stats.parentNode.insertBefore(box, stats.nextSibling);
   let last = null;
+  function fixOk() {   // si no hay fechas vencidas pero sí clientes de prioridad alta, la agenda no debe decir "Todo al día"
+    const ok = document.querySelector("#hoyList .hoy-ok"), hb = document.getElementById("gxHoy"); if (!ok || !hb || hb.hidden || ok.dataset.gx) return;
+    ok.dataset.gx = "1"; ok.innerHTML = "<b>Sin fechas vencidas.</b><br>Atienda primero la prioridad alta de contacto indicada arriba.";
+  }
   function render() {
     const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rank = s => ord.indexOf(s);
     const all = CLIENTS.filter(c => c.stage !== "Descartado" || true), tot = CLIENTS.length || 1;
@@ -5076,7 +5080,8 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     if (hk) { let hb = document.getElementById("gxHoy"); if (!hb) { hb = document.createElement("div"); hb.id = "gxHoy"; hb.className = "panel"; hb.style.marginBottom = "14px"; hk.parentNode.insertBefore(hb, hk.nextSibling); }
       const hot = act.filter(x => x.s >= 70);
       hb.hidden = !hot.length; hb.innerHTML = hot.length ? `<h3 style="margin-top:0">Prioridad alta de contacto (${hot.length})</h3><div class="gx-pri">${hot.slice(0, 5).map(({c, s}) => `<div class="gx-it" data-id="${esc(c.id)}"><span class="t c">Prioridad alta</span><b>${esc(c.name)} · ${esc(c.proj || "")}</b><div class="acts">${c.phone ? `<button type="button" class="w" data-gx="wa">WhatsApp</button>` : ""}</div><span class="nba">→ ${esc(nba(c, s)[0])}</span></div>`).join("")}</div><p class="gx-tip"><a href="#clientes">Ver la prioridad completa en Mis clientes</a></p>` : "";
-      if (!hb.dataset.on) { hb.dataset.on = "1"; hb.addEventListener("click", e => onPanel(e)); } }
+      if (!hb.dataset.on) { hb.dataset.on = "1"; hb.addEventListener("click", e => onPanel(e)); const hl = document.getElementById("hoyList"); if (hl) new MutationObserver(fixOk).observe(hl, {childList: true}); }
+      fixOk(); }
     const imp = `<details class="gx-imp"><summary>Registrar cliente desde un mensaje de la web</summary><textarea id="gxPaste" rows="4" placeholder="Pegue aquí el mensaje de WhatsApp recibido desde la web"></textarea><label class="inp" style="margin-top:6px">Celular (si el mensaje no lo incluye)<input id="gxPh" type="tel" inputmode="tel" placeholder="9XX XXX XXX"></label><div class="acts" style="margin-top:8px"><button class="btn pri sm" type="button" data-gx="imp">Registrar cliente</button></div></details>`;
     box.innerHTML = `<div class="panel"><h3>Prioridad de contacto</h3>${imp}<div class="gx-pri">${pri}</div><p class="gx-tip">La prioridad considera la etapa, la antigüedad del contacto, la proforma emitida, la visita realizada, el presupuesto declarado y el origen referido.</p>${reac}${refBox}</div>
       <div class="panel"><h3>Embudo de ventas</h3>${kpis}<div class="gx-fun">${fun}</div>
@@ -5090,7 +5095,7 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       copyText(`https://vivaldiinmobiliaria.com/?utm_source=asesor&utm_medium=whatsapp&utm_campaign=${encodeURIComponent(a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "-"))}`); return; }   // con este enlace, los mensajes que llegan de la web dicen qué asesor trajo al cliente
     if (W) { const wk = c => daysAgo(c.created) <= 7, n = CLIENTS.filter(wk), st = s => CLIENTS.filter(c => c.stage === s && daysAgo(c.stageAt || c.created) <= 7).length;
       const by = {}; n.forEach(c => { const k = c.src || "Sin dato"; by[k] = (by[k] || 0) + 1; });
-      sendWa(`Resumen semanal${adv() ? " · " + adv() : ""}\nNuevos interesados: ${n.length}\nVisitas agendadas: ${st("Visita agendada")}\nSeparaciones: ${st("Separado")}\nVentas: ${st("Vendido")}\nOrigen de los nuevos: ${Object.entries(by).map(([k, v]) => k + " " + v).join(", ") || "sin datos"}`); return; }
+      sendWa(`Resumen semanal${adv() ? " · " + adv() : ""}\nNuevos interesados: ${n.length}\nVisitas agendadas: ${st("Visita agendada")}\nSeparaciones: ${st("Separado")}\nVentas: ${st("Vendido")}\nOrigen de los nuevos: ${Object.entries(by).map(([k, v]) => k + " " + v).join(", ") || "sin datos"}${last && last.med !== null ? "\nRespuesta mediana: " + last.mins(last.med) : ""}${last ? "\nPronóstico ponderado: " + fmt(last.wsum) : ""}`); return; }
     if (e.target.closest("[data-gx=xls]")) { exportXls(); return; }
     if (e.target.closest("[data-gx=goal]")) { const v = prompt("Meta diaria de contactos por asesor:", goal()); if (v && +v > 0) { try { localStorage.setItem(goalKey, String(Math.round(+v))); } catch (er) {} render(); } return; }
     if (e.target.closest("[data-gx=imp]")) {
