@@ -1,0 +1,82 @@
+PRESENTACION PARA VIVALDI INMOBILIARIA
+Propuesta integral - Pedrojose Andrade Paredes - Noviembre 2026
+=================================================================
+
+QUE HAY EN ESTE USB
+
+1-Presentacion-en-laptop
+   Presentacion-Vivaldi.html  ->  LA PRINCIPAL. Se abre con doble clic
+   (Chrome, Edge, Safari o Firefox). Funciona sin internet.
+
+2-Presentacion-PDF
+   La misma presentacion en PDF. Se abre a pantalla completa.
+
+3-Directo-en-televisor
+   Para conectar el USB directo al televisor, sin laptop:
+   - Presentacion-Vivaldi-video.mp4: avanza solo (3 minutos).
+   - Carpeta Imagenes: una imagen por diapositiva, en orden (01 a 15).
+
+4-Guion-para-presentar
+   Que decir en cada diapositiva, tiempos y preguntas probables.
+   Es para quien presenta; no se entrega a Vivaldi.
+
+5-Demostracion-en-vivo
+   1-Pagina-web.html, 2-Herramienta-de-ventas.html, 3-Simulador-3D.html
+   Para mostrar todo funcionando despues de la presentacion.
+   Funcionan sin internet.
+
+6-Documentos-para-entregar
+   Propuesta, asesoria comercial, plan de crecimiento, plan de
+   contenidos, plan de automatizacion y rotulado. Para copiar o enviar
+   al final de la reunion.
+
+
+OPCION A: LAPTOP CONECTADA AL TELEVISOR (recomendada)
+
+1. Conectar la laptop al televisor con el cable HDMI. En el televisor,
+   elegir la entrada HDMI correcta (boton "Input" o "Source").
+2. Si en el televisor no aparece la imagen: en Windows presionar
+   tecla Windows + P y elegir "Duplicar". En Mac: Preferencias del
+   Sistema > Pantallas > Duplicar.
+3. Copiar la carpeta del USB al escritorio de la laptop (abre mas
+   rapido que desde el USB).
+4. Abrir 1-Presentacion-en-laptop/Presentacion-Vivaldi.html con doble clic.
+5. Presionar F para pantalla completa.
+
+   Controles:
+   Flecha derecha, espacio o clic ......... siguiente
+   Flecha izquierda ........................ anterior
+   Numero + Enter (ej. 9 Enter) ............ ir a esa diapositiva
+   B ....................................... pantalla en negro (otra vez B para volver)
+   H ....................................... ayuda
+   Esc ..................................... salir de pantalla completa
+
+   Si se usa un presentador inalambrico (clicker), funciona igual:
+   sus botones envian las flechas.
+
+
+OPCION B: USB DIRECTO EN EL TELEVISOR (si no hay laptop)
+
+1. Conectar el USB al puerto USB del televisor.
+2. Abrir el reproductor de archivos del televisor (Medios, USB o
+   Reproductor multimedia).
+3. Entrar a 3-Directo-en-televisor y abrir Presentacion-Vivaldi-video.mp4.
+   Se puede pausar con el control remoto cuando haga falta conversar.
+4. Si el televisor no reproduce el video: entrar a la carpeta Imagenes
+   y abrir Diapositiva-01.jpg; avanzar con las flechas del control.
+
+   Nota: muchos televisores no leen USB en formato NTFS ni exFAT. Si el
+   televisor no reconoce el USB, formatearlo en FAT32 desde la
+   computadora (todos los archivos pesan menos de 4 GB) y copiar de nuevo
+   esta carpeta.
+
+
+EL DIA ANTERIOR
+
+[ ] Probar el USB en la laptop que se va a usar.
+[ ] Si es posible, probar en el mismo televisor de la reunion.
+[ ] Llevar cable HDMI, adaptador (USB-C o Mini DisplayPort si la laptop
+    lo necesita) y cargador.
+[ ] Desactivar notificaciones y el protector de pantalla de la laptop.
+[ ] Imprimir el guion (carpeta 4).
+[ ] Llevar una copia del USB en el celular o en otra memoria.

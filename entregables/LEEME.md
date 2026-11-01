@@ -18,6 +18,9 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
 | presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (15 diapositivas). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
 | presentacion/ | Presentacion-Propuesta-Integral-Vivaldi.pdf | La misma presentación en PDF, para enviar o imprimir |
+| presentacion/ | Presentacion-Vivaldi-video.mp4 e imagenes-para-tv/ | Para poner el USB directo en el televisor, sin laptop |
+| presentacion/ | Guion-Reunion-Vivaldi.pdf | Guion para quien presenta: qué decir, tiempos y preguntas probables (no se entrega) |
+| presentacion/ | LEEME-USB.txt | Cómo armar y usar el USB de la reunión |
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
 | manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato; revisar con un abogado antes de firmar |
