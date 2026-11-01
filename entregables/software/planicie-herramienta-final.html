@@ -5231,11 +5231,44 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
     ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
   }
 
+
+  // clientes que llegaron solos desde la web: entran a "Mis clientes" del asesor asignado
+  let avisados = "";
+  async function traerSolicitudes() {
+    const jefe = ses.rol === "jefatura";
+    const filtro = jefe ? "" : `&asesor=eq.${ses.user.id}`;
+    let rows = []; try { rows = await api(`/rest/v1/solicitudes?select=*&estado=eq.nueva${filtro}&order=fecha.asc&limit=200`, {method: "GET"}) || []; } catch (e) { if (/does not exist|schema cache|404/i.test(e.message)) return; throw e; }
+    const mias = rows.filter(r => r.asesor === ses.user.id || (jefe && !r.asesor));
+    let nuevos = 0;
+    for (const r of mias) {
+      const phone = String(r.celular || "").slice(-9), ex = CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
+      const note = [r.plazo && `Plazo de compra: ${r.plazo}`, r.pago && `Forma de pago: ${r.pago}`, r.visita && `Visita solicitada: ${r.visita}`, r.mensaje && `Mensaje: ${r.mensaje}`, r.campana && `Origen web: ${r.campana}`, r.acepta_promos ? "Acepta recibir promociones" : "No autorizó promociones"].filter(Boolean).join("\n");
+      const src = /facebook/i.test(r.origen) ? "Facebook" : /instagram/i.test(r.origen) ? "Instagram" : /tiktok/i.test(r.origen) ? "TikTok" : /google/i.test(r.origen) ? "Google" : "Web";
+      let id;
+      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (r.plazo) ex.plazo = r.plazo; if (r.pago) ex.pago = r.pago; id = ex.id; }
+      else { id = "w" + r.id; const d = (r.fecha || "").slice(0, 10) || todayIso();
+        CLIENTS.unshift({id, created: d, ts: Date.parse(r.fecha) || Date.now(), name: r.nombre, phone, proj: r.proyecto || (VIV[0] || {}).name || "", stage: r.visita ? "Visita agendada" : "Nuevo", stageAt: d, next: todayIso(), budget: 0, notes: note, src, plazo: r.plazo || "", pago: r.pago || "", adv: ses.nombre}); nuevos++; }
+      await api(`/rest/v1/solicitudes?id=eq.${r.id}`, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "en herramienta", cliente_id: id})});
+    }
+    if (mias.length) { quiet(() => L.set(COLS.clientes.ls, JSON.stringify(CLIENTS))); rerender(); toast(nuevos === 1 ? "Llegó 1 cliente nuevo desde la web" : `Llegaron ${mias.length} clientes desde la web`); }
+    // jefatura: solicitudes que siguen sin atender después de una hora
+    if (jefe) {
+      const tarde = rows.filter(r => r.asesor && r.asesor !== ses.user.id && Date.now() - Date.parse(r.fecha) > 3600000);
+      const k = tarde.map(r => r.id).join(",");
+      ALERTA = tarde.length ? `${tarde.length} ${tarde.length === 1 ? "cliente de la web lleva" : "clientes de la web llevan"} más de una hora sin que su asesor abra la herramienta: ${tarde.slice(0, 5).map(r => r.nombre).join(", ")}${tarde.length > 5 ? "…" : ""}.` : "";
+      if (k && k !== avisados) toast("Hay clientes de la web sin atender. Revisa el botón de la base de datos.");
+      avisados = k;
+      try { const rc = await api(`/rest/v1/reclamos?select=codigo,vence,tipo,nombre&estado=eq.abierto&order=vence.asc&limit=50`, {method: "GET"}) || [];
+        RECL = rc; } catch (e) { RECL = []; }
+    }
+  }
+  let ALERTA = "", RECL = [];
   let busy = false, again = false;
   async function sync() {
     if (!ses) { status("", "Sin conectar"); return; }
     if (busy) { again = true; return; } busy = true; status("busy", "Sincronizando…");
     try {
+      await traerSolicitudes();
       // 1) bajar lo nuevo del servidor
       let changed = new Set(), page = 0;
       while (true) {
@@ -5284,7 +5317,9 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
       }
       if (changed.size) rerender();
       L.set("nube-ultima", new Date().toISOString());
-      status("ok", "Sincronizado"); msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"})}`);
+      const hoyIso = todayIso(), rtxt = RECL.length ? ` Libro de Reclamaciones: ${RECL.length} sin responder; el más próximo vence el ${RECL[0].vence.split("-").reverse().join("/")} (${RECL[0].codigo}, ${RECL[0].nombre})${RECL.some(r => r.vence <= hoyIso) ? ". Hay plazos vencidos o que vencen hoy." : "."}` : "";
+      status(ALERTA || RECL.some(r => r.vence <= hoyIso) ? "busy" : "ok", ALERTA ? "Clientes sin atender" : "Sincronizado");
+      msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}).replace(/\.$/, "")}.` + (ALERTA ? " " + ALERTA : "") + rtxt);
     } catch (e) {
       const off = !navigator.onLine || /fetch|network|Failed/i.test(e.message);
       status(off ? "" : "err", off ? "Sin señal: guardado en el equipo" : "Error al sincronizar"); msg(off ? "No hay conexión. Todo queda guardado en este equipo y se subirá al volver la señal." : "No se pudo sincronizar: " + e.message);

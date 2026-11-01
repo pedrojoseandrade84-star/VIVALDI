@@ -2536,5 +2536,43 @@ async function projectCard(p, g, photoEl){
 })();
 </script>
 <!--growth-end-->
+<!--growth-db-start-->
+<script id="growth-db">
+/* Registro automático en la base de datos de Vivaldi: cada solicitud de cotización y cada hoja del Libro de Reclamaciones
+   se guarda en el servidor, además de abrir WhatsApp o el correo como siempre. Si la base no está configurada, la web funciona igual.
+   El administrador completa estos dos datos (los mismos de la herramienta comercial; la clave es la pública "anon"). */
+(() => {
+  const BASE = {url: "", key: ""};
+  const send = (tabla, fila) => {
+    if (!BASE.url || !BASE.key) return;
+    try { fetch(BASE.url.replace(/\/$/, "") + "/rest/v1/" + tabla, {method: "POST", keepalive: true,
+      headers: {apikey: BASE.key, Authorization: "Bearer " + BASE.key, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(fila)}).catch(() => {}); } catch (e) {}
+  };
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  // se escucha antes que el formulario se limpie
+  document.addEventListener("submit", e => {
+    const f = e.target;
+    if (f.id === "leadForm") {
+      const nombre = v("fName"), celular = v("fPhone").replace(/\D/g, "").replace(/^(00)?51(?=9\d{8}$)/, "");
+      if (nombre.length < 3 || !/^9\d{8}$/.test(celular) || !document.getElementById("fPriv").checked) return;
+      const pj = document.getElementById("fProj"), opt = pj && pj.selectedOptions[0];
+      let visita = ""; try { if (VISIT.day) visita = VISIT.day + (VISIT.slot ? ", " + VISIT.slot : ""); } catch (x) {}
+      let origen = "Web", campana = ""; try { if (SRC) { origen = /facebook|instagram|tiktok|google|youtube/i.test(SRC) ? "Web · " + SRC.split(" / ")[0] : "Web"; campana = SRC; } } catch (x) {}
+      send("solicitudes", {nombre: nombre.slice(0, 120), celular, proyecto: opt ? opt.textContent.slice(0, 120) : "", plazo: v("gxPlazo").slice(0, 60), pago: v("gxPago").slice(0, 60),
+        visita: visita.slice(0, 80), mensaje: v("fMsg").replace(/\s*\[(Plazo de compra|Forma de pago):[^\]]*\]/g, "").slice(0, 1000),
+        acepta_promos: !!(document.getElementById("fMkt") || {}).checked, origen: origen.slice(0, 60), campana: campana.slice(0, 120)});
+    }
+    if (f.id === "libroForm") {
+      const doc = v("lbD").replace(/\s/g, ""), mail = v("lbE");
+      if (!v("lbN") || !v("lbM") || !/^\S+@\S+\.\S+$/.test(mail) || !/^\d{8,12}$/.test(doc)) return;
+      const n = new Date(), p2 = x => String(x).padStart(2, "0");
+      const codigo = `LR-${n.getFullYear()}-${p2(n.getMonth() + 1)}${p2(n.getDate())}-${p2(n.getHours())}${p2(n.getMinutes())}${p2(n.getSeconds())}`;
+      send("reclamos", {codigo, tipo: v("lbK").startsWith("Queja") ? "Queja" : "Reclamo", nombre: v("lbN").slice(0, 120), documento: doc.slice(0, 20), celular: v("lbT").slice(0, 20),
+        correo: mail.slice(0, 120), detalle: v("lbM").slice(0, 3000), pedido: v("lbP").slice(0, 1500)});
+    }
+  }, true);
+})();
+</script>
+<!--growth-db-end-->
 </body>
 </html>

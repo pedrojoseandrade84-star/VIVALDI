@@ -85,6 +85,37 @@ El botón muestra el estado:
 
 La herramienta sincroniza sola al guardar algo, cada minuto mientras está abierta, al volver la señal y al volver a la pestaña.
 
+## Automatización: clientes de la web y Libro de Reclamaciones
+
+Con la base de datos activa, la web y la herramienta trabajan solas en estos puntos:
+
+1. **Cada solicitud de cotización de la web queda guardada**, aunque el cliente no llegue a enviar el WhatsApp. Se guarda nombre, celular, proyecto, plazo de compra, forma de pago, visita solicitada, si autorizó promociones y de qué anuncio o campaña vino.
+2. **Se asigna sola a un asesor, por turno**, entre los asesores activos. Si el mismo celular escribe dos veces en 24 horas, no se duplica.
+3. **Aparece en "Mis clientes" del asesor** la próxima vez que abre la herramienta (o en menos de un minuto si ya la tiene abierta), con aviso en pantalla y la nota de lo que pidió.
+4. **La jefatura recibe una alerta** si un cliente de la web lleva más de una hora sin que su asesor lo haya recibido.
+5. **Cada hoja del Libro de Reclamaciones queda registrada** con el mismo número que vio el cliente y con su fecha límite de respuesta (15 días hábiles). La jefatura ve en la herramienta cuántos reclamos están sin responder y cuál vence primero. El cálculo no descuenta feriados; revisarlo cuando haya feriados de por medio y confirmar el plazo vigente con el asesor legal.
+
+### Cómo activarlo
+
+- Ejecutar otra vez `esquema-supabase.sql` completo (se puede ejecutar varias veces sin perder datos).
+- En los dos archivos de la web (`Vivaldi-web-whatsapp.html` y `Vivaldi-web-final.html`), buscar
+  `const BASE = {url: "", key: ""};`
+  y escribir la misma URL y clave pública de la herramienta. Mientras esté vacío, la web funciona igual que antes.
+- Para que un asesor deje de recibir clientes nuevos (vacaciones, por ejemplo):
+
+```sql
+update public.perfiles set recibe_clientes = false
+where id = (select id from auth.users where email = 'rosa@vivaldi.pe');
+```
+
+- Para responder un reclamo: en Supabase, **Table Editor → reclamos**, escribir la respuesta y cambiar `estado` a `respondido`. La fecha de respuesta se guarda sola.
+
+### Protección
+
+- Desde la web solo se puede **registrar**; nadie puede leer las solicitudes ni los reclamos con la clave pública.
+- Cada asesor ve solo las solicitudes que le tocaron; la jefatura ve todas y es la única que ve los reclamos.
+- Hay un tope de envíos por hora para frenar ataques de envío masivo.
+
 ## Consultar y descargar la información
 
 - En Supabase, **Table Editor → registros** muestra todos los registros; se puede filtrar por `coleccion` (clientes, proformas, separaciones, cobranza, visitas, lotes) y exportar a CSV.
@@ -102,4 +133,5 @@ La herramienta sincroniza sola al guardar algo, cada minuto mientras está abier
 
 - Las reglas de seguridad se probaron en PostgreSQL 16 con las mismas funciones de usuario que usa Supabase: un asesor no puede ver, modificar ni hacerse pasar por otro; un usuario dado de baja no ve nada; sin sesión no se ve nada; la jefatura ve todo y su edición conserva al dueño del registro; el historial registra cada cambio.
 - La sincronización se probó con varios navegadores a la vez (asesora, asesor, jefatura y usuario dado de baja) contra un servidor de prueba con la misma interfaz que Supabase: alta, edición, borrado, inventario compartido, trabajo sin señal, sesión vencida, recarga y cambio de usuario en un mismo equipo.
+- La automatización se probó de punta a punta: formularios llenados en la web desde un celular, reparto entre asesores, llegada a la herramienta de cada asesor, alerta a la jefatura y registro del reclamo con su plazo.
 - **Falta probarlo con el proyecto real de Supabase de Vivaldi**, que debe crear la empresa. Una vez creado, la primera prueba es entrar con un asesor y la jefatura y revisar que cada uno vea lo que le corresponde.
