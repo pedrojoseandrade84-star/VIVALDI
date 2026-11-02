@@ -1623,14 +1623,14 @@ document.querySelectorAll("#navLinks a").forEach(a => a.addEventListener("click"
     // collage assembles, centre photo opens to full bleed, then the copy rises in
     const er = ex.getBoundingClientRect();
     if (er.bottom > 0 && er.top < vh){ const p = Math.max(0, Math.min(1, -er.top / (er.height - vh)));
-      const p1 = Math.min(1, p / .3), a1 = 1 - Math.pow(1 - p1, 3), p3 = Math.max(0, Math.min(1, (p - .4) / .25));
+      const p1 = Math.min(1, p / .3), a1 = .45 + .55 * (1 - Math.pow(1 - p1, 3)), p3 = Math.max(0, Math.min(1, (p - .4) / .25));
       colImgs.forEach((im, i) => { const c = COL[i], out = p3 * (c.x < 50 ? -1 : 1);
         im.style.opacity = String(a1 * (1 - p3));
         im.style.transform = `translate(${(1 - a1) * c.dx + out * 60}vw, ${(1 - a1) * c.dy}vh) scale(${.85 + a1 * .15})`; });
       colTitle.style.opacity = String(1 - p3); colTitle.style.transform = `translateY(${-p3 * 30}px)`;
       const p2 = Math.max(0, Math.min(1, (p - .38) / .32)), e2 = p2 < .5 ? 4 * p2 * p2 * p2 : 1 - Math.pow(-2 * p2 + 2, 3) / 2, k = 1 - e2;
       exImg.style.clipPath = `inset(${30 * k}% ${33 * k}% ${32 * k}% ${33 * k}% round ${k * 18}px)`;
-      exImg.style.opacity = String(Math.min(1, p1 * 1.4));
+      exImg.style.opacity = String(Math.min(1, .85 + p1));
       exImg.style.transform = `scale(${1.1 - e2 * .1})`;
       exShade.style.opacity = String(e2);
       const c = Math.max(0, Math.min(1, (p - .72) / .2));

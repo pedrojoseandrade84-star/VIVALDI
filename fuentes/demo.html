@@ -30,15 +30,18 @@
     ];
     const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
     clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
-    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at) => {
+    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at, adv = ADV) => {
       const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
-      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv: ADV};
+      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv};
     };
     const proformas = [
       pf("PF-EJ-0001", "Jorge Ramos Quispe", "987333444", 0, P, "B", "5", 200, 29000, 0, 20, 24, 0),
       pf("PF-EJ-0002", "María Fernández Soto", "985444555", 0, P, "B", "7", 200, 29000, 1000, 20, 36, 0),
       pf("PF-EJ-0003", "Pedro Salas Rojas", "984666777", 0, P, "A", "3", 200, 29000, 0, 30, 24, -42),
       pf("PF-EJ-0004", "Elena Castillo Paredes", "983888999", 2, PO, "C", "12", 90, 37900, 0, 20, 36, -62),
+      pf("PF-EJ-0005", "Miguel Paredes Ruiz", "981222333", 0, P, "B", "2", 200, 31500, 0, 20, 24, 0, "Carlos Medina"),
+      pf("PF-EJ-0006", "Sofía Chávez León", "981444555", 0, P, "B", "4", 200, 29000, 0, 20, 36, 0, "Carlos Medina"),
+      pf("PF-EJ-0007", "Raúl Torres Vega", "981666777", 2, PO, "D", "3", 90, 37900, 0, 20, 36, 0, "Diana Ríos"),
     ];
     const separaciones = [
       {no: "SEP-EJ-0001", demo: true, pf: "PF-EJ-0002", at: day(0), amt: 1000, pay: "Transferencia bancaria", op: "", lim: day(2), name: "María Fernández Soto", adv: ADV},
@@ -47,11 +50,14 @@
     const sched = (net, ini, term, first) => { const down = Math.round(net * ini / 100), fin = net - down, q = Math.round(fin / term), last = fin - q * (term - 1); return Array.from({length: term}, (_, i) => ({i: i + 1, d: mon(i, first), amt: i === term - 1 ? last : q})); };
     const s1 = sched(29000, 30, 24, day(-35)), s2 = sched(37900, 20, 36, day(-58));
     const cobranza = [
-      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d}},
+      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d, 2: day(0)}},
       {id: "demo-k2", demo: true, at: day(-60), pf: "PF-EJ-0004", sep: "", adv: ADV, name: "Elena Castillo Paredes", phone: "983888999", projName: PO, lot: "Mz C Lt 12", sched: s2, paid: {}},
+      {id: "demo-k3", demo: true, at: day(0), pf: "PF-EJ-0007", sep: "", adv: "Diana Ríos", name: "Raúl Torres Vega", phone: "981666777", projName: PO, lot: "Mz D Lt 3", sched: sched(37900, 20, 36, mon(1, day(0))), paid: {}},
     ];
-    const v = (id, name, phone, proj, date, time, st) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv: ADV, at: day(Math.min(date, 0) - 2)});
-    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog")];
+    const v = (id, name, phone, proj, date, time, st, adv = ADV) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv, at: day(Math.min(date, 0) - 2)});
+    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog"),
+      v("v4", "Carlos Mendoza Vega", "986222333", L, 0, "09:30", "ok"), v("v5", "Miguel Paredes Ruiz", "981222333", P, 0, "10:00", "ok", "Carlos Medina"),
+      v("v6", "Sofía Chávez León", "981444555", P, 0, "11:30", "ok", "Carlos Medina"), v("v7", "Raúl Torres Vega", "981666777", PO, 0, "09:00", "ok", "Diana Ríos")];
     const lotes = [];
     [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
       lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });

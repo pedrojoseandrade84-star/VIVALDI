@@ -4484,7 +4484,7 @@ function cobRows(){
 function renderCob(){
   const rows = cobRows(), ym = iso(new Date()).slice(0, 7), sum = a => a.reduce((x, r) => x + r.s.amt, 0);
   const late = rows.filter(r => r.state === "late"), soon = rows.filter(r => r.state === "soon"), paidM = rows.filter(r => r.paid && r.paid.slice(0, 7) === ym);
-  $("cobKp").innerHTML = [["Vencido", fmt(sum(late)), `${late.length} cuotas atrasadas`, 1], ["Por cobrar 30 días", fmt(sum(soon)), `${soon.length} cuotas`], ["Cobrado este mes", fmt(sum(paidM)), `${paidM.length} pagos registrados`], ["Ventas en cobranza", COB.length, `${rows.filter(r => !r.paid).length} cuotas pendientes`]]
+  $("cobKp").innerHTML = [["Vencido", fmt(sum(late)), `${late.length} ${late.length === 1 ? "cuota atrasada" : "cuotas atrasadas"}`, 1], ["Por cobrar 30 días", fmt(sum(soon)), `${soon.length} ${soon.length === 1 ? "cuota" : "cuotas"}`], ["Cobrado este mes", fmt(sum(paidM)), `${paidM.length} ${paidM.length === 1 ? "pago registrado" : "pagos registrados"}`], ["Ventas en cobranza", COB.length, `${rows.filter(r => !r.paid).length} cuotas pendientes`]]
     .map(([k, v, s, hl]) => `<div class="kp ${hl && late.length ? "hl" : ""}"><span>${k}</span><b>${v}</b><small>${s}</small></div>`).join("");
   const list = rows.filter(r => cobF === "all" || (cobF === "paid" ? r.paid : (r.state === "late" || r.state === "soon"))).slice(0, 300);
   const lab = {late:"Vencida", soon:"Próxima", ok:"Pagada", fut:"Programada"};
@@ -5460,89 +5460,6 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
 })();
 </script>
 <!--growth-sync-end-->
-<!--growth-demo-start-->
-<style id="demo-css">
-#demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
-#demoBtn:hover{background:#1F6EAB;color:#fff}
-#demoBar{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:61;display:flex;align-items:center;gap:10px;background:#E8A93A;color:#1F1604;border-radius:999px;padding:6px 6px 6px 14px;font:700 12px Manrope,Arial,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-#demoBar button{font:inherit;border:0;border-radius:999px;background:#1F1604;color:#fff;padding:7px 12px;cursor:pointer;min-height:32px}
-</style>
-<script id="growth-demo">
-/* Datos de ejemplo para mostrar la herramienta funcionando en una reunión. Son ficticios, llevan la marca demo
-   y nunca se suben a la base de datos. Se quitan con un botón y los datos reales no se tocan. */
-(() => {
-  const KEYS = {clientes: "vivaldi-clientes-v1", proformas: "vivaldi-proformas-v1", separaciones: "vivaldi-separaciones-v1", cobranza: "vivaldi-cobranza-v1", visitas: "vivaldi-visitas-v1", lotes: "vivaldi-lotes-v1"};
-  const get = k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } };
-  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const day = n => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
-  const mon = (n, base) => { const x = new Date(base + "T12:00"); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
-  const active = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
-  const ADV = "Rosa Quispe", P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = "Lirios del Mar de Asia", PO = "La Portada del Sol";
-  function data() {
-    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, adv: ADV}, extra);
-    const clientes = [
-      c("c1", "Lucía Torres Ramírez", "987111222", P, "Nuevo", 0, "Facebook", 0, {plazo: "Este mes", pago: "Financiado con Vivaldi"}),
-      c("c2", "Jorge Ramos Quispe", "987333444", P, "Visita agendada", 1, "Referido", -5, {budget: 30000}),
-      c("c3", "Ana Díaz Huamán", "987555666", T, "Contactado", -2, "TikTok", -12),
-      c("c4", "Carlos Mendoza Vega", "986222333", L, "Contactado", 3, "Web", -8),
-      c("c5", "María Fernández Soto", "985444555", P, "Separado", null, "Facebook", -15, {stageAt: day(0)}),
-      c("c6", "Pedro Salas Rojas", "984666777", P, "Vendido", null, "Referido", -40, {budget: 29000}),
-      c("c7", "Elena Castillo Paredes", "983888999", PO, "Vendido", null, "Instagram", -60),
-      c("c8", "Luis Gutiérrez Flores", "982111000", T, "Nuevo", -1, "Google", -1),
-    ];
-    const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
-    clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
-    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at) => {
-      const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
-      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv: ADV};
-    };
-    const proformas = [
-      pf("PF-EJ-0001", "Jorge Ramos Quispe", "987333444", 0, P, "B", "5", 200, 29000, 0, 20, 24, 0),
-      pf("PF-EJ-0002", "María Fernández Soto", "985444555", 0, P, "B", "7", 200, 29000, 1000, 20, 36, 0),
-      pf("PF-EJ-0003", "Pedro Salas Rojas", "984666777", 0, P, "A", "3", 200, 29000, 0, 30, 24, -42),
-      pf("PF-EJ-0004", "Elena Castillo Paredes", "983888999", 2, PO, "C", "12", 90, 37900, 0, 20, 36, -62),
-    ];
-    const separaciones = [
-      {no: "SEP-EJ-0001", demo: true, pf: "PF-EJ-0002", at: day(0), amt: 1000, pay: "Transferencia bancaria", op: "", lim: day(2), name: "María Fernández Soto", adv: ADV},
-      {no: "SEP-EJ-0002", demo: true, pf: "PF-EJ-0003", at: day(-45), amt: 1000, pay: "Yape", op: "", lim: day(-38), name: "Pedro Salas Rojas", adv: ADV},
-    ];
-    const sched = (net, ini, term, first) => { const down = Math.round(net * ini / 100), fin = net - down, q = Math.round(fin / term), last = fin - q * (term - 1); return Array.from({length: term}, (_, i) => ({i: i + 1, d: mon(i, first), amt: i === term - 1 ? last : q})); };
-    const s1 = sched(29000, 30, 24, day(-35)), s2 = sched(37900, 20, 36, day(-58));
-    const cobranza = [
-      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d}},
-      {id: "demo-k2", demo: true, at: day(-60), pf: "PF-EJ-0004", sep: "", adv: ADV, name: "Elena Castillo Paredes", phone: "983888999", projName: PO, lot: "Mz C Lt 12", sched: s2, paid: {}},
-    ];
-    const v = (id, name, phone, proj, date, time, st) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv: ADV, at: day(Math.min(date, 0) - 2)});
-    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog")];
-    const lotes = [];
-    [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
-      lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
-    return {clientes, proformas, separaciones, cobranza, visitas, lotes};
-  }
-  function load() {
-    if (window.vivaldiNube && window.vivaldiNube.sesion) { alert("Cierra sesión en la base de datos antes de cargar datos de ejemplo."); return; }
-    const D = data(); Object.entries(KEYS).forEach(([k, key]) => put(key, [...get(key).filter(r => !r.demo), ...D[k]]));
-    try { localStorage.setItem("vivaldi-demo", "1"); if (!localStorage.getItem("vivaldi-asesor")) localStorage.setItem("vivaldi-asesor", ADV); } catch (e) {}
-    location.reload();
-  }
-  function clear() {
-    if (!confirm("¿Quitar los datos de ejemplo? Tus datos reales no se tocan.")) return;
-    Object.values(KEYS).forEach(key => put(key, get(key).filter(r => !r.demo)));
-    try { localStorage.removeItem("vivaldi-demo"); if (localStorage.getItem("vivaldi-asesor") === ADV) localStorage.removeItem("vivaldi-asesor"); } catch (e) {}
-    location.reload();
-  }
-  const note = document.querySelector(".mode[role=note]");
-  if (active()) {
-    const bar = document.createElement("div"); bar.id = "demoBar"; bar.setAttribute("role", "status");
-    bar.innerHTML = '<span>Mostrando datos de ejemplo</span><button type="button">Quitar</button>'; bar.querySelector("button").onclick = clear; document.body.appendChild(bar);
-  } else if (note) {
-    const real = Object.values(KEYS).some(key => get(key).some(r => !r.demo));
-    if (!real) { const b = document.createElement("button"); b.type = "button"; b.id = "demoBtn"; b.textContent = "Ver con datos de ejemplo"; b.onclick = load; note.appendChild(b); }
-  }
-  window.vivaldiDemo = {load, clear, data};
-})();
-</script>
-<!--growth-demo-end-->
 <!--nav-menu-start-->
 <style>
 nav.top .navmore{position:relative;display:inline-flex;flex:none}
@@ -5597,5 +5514,94 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--nav-menu-end-->
+<!--growth-demo-start-->
+<style id="demo-css">
+#demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
+#demoBtn:hover{background:#1F6EAB;color:#fff}
+#demoBar{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:61;display:flex;align-items:center;gap:10px;background:#E8A93A;color:#1F1604;border-radius:999px;padding:6px 6px 6px 14px;font:700 12px Manrope,Arial,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+#demoBar button{font:inherit;border:0;border-radius:999px;background:#1F1604;color:#fff;padding:7px 12px;cursor:pointer;min-height:32px}
+</style>
+<script id="growth-demo">
+/* Datos de ejemplo para mostrar la herramienta funcionando en una reunión. Son ficticios, llevan la marca demo
+   y nunca se suben a la base de datos. Se quitan con un botón y los datos reales no se tocan. */
+(() => {
+  const KEYS = {clientes: "vivaldi-clientes-v1", proformas: "vivaldi-proformas-v1", separaciones: "vivaldi-separaciones-v1", cobranza: "vivaldi-cobranza-v1", visitas: "vivaldi-visitas-v1", lotes: "vivaldi-lotes-v1"};
+  const get = k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const day = n => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+  const mon = (n, base) => { const x = new Date(base + "T12:00"); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
+  const active = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
+  const ADV = "Rosa Quispe", P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = "Lirios del Mar de Asia", PO = "La Portada del Sol";
+  function data() {
+    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, adv: ADV}, extra);
+    const clientes = [
+      c("c1", "Lucía Torres Ramírez", "987111222", P, "Nuevo", 0, "Facebook", 0, {plazo: "Este mes", pago: "Financiado con Vivaldi"}),
+      c("c2", "Jorge Ramos Quispe", "987333444", P, "Visita agendada", 1, "Referido", -5, {budget: 30000}),
+      c("c3", "Ana Díaz Huamán", "987555666", T, "Contactado", -2, "TikTok", -12),
+      c("c4", "Carlos Mendoza Vega", "986222333", L, "Contactado", 3, "Web", -8),
+      c("c5", "María Fernández Soto", "985444555", P, "Separado", null, "Facebook", -15, {stageAt: day(0)}),
+      c("c6", "Pedro Salas Rojas", "984666777", P, "Vendido", null, "Referido", -40, {budget: 29000}),
+      c("c7", "Elena Castillo Paredes", "983888999", PO, "Vendido", null, "Instagram", -60),
+      c("c8", "Luis Gutiérrez Flores", "982111000", T, "Nuevo", -1, "Google", -1),
+    ];
+    const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
+    clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
+    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at, adv = ADV) => {
+      const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
+      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv};
+    };
+    const proformas = [
+      pf("PF-EJ-0001", "Jorge Ramos Quispe", "987333444", 0, P, "B", "5", 200, 29000, 0, 20, 24, 0),
+      pf("PF-EJ-0002", "María Fernández Soto", "985444555", 0, P, "B", "7", 200, 29000, 1000, 20, 36, 0),
+      pf("PF-EJ-0003", "Pedro Salas Rojas", "984666777", 0, P, "A", "3", 200, 29000, 0, 30, 24, -42),
+      pf("PF-EJ-0004", "Elena Castillo Paredes", "983888999", 2, PO, "C", "12", 90, 37900, 0, 20, 36, -62),
+      pf("PF-EJ-0005", "Miguel Paredes Ruiz", "981222333", 0, P, "B", "2", 200, 31500, 0, 20, 24, 0, "Carlos Medina"),
+      pf("PF-EJ-0006", "Sofía Chávez León", "981444555", 0, P, "B", "4", 200, 29000, 0, 20, 36, 0, "Carlos Medina"),
+      pf("PF-EJ-0007", "Raúl Torres Vega", "981666777", 2, PO, "D", "3", 90, 37900, 0, 20, 36, 0, "Diana Ríos"),
+    ];
+    const separaciones = [
+      {no: "SEP-EJ-0001", demo: true, pf: "PF-EJ-0002", at: day(0), amt: 1000, pay: "Transferencia bancaria", op: "", lim: day(2), name: "María Fernández Soto", adv: ADV},
+      {no: "SEP-EJ-0002", demo: true, pf: "PF-EJ-0003", at: day(-45), amt: 1000, pay: "Yape", op: "", lim: day(-38), name: "Pedro Salas Rojas", adv: ADV},
+    ];
+    const sched = (net, ini, term, first) => { const down = Math.round(net * ini / 100), fin = net - down, q = Math.round(fin / term), last = fin - q * (term - 1); return Array.from({length: term}, (_, i) => ({i: i + 1, d: mon(i, first), amt: i === term - 1 ? last : q})); };
+    const s1 = sched(29000, 30, 24, day(-35)), s2 = sched(37900, 20, 36, day(-58));
+    const cobranza = [
+      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d, 2: day(0)}},
+      {id: "demo-k2", demo: true, at: day(-60), pf: "PF-EJ-0004", sep: "", adv: ADV, name: "Elena Castillo Paredes", phone: "983888999", projName: PO, lot: "Mz C Lt 12", sched: s2, paid: {}},
+      {id: "demo-k3", demo: true, at: day(0), pf: "PF-EJ-0007", sep: "", adv: "Diana Ríos", name: "Raúl Torres Vega", phone: "981666777", projName: PO, lot: "Mz D Lt 3", sched: sched(37900, 20, 36, mon(1, day(0))), paid: {}},
+    ];
+    const v = (id, name, phone, proj, date, time, st, adv = ADV) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv, at: day(Math.min(date, 0) - 2)});
+    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog"),
+      v("v4", "Carlos Mendoza Vega", "986222333", L, 0, "09:30", "ok"), v("v5", "Miguel Paredes Ruiz", "981222333", P, 0, "10:00", "ok", "Carlos Medina"),
+      v("v6", "Sofía Chávez León", "981444555", P, 0, "11:30", "ok", "Carlos Medina"), v("v7", "Raúl Torres Vega", "981666777", PO, 0, "09:00", "ok", "Diana Ríos")];
+    const lotes = [];
+    [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
+      lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
+    return {clientes, proformas, separaciones, cobranza, visitas, lotes};
+  }
+  function load() {
+    if (window.vivaldiNube && window.vivaldiNube.sesion) { alert("Cierra sesión en la base de datos antes de cargar datos de ejemplo."); return; }
+    const D = data(); Object.entries(KEYS).forEach(([k, key]) => put(key, [...get(key).filter(r => !r.demo), ...D[k]]));
+    try { localStorage.setItem("vivaldi-demo", "1"); if (!localStorage.getItem("vivaldi-asesor")) localStorage.setItem("vivaldi-asesor", ADV); } catch (e) {}
+    location.reload();
+  }
+  function clear() {
+    if (!confirm("¿Quitar los datos de ejemplo? Tus datos reales no se tocan.")) return;
+    Object.values(KEYS).forEach(key => put(key, get(key).filter(r => !r.demo)));
+    try { localStorage.removeItem("vivaldi-demo"); if (localStorage.getItem("vivaldi-asesor") === ADV) localStorage.removeItem("vivaldi-asesor"); } catch (e) {}
+    location.reload();
+  }
+  const note = document.querySelector(".mode[role=note]");
+  if (active()) {
+    const bar = document.createElement("div"); bar.id = "demoBar"; bar.setAttribute("role", "status");
+    bar.innerHTML = '<span>Mostrando datos de ejemplo</span><button type="button">Quitar</button>'; bar.querySelector("button").onclick = clear; document.body.appendChild(bar);
+  } else if (note) {
+    const real = Object.values(KEYS).some(key => get(key).some(r => !r.demo));
+    if (!real) { const b = document.createElement("button"); b.type = "button"; b.id = "demoBtn"; b.textContent = "Ver con datos de ejemplo"; b.onclick = load; note.appendChild(b); }
+  }
+  window.vivaldiDemo = {load, clear, data};
+})();
+</script>
+<!--growth-demo-end-->
 </body>
 </html>
