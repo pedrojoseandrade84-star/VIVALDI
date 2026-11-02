@@ -61,6 +61,23 @@
     const lotes = [];
     [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
       lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
+    // historia de 5 meses (proformas, ventas pagando al día, clientes vendidos y lotes de Las Terrazas) para los gráficos de dirección
+    const md = (m, d) => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(1); x.setMonth(x.getMonth() - m); x.setDate(Math.min(d, 28)); return x.toISOString().slice(0, 10); };
+    const NOMBRES = ["Rocío Huamán Ccori", "Javier Quispe Llanos", "Patricia Rojas Villa", "Andrés Navarro Ruiz", "Gabriela Chávez Soto", "Ricardo León Paredes", "Milagros Vargas Tello", "Hugo Espinoza Mora", "Carmen Ríos Arce", "Fernando Salazar Peña", "Diana Campos Lazo", "Óscar Medina Cruz", "Liliana Torres Rivas", "Manuel Aguilar Ponce", "Verónica Flores Gil", "Raúl Castro Zegarra", "Silvia Ramírez Ortiz", "Eduardo Bravo Núñez", "Karina Palacios Ruiz", "Alberto Cárdenas Vega", "Natalia Ríos Benites", "Jorge Luna Herrera"];
+    const PRO = [[0, P, 200, 29000], [1, T, 200, 25000], [3, L, 90, 60000], [2, PO, 90, 37900]], ASES = [ADV, "Carlos Medina", "Diana Ríos"], SRC = ["Facebook", "Referido", "TikTok", "Web", "Google", "Instagram"];
+    let ni = 0, pn = 8;
+    [[5, 3, 1], [4, 4, 1], [3, 4, 2], [2, 5, 2], [1, 6, 3]].forEach(([m, nPf, nSale]) => {
+      for (let k = 0; k < nPf; k++) {
+        const [pi, pname, area, price] = PRO[(m + k) % PRO.length], who = NOMBRES[ni++ % NOMBRES.length], adv = ASES[(m + k) % ASES.length], at = md(m, 1 + k * 4), no = "PF-EJ-" + String(pn++).padStart(4, "0");
+        const r = pf(no, who, "9" + String(10000000 + ni * 7919).slice(0, 8), pi, pname, "", "", area, price, 0, 20, k % 2 ? 36 : 24, 0, adv); r.at = at; r.start = mon(1, at); proformas.push(r);
+        if (k < nSale) {
+          const sale = md(m, k ? 8 + k * 6 : 2), sc = sched(r.net, 20, r.term, mon(1, sale)), paid = {}; sc.forEach(q => { if (q.d < day(0)) paid[q.i] = q.d; });
+          cobranza.push({id: "demo-kh" + no.slice(-4), demo: true, at: sale, pf: no, sep: "", adv, name: who, phone: r.phone, projName: pname, lot: "Mz " + "CDEF"[k] + " Lt " + (m * 3 + k), sched: sc, paid});
+          clientes.push(c("h" + no.slice(-4), who, r.phone, pname, "Vendido", null, SRC[(m + k) % SRC.length], -(m * 30 + 6), {stageAt: sale, adv}));
+        }
+      }
+    });
+    for (let i = 1; i <= 12; i++) lotes.push({id: "demo-lTA" + i, demo: true, proj: T, mz: "A", lt: String(i), area: 200, price: 25000, loc: i <= 3 ? "Frente al parque" : "Interior", st: i <= 4 ? "Vendido" : i <= 6 ? "Separado" : "Disponible", client: ""});
     return {clientes, proformas, separaciones, cobranza, visitas, lotes};
   }
   function load() {

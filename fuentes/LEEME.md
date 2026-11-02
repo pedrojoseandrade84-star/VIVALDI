@@ -32,3 +32,5 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 `demo.html` es el modo "Ver con datos de ejemplo" de la herramienta (para demostraciones); se inserta con `inject_demo.py`. Los registros de ejemplo llevan `demo: true`, se pueden quitar con un botón y la sincronización nunca los sube a la base de datos.
 
 `navmenu.html` agrupa en el menú "Análisis" las secciones de comparación con la competencia y los ajustes, para que el menú quepa en pantalla; se inserta con `inject_navmenu.py`.
+
+`direccion.html` es el Tablero de dirección de la herramienta (indicadores del mes, cotizado y vendido por mes, inventario, embudo, cartera por antigüedad, origen de clientes, equipo y alertas); se inserta con `inject_direccion.py` después de `navmenu.html`.

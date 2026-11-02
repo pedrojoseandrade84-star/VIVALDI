@@ -5515,6 +5515,293 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--nav-menu-end-->
+<!--direccion-start-->
+<style>
+#direccion{--dx-ink:#0B2236;--dx-ink2:#3E5366;--dx-mute:#5A6E80;--dx-line:#E1E9F0;--dx-grid:#EDF2F6;--dx-card:#fff;--dx-navy:#062B44;
+  --dx-s1:#1F6FAE;--dx-s2:#D08A12;--dx-s3:#14966A;--dx-sold:#0B3A5C;--dx-sep:#D08A12;--dx-free:#14966A;--dx-blk:#9AA8B3;--dx-bad:#C0392B;--dx-bad2:#E07A6E;--dx-bad3:#F2B5AD;--dx-good:#14804A;
+  scroll-margin-top:76px;margin-top:8px}
+#direccion .dx-band{background:radial-gradient(120% 140% at 85% -20%,#1A5C8E 0%,rgba(26,92,142,0) 55%),linear-gradient(120deg,#041F33,#0A3654 60%,#0E4C72);color:#fff;border-radius:22px 22px 0 0;padding:28px 30px 74px;position:relative;overflow:hidden}
+#direccion .dx-band::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;border:40px solid rgba(255,200,97,.07)}
+#direccion .dx-top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;position:relative;z-index:1}
+#direccion .dx-eb{font-size:.7rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#FFC861}
+#direccion h2.dx-h{font-family:var(--f-display,Georgia,serif);font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:400;line-height:1.05;margin:6px 0 6px;color:#fff;letter-spacing:-.01em}
+#direccion .dx-sub{color:rgba(255,255,255,.78);font-size:.92rem;margin:0}
+#direccion .dx-acts{display:flex;gap:8px;flex-wrap:wrap}
+#direccion .dx-acts button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:.86rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+#direccion .dx-acts button:hover{background:rgba(255,255,255,.16)}
+#direccion .dx-acts button.pri{background:#FFC861;color:#08263A;border-color:#FFC861}
+#direccion .dx-acts svg{width:16px;height:16px}
+#direccion .dx-body{background:#EEF3F7;border-radius:0 0 22px 22px;padding:0 22px 24px}
+#direccion .dx-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;transform:translateY(-52px);margin-bottom:-38px;position:relative;z-index:2}
+#direccion .dx-k{background:var(--dx-card);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 30px rgba(6,43,68,.12);display:flex;flex-direction:column;gap:4px;min-width:0}
+#direccion .dx-k .l{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dx-mute)}
+#direccion .dx-k .v{font-family:var(--f-display,Georgia,serif);font-size:clamp(1.5rem,2.2vw,2rem);color:var(--dx-ink);line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+#direccion .dx-k .v.bad{color:var(--dx-bad)}
+#direccion .dx-k .d{font-size:.78rem;color:var(--dx-ink2);display:flex;align-items:center;gap:4px;min-height:20px}
+#direccion .dx-k .d b{font-weight:800}
+#direccion .dx-k .d .up{color:var(--dx-good)} #direccion .dx-k .d .dn{color:var(--dx-bad)}
+#direccion .dx-k svg.sp{width:100%;height:34px;display:block;margin-top:4px}
+#direccion .dx-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+#direccion .dx-c{background:var(--dx-card);border-radius:16px;padding:18px 18px 14px;box-shadow:0 1px 0 var(--dx-line),0 6px 18px rgba(6,43,68,.06);min-width:0;display:flex;flex-direction:column}
+#direccion .c8{grid-column:span 8} #direccion .c4{grid-column:span 4} #direccion .c6{grid-column:span 6} #direccion .c12{grid-column:span 12}
+#direccion .dx-ch{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+#direccion .dx-ch h3{font-size:1rem;margin:0;color:var(--dx-ink);font-weight:700}
+#direccion .dx-ch p{margin:2px 0 0;font-size:.8rem;color:var(--dx-mute)}
+#direccion .dx-leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--dx-ink2);margin:0 0 6px}
+#direccion .dx-leg span{display:inline-flex;align-items:center;gap:6px}
+#direccion .dx-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+#direccion .dx-seg{display:inline-flex;background:#EEF3F7;border-radius:999px;padding:3px;flex:none}
+#direccion .dx-seg button{border:0;background:none;font:inherit;font-size:.76rem;font-weight:600;color:var(--dx-ink2);padding:0 12px;min-height:30px;border-radius:999px;cursor:pointer}
+#direccion .dx-seg button[aria-pressed="true"]{background:#fff;color:var(--dx-ink);box-shadow:0 1px 3px rgba(6,43,68,.15)}
+#direccion svg text{font-family:var(--f-body,system-ui,sans-serif)}
+#direccion .dx-c svg.ch{width:100%;height:auto;display:block;overflow:visible}
+#direccion [data-tip]{cursor:default}
+#direccion [data-tip]:hover>.mk,#direccion [data-tip]:focus>.mk{filter:brightness(1.12)}
+#direccion [data-tip]:focus{outline:none} #direccion [data-tip]:focus-visible>.hit{stroke:#0B2236;stroke-width:2}
+#direccion .dx-tbl{width:100%;min-width:0;border-collapse:collapse;font-size:.82rem;margin-top:6px}
+#direccion .dx-tbl th,#direccion .dx-tbl td{white-space:nowrap;padding:7px 6px;border-bottom:1px solid var(--dx-line);text-align:right;font-variant-numeric:tabular-nums}
+#direccion .dx-tbl th:first-child,#direccion .dx-tbl td:first-child{text-align:left}
+#direccion .dx-tbl th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dx-mute)}
+#direccion .dx-scroll{overflow-x:auto;max-width:100%}
+#direccion .dx-c > *{min-width:0;max-width:100%}
+#direccion .dx-lnk{background:none;border:0;padding:0;font:inherit;font-size:.78rem;color:var(--dx-s1);text-decoration:underline;cursor:pointer;min-height:24px;align-self:flex-start;margin-top:auto}
+#direccion .dx-big{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}
+#direccion .dx-big b{font-family:var(--f-display,Georgia,serif);font-size:2rem;font-weight:400;color:var(--dx-ink)}
+#direccion .dx-big span{font-size:.82rem;color:var(--dx-mute)}
+#direccion .dx-al{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#direccion .dx-al li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#F6F9FB}
+#direccion .dx-al li .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:.9rem}
+#direccion .dx-al li.cr .ic{background:#FBE3DF;color:var(--dx-bad)} #direccion .dx-al li.wa .ic{background:#FBEFD3;color:#8A5A00} #direccion .dx-al li.ok .ic{background:#DDF3E7;color:var(--dx-good)}
+#direccion .dx-al li b{display:block;font-size:.88rem;color:var(--dx-ink)} #direccion .dx-al li span{font-size:.78rem;color:var(--dx-mute)}
+#direccion .dx-al li em{font-style:normal;font-weight:800;color:var(--dx-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+#direccion .dx-foot{font-size:.74rem;color:var(--dx-mute);margin:14px 2px 0}
+#dxTip{position:fixed;z-index:80;pointer-events:none;background:#0B2236;color:#fff;border-radius:10px;padding:8px 11px;font-size:.78rem;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:260px;opacity:0;transition:opacity .12s}
+#dxTip.on{opacity:1} #dxTip b{font-size:.9rem} #dxTip .r{display:flex;align-items:center;gap:7px} #dxTip .r i{width:12px;height:3px;border-radius:2px;display:inline-block}
+#direccion:fullscreen{background:#EEF3F7;overflow:auto;padding:18px;margin:0}
+#direccion:fullscreen .dx-band{border-radius:18px 18px 0 0}
+@media (max-width:1100px){#direccion .dx-kpis{grid-template-columns:repeat(3,minmax(0,1fr))} #direccion .c8,#direccion .c4,#direccion .c6{grid-column:span 12}}
+@media (max-width:640px){#direccion #dxTrend svg{min-width:620px} #direccion .dx-band{padding:22px 18px 70px;border-radius:18px 18px 0 0} #direccion .dx-body{padding:0 12px 18px} #direccion .dx-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px} #direccion .dx-k:first-child{grid-column:span 2}}
+@media print{body.dx-print main > *:not(#direccion),body.dx-print .hero,body.dx-print header.hero{display:none!important} #direccion .dx-acts,#direccion .dx-lnk,#direccion .dx-seg{display:none!important} #direccion .dx-c,#direccion .dx-k{box-shadow:none;border:1px solid #DDE6EE;break-inside:avoid} #direccion .dx-band,#direccion .dx-body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+<script>
+(() => {
+  if (typeof CLIENTS === "undefined" || typeof PFLOG === "undefined") return;
+  const main = document.querySelector("main"); if (!main) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const S = n => "S/ " + Math.round(n || 0).toLocaleString("es-PE");
+  const K = n => { n = Math.round(n || 0); return n >= 1e6 ? "S/ " + (n / 1e6).toFixed(1).replace(".0", "") + " M" : n >= 1e4 ? "S/ " + Math.round(n / 1e3) + " mil" : S(n); };
+  const iso2 = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const MESL = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+  const sec = document.createElement("section"); sec.id = "direccion"; sec.setAttribute("aria-labelledby", "dxTitle");
+  sec.innerHTML = `<div class="dx-band"><div class="dx-top"><div><div class="dx-eb">Vista para la gerencia</div><h2 class="dx-h" id="dxTitle">Tablero de dirección</h2><p class="dx-sub" id="dxSub"></p></div>
+    <div class="dx-acts"><button type="button" class="pri" id="dxFull"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Presentar en pantalla</button><button type="button" id="dxPrint"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6V2h8v4M4 12H2V7h12v5h-2M5 10h6v4H5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Imprimir o PDF</button></div></div></div>
+    <div class="dx-body"><div class="dx-kpis" id="dxKpis"></div><div class="dx-grid">
+      <div class="dx-c c8"><div class="dx-ch"><div><h3>Cotizado y vendido por mes</h3><p>Monto de proformas emitidas y de ventas cerradas, últimos 6 meses</p></div><button type="button" class="dx-lnk" data-tbl="dxTrend" aria-expanded="false" style="margin-top:0">Ver tabla</button></div><div class="dx-leg" id="dxTrendLeg"></div><div id="dxTrend" class="dx-scroll"></div></div>
+      <div class="dx-c c4"><div class="dx-ch"><div><h3>Inventario de lotes</h3><p>Estado por proyecto</p></div></div><div id="dxInv"></div></div>
+      <div class="dx-c c4"><div class="dx-ch"><div><h3>Embudo comercial</h3><p>Clientes que llegaron a cada etapa</p></div></div><div id="dxFun"></div></div>
+      <div class="dx-c c4"><div class="dx-ch"><div><h3>Cartera por cobrar</h3><p>Cuotas pendientes según antigüedad</p></div></div><div id="dxAge"></div></div>
+      <div class="dx-c c4"><div class="dx-ch"><div><h3>Origen de los clientes</h3><p>Clientes y cierres por canal</p></div></div><div id="dxSrc"></div></div>
+      <div class="dx-c c6"><div class="dx-ch"><div><h3>Equipo comercial</h3><p id="dxTeamSub">Monto cotizado por asesor</p></div><div class="dx-seg" role="group" aria-label="Periodo del equipo"><button type="button" data-p="mes" aria-pressed="true">Este mes</button><button type="button" data-p="todo" aria-pressed="false">Todo</button></div></div><div id="dxTeam"></div></div>
+      <div class="dx-c c6"><div class="dx-ch"><div><h3>Atención de la gerencia</h3><p>Lo que requiere una decisión o seguimiento</p></div></div><ul class="dx-al" id="dxAl"></ul></div>
+    </div><p class="dx-foot" id="dxFoot"></p></div>`;
+  const anchor = document.getElementById("hoy") || main.firstElementChild; main.insertBefore(sec, anchor);
+  const tip = document.createElement("div"); tip.id = "dxTip"; tip.setAttribute("role", "status"); document.body.appendChild(tip);
+
+  // navegación: enlace "Dirección" primero; Objeciones pasa al menú Análisis
+  const navSetup = () => { const wrap = document.querySelector("nav.top .wrap");
+  if (wrap && !document.getElementById("dxNav")) {
+    const a = document.createElement("a"); a.href = "#direccion"; a.textContent = "Dirección"; a.id = "dxNav";
+    const first = wrap.querySelector('a[href="#hoy"]'); wrap.insertBefore(a, first || null);
+    const ob = wrap.querySelector('a[href="#objeciones"]'), menu = document.getElementById("navMenu");
+    if (ob && menu) { const h = menu.querySelector(".ng"); const sm = document.createElement("small"); sm.textContent = "respuestas listas"; ob.appendChild(sm); h ? h.after(ob) : menu.prepend(ob); }
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { const on = en.target.id === "direccion"; a.classList.toggle("on", on); if (on) wrap.querySelectorAll("a.on").forEach(x => x !== a && x.classList.remove("on")); } }), {rootMargin: "-45% 0px -50% 0px"});
+    document.querySelectorAll("section[id]").forEach(s => io.observe(s));
+  } };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", navSetup); else navSetup();
+
+  // datos
+  function months(n) { const out = [], d = new Date(); d.setDate(1); d.setHours(12); for (let i = n - 1; i >= 0; i--) { const x = new Date(d); x.setMonth(d.getMonth() - i); out.push({k: iso2(x).slice(0, 7), l: MES[x.getMonth()], L: MESL[x.getMonth()]}); } return out; }
+  const pfOf = no => PFLOG.find(r => r.no === no);
+  const SEPS_ = () => typeof SEPS === "undefined" ? [] : SEPS, COB_ = () => typeof COB === "undefined" ? [] : COB, VIS_ = () => typeof VISITS === "undefined" ? [] : VISITS, INV_ = () => typeof INV === "undefined" ? [] : INV;
+  function saleOf(k) { const p = pfOf(k.pf), date = k.at || SEPS_().find(x => x.pf === k.pf)?.at || p?.at || "", val = p?.net || (k.sched || []).reduce((a, s) => a + (s.amt || 0), 0); return {date, val}; }
+  function data() {
+    const M = months(6), t = iso2(new Date()), by = {};
+    M.forEach(m => by[m.k] = {cot: 0, nPf: 0, ven: 0, nV: 0, cob: 0});
+    PFLOG.forEach(r => { const b = by[(r.at || "").slice(0, 7)]; if (b) { b.cot += r.net || 0; b.nPf++; } });
+    COB_().forEach(k => { const s = saleOf(k), b = by[s.date.slice(0, 7)]; if (b) { b.ven += s.val; b.nV++; }
+      Object.entries(k.paid || {}).forEach(([i, d]) => { const bb = by[String(d).slice(0, 7)]; if (bb) bb.cob += (k.sched.find(x => x.i === +i) || {}).amt || 0; }); });
+    SEPS_().forEach(x => { const b = by[(x.at || "").slice(0, 7)]; if (b) b.cob += x.amt || 0; });
+    // mismo periodo del mes anterior (del 1 al día de hoy) para comparar sin castigar al mes en curso
+    const pk = M[4].k, dd = t.slice(8, 10), inP = s => String(s || "").slice(0, 7) === pk && String(s).slice(8, 10) <= dd, pp = {cot: 0, ven: 0, cob: 0};
+    PFLOG.forEach(r => { if (inP(r.at)) pp.cot += r.net || 0; });
+    COB_().forEach(k => { const sl = saleOf(k); if (inP(sl.date)) pp.ven += sl.val; Object.entries(k.paid || {}).forEach(([i, d]) => { if (inP(d)) pp.cob += (k.sched.find(x => x.i === +i) || {}).amt || 0; }); });
+    SEPS_().forEach(x => { if (inP(x.at)) pp.cob += x.amt || 0; });
+    const age = {fut: 0, a: 0, b: 0, c: 0, d: 0, nFut: 0, nLate: 0}, lim = iso2(new Date(Date.now() + 30 * 864e5));
+    COB_().forEach(k => (k.sched || []).forEach(s => { if (k.paid && k.paid[s.i]) return; if (s.d >= t) { if (s.d <= lim) { age.fut += s.amt; age.nFut++; } return; }
+      const days = Math.round((new Date(t + "T12:00") - new Date(s.d + "T12:00")) / 864e5); age.nLate++; age[days <= 30 ? "a" : days <= 60 ? "b" : days <= 90 ? "c" : "d"] += s.amt; }));
+    const inv = {}; INV_().forEach(l => { const p = l.proj || "Sin proyecto"; inv[p] = inv[p] || {Vendido: 0, Separado: 0, Disponible: 0, Bloqueado: 0}; inv[p][l.st] = (inv[p][l.st] || 0) + 1; });
+    const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rk = s => ord.indexOf(s);
+    const fun = ord.map((s, i) => CLIENTS.filter(c => rk(c.stage) >= i || (i === 0 && c.stage === "Descartado")).length);
+    const src = {}; CLIENTS.forEach(c => { const k = c.src || "Sin dato"; src[k] = src[k] || {n: 0, w: 0}; src[k].n++; if (rk(c.stage) >= 3) src[k].w++; });
+    return {M, by, age, inv, fun, ord, src, t, pp, dd: +dd};
+  }
+
+  // gráficos
+  const el = (tag, at, kids) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); (kids || []).forEach(x => e.appendChild(x)); return e; };
+  const txt = (s, at) => { const e = el("text", at); e.textContent = s; return e; };
+  const barPath = (x, y, w, h, r) => { r = Math.min(r, w / 2, h); return h <= 0 ? "" : `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`; };
+  const hbarPath = (x, y, w, h, r) => { r = Math.min(r, h / 2, w); return w <= 0 ? "" : `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`; };
+  const nice = v => { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; };
+  const tipAttrs = (lines, focus) => ({"data-tip": lines.join("|"), ...(focus ? {tabindex: "0", role: "img", "aria-label": lines.join(". ").replace(/\[[^\]]*\]/g, "")} : {})});
+
+  function trend(d) {
+    const W = 760, H = 300, L = 84, R = 12, T = 14, B = 56, iw = W - L - R, ih = H - T - B, top = Math.max(0, ...d.M.map(m => Math.max(d.by[m.k].cot, d.by[m.k].ven))), max = top ? nice(top * 1.08) : 100000;
+    const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, class: "ch", role: "group", "aria-label": "Cotizado y vendido por mes"});
+    for (let i = 0; i <= 4; i++) { const v = max / 4 * i, y = T + ih - ih * v / max; svg.appendChild(el("line", {x1: L, x2: W - R, y1: y, y2: y, stroke: i ? "#EDF2F6" : "#C9D6E0", "stroke-width": 1}));
+      svg.appendChild(txt(K(v), {x: L - 10, y: y + 4, "text-anchor": "end", "font-size": 12, fill: "#5A6E80"})); }
+    const gw = iw / d.M.length, bw = Math.min(30, gw * .28);
+    if (!top) svg.appendChild(txt("Aún no hay proformas ni ventas registradas en estos 6 meses", {x: L + iw / 2, y: T + ih / 2, "text-anchor": "middle", "font-size": 14, fill: "#5A6E80"}));
+    d.M.forEach((m, i) => { const b = d.by[m.k], cx = L + gw * i + gw / 2, last = i === d.M.length - 1;
+      [["cot", "#1F6FAE", -1], ["ven", "#D08A12", 1]].forEach(([key, col, side]) => { const v = b[key], h = ih * v / max, x = cx + (side < 0 ? -bw - 1 : 1), y = T + ih - h;
+        const g = el("g", tipAttrs([`${m.L}`, `[${col}]${key === "cot" ? "Cotizado" : "Vendido"}: ${S(v)}`, key === "cot" ? `${b.nPf} proformas` : `${b.nV} ${b.nV === 1 ? "venta" : "ventas"}`], true));
+        g.appendChild(el("rect", {class: "hit", x: x - 3, y: T, width: bw + 6, height: ih, fill: "transparent"}));
+        if (h > 0) g.appendChild(el("path", {class: "mk", d: barPath(x, y, bw, h, 4), fill: col}));
+        svg.appendChild(g);
+      });
+      svg.appendChild(txt(m.l + (last ? " (en curso)" : ""), {x: cx, y: T + ih + 20, "text-anchor": "middle", "font-size": 13, fill: last ? "#0B2236" : "#5A6E80", "font-weight": last ? 700 : 400}));
+      svg.appendChild(txt(b.ven ? "Vendido " + K(b.ven) : "Sin ventas", {x: cx, y: T + ih + 40, "text-anchor": "middle", "font-size": 12, fill: b.ven ? "#0B2236" : "#8A9AA8", "font-weight": b.ven ? 700 : 400}));
+    });
+    const tb = `<table class="dx-tbl" hidden><thead><tr><th>Mes</th><th>Proformas</th><th>Cotizado</th><th>Ventas</th><th>Vendido</th><th>Cobrado</th></tr></thead><tbody>${d.M.map(m => { const b = d.by[m.k]; return `<tr><td>${E(m.L)}</td><td>${b.nPf}</td><td>${S(b.cot)}</td><td>${b.nV}</td><td>${S(b.ven)}</td><td>${S(b.cob)}</td></tr>`; }).join("")}</tbody></table>`;
+    const box = document.getElementById("dxTrend"); box.innerHTML = ""; box.appendChild(svg); box.insertAdjacentHTML("beforeend", tb);
+    document.getElementById("dxTrendLeg").innerHTML = `<span><i style="background:#1F6FAE"></i>Cotizado</span><span><i style="background:#D08A12"></i>Vendido</span>`;
+  }
+
+  function hbars(boxId, rows, {fmt = v => v, color = "#1F6FAE", label, w = 360, rowH = 34, labW = 118, valW = 74, noteW, extra} = {}) {
+    if (noteW == null) noteW = rows.some(r => r.note) ? 96 : 0;
+    const max = Math.max(1, ...rows.map(r => r.v)), H = rows.length * rowH + 4, iw = w - labW - valW - noteW;
+    const svg = el("svg", {viewBox: `0 0 ${w} ${H}`, class: "ch", role: "group", "aria-label": label});
+    rows.forEach((r, i) => { const y = i * rowH + 6, bh = rowH - 14, bw = Math.max(r.v ? 3 : 0, iw * r.v / max), col = r.color || color;
+      svg.appendChild(txt(r.k, {x: 0, y: y + bh / 2 + 5, "font-size": 13, fill: "#3E5366"}));
+      const g = el("g", tipAttrs(r.tip || [r.k, `[${col}]${fmt(r.v)}`], true));
+      g.appendChild(el("rect", {class: "hit", x: labW - 2, y: y - 4, width: iw + 4, height: bh + 8, fill: "transparent"}));
+      g.appendChild(el("rect", {x: labW, y, width: iw, height: bh, rx: 4, fill: "#F0F4F7"}));
+      if (bw) g.appendChild(el("path", {class: "mk", d: hbarPath(labW, y, bw, bh, 4), fill: col}));
+      svg.appendChild(g);
+      svg.appendChild(txt(fmt(r.v), {x: labW + iw + 8, y: y + bh / 2 + 5, "font-size": 13, fill: "#0B2236", "font-weight": 700}));
+      if (r.note) svg.appendChild(txt(r.note, {x: w, y: y + bh / 2 + 5, "font-size": 12, fill: "#5A6E80", "text-anchor": "end"}));
+    });
+    const box = document.getElementById(boxId); box.innerHTML = extra || ""; box.appendChild(svg);
+  }
+
+  function inventory(d) {
+    const box = document.getElementById("dxInv"), P = Object.entries(d.inv), ST = [["Vendido", "#0B3A5C"], ["Separado", "#D08A12"], ["Disponible", "#14966A"], ["Bloqueado", "#9AA8B3"]];
+    if (!P.length) { box.innerHTML = `<p class="dx-foot" style="margin:6px 0">Aún no hay lotes cargados. Se cargan en la sección Lotes.</p>`; return; }
+    const tot = P.reduce((a, [, c]) => a + ST.reduce((x, [s]) => x + (c[s] || 0), 0), 0), sold = P.reduce((a, [, c]) => a + (c.Vendido || 0) + (c.Separado || 0), 0);
+    const W = 360, rowH = 56, H = P.length * rowH, svg = el("svg", {viewBox: `0 0 ${W} ${H}`, class: "ch", role: "group", "aria-label": "Inventario de lotes por proyecto"});
+    P.forEach(([p, c], i) => { const n = ST.reduce((x, [s]) => x + (c[s] || 0), 0), y = i * rowH + 18, bh = 18; let x = 0;
+      svg.appendChild(txt(p, {x: 0, y: y - 7, "font-size": 13, fill: "#3E5366", "font-weight": 600}));
+      svg.appendChild(txt(`${n} lotes`, {x: W, y: y - 7, "font-size": 12, fill: "#5A6E80", "text-anchor": "end"}));
+      ST.forEach(([s, col]) => { const v = c[s] || 0; if (!v) return; const w = W * v / n, g = el("g", tipAttrs([p, `[${col}]${s}: ${v} de ${n} (${Math.round(v / n * 100)}%)`], true));
+        g.appendChild(el("rect", {class: "mk", x: x + (x ? 1 : 0), y, width: Math.max(1, w - (x ? 1 : 0) - (x + w < W - .5 ? 1 : 0)), height: bh, rx: 4, fill: col}));
+        if (w > 22) g.appendChild(txt(String(v), {x: x + w / 2, y: y + 15, "text-anchor": "middle", "font-size": 11, fill: s === "Bloqueado" ? "#0B2236" : "#fff", "font-weight": 700}));
+        svg.appendChild(g); x += w; });
+    });
+    box.innerHTML = `<div class="dx-big"><b>${Math.round(sold / tot * 100)}%</b><span>vendido o separado · ${sold} de ${tot} lotes</span></div><div class="dx-leg">${ST.map(([s, c]) => `<span><i style="background:${c}"></i>${s}</span>`).join("")}</div>`;
+    box.appendChild(svg);
+    const L = INV_(), val = st => L.filter(l => l.st === st).reduce((a, l) => a + (+l.price || 0), 0), nA = L.filter(l => l.st === "Disponible").length;
+    box.insertAdjacentHTML("beforeend", `<table class="dx-tbl" style="margin-top:12px"><tbody><tr><td>Valor de lotes disponibles</td><td><b>${S(val("Disponible"))}</b></td></tr><tr><td>Precio promedio disponible</td><td>${nA ? S(val("Disponible") / nA) : "—"}</td></tr><tr><td>Valor vendido y separado</td><td>${S(val("Vendido") + val("Separado"))}</td></tr></tbody></table>`);
+  }
+
+  function spark(vals, col) {
+    const W = 160, H = 34, max = Math.max(1, ...vals), n = vals.length, pts = vals.map((v, i) => [4 + i * (W - 8) / (n - 1), H - 4 - (H - 10) * v / max]);
+    const s = el("svg", {viewBox: `0 0 ${W} ${H}`, class: "sp", "aria-hidden": "true", preserveAspectRatio: "none"});
+    s.appendChild(el("path", {d: "M" + pts.map(p => p.join(",")).join("L") + `L${pts[n - 1][0]},${H}L${pts[0][0]},${H}Z`, fill: col, opacity: .1}));
+    s.appendChild(el("polyline", {points: pts.map(p => p.join(",")).join(" "), fill: "none", stroke: col, "stroke-width": 2, "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke"}));
+    const [lx, ly] = pts[n - 1]; s.appendChild(el("circle", {cx: lx, cy: ly, r: 3.5, fill: col, stroke: "#fff", "stroke-width": 1.5, "vector-effect": "non-scaling-stroke"}));
+    return s;
+  }
+
+  function render() {
+    const d = data(), cur = d.by[d.M[5].k], prev = d.pp, prevFull = d.by[d.M[4].k], late = d.age.a + d.age.b + d.age.c + d.age.d;
+    const now = new Date(), ser = key => d.M.map(m => d.by[m.k][key]);
+    const per = d.dd === 1 ? `el 1 de ${d.M[4].L}` : `del 1 al ${d.dd} de ${d.M[4].L}`;
+    document.getElementById("dxSub").textContent = `${now.getDate()} de ${MESL[now.getMonth()]} de ${now.getFullYear()} · comparado con el mismo periodo del mes anterior (${per})`;
+    const ref = d.dd === 1 ? `1 ${d.M[4].l}` : `1–${d.dd} ${d.M[4].l}`;
+    const delta = (a, b) => { if (!b && !a) return `<span>Igual que ${E(ref)}: sin movimiento</span>`; if (!b) return `<span class="up"><b>▲ ${K(a)}</b></span><span>vs S/ 0 el ${E(ref)}</span>`;
+      const p = Math.round((a - b) / b * 100); return `<span class="${p >= 0 ? "up" : "dn"}"><b>${p >= 0 ? "▲" : "▼"} ${Math.abs(p)}%</b></span><span>vs ${E(ref)}</span>`; };
+    const inv = Object.values(d.inv), tl = inv.reduce((a, c) => a + Object.values(c).reduce((x, y) => x + y, 0), 0), avail = inv.reduce((a, c) => a + (c.Disponible || 0), 0), placed = inv.reduce((a, c) => a + (c.Vendido || 0) + (c.Separado || 0), 0);
+    const K5 = [
+      ["Vendido en el mes", S(cur.ven), delta(cur.ven, prev.ven), ser("ven"), "#D08A12"],
+      ["Cotizado en el mes", S(cur.cot), delta(cur.cot, prev.cot), ser("cot"), "#1F6FAE"],
+      ["Cobrado en el mes", S(cur.cob), delta(cur.cob, prev.cob), ser("cob"), "#14966A"],
+      ["Cuotas vencidas", S(late), late ? `<span class="dn"><b>● ${d.age.nLate} ${d.age.nLate === 1 ? "cuota" : "cuotas"}</b></span><span>por cobrar ya</span>` : `<span class="up"><b>✓ Al día</b></span>`, null, null, !!late],
+      ["Lotes disponibles", tl ? String(avail) : "—", tl ? `<span>de ${tl} · ${Math.round(placed / tl * 100)}% vendido o separado</span>` : `<span>Sin inventario cargado</span>`, null, null]
+    ];
+    const kb = document.getElementById("dxKpis"); kb.innerHTML = "";
+    K5.forEach(([l, v, dl, sp, col, bad]) => { const k = document.createElement("div"); k.className = "dx-k"; k.innerHTML = `<span class="l">${E(l)}</span><span class="v${bad ? " bad" : ""}">${E(v)}</span><span class="d">${dl}</span>`;
+      if (sp) k.appendChild(spark(sp, col)); else { const pad = document.createElement("div"); pad.style.height = "38px"; if (l === "Lotes disponibles" && tl) pad.innerHTML = `<div style="height:8px;border-radius:4px;background:#E6EDF2;margin-top:18px;overflow:hidden"><div style="height:100%;width:${Math.round(placed / tl * 100)}%;background:#0B3A5C;border-radius:4px"></div></div>`;
+        if (bad) pad.innerHTML = `<div style="font-size:.74rem;color:#5A6E80;margin-top:12px">Detalle en Cartera por cobrar ↓</div>`; k.appendChild(pad); }
+      kb.appendChild(k); });
+    trend(d); inventory(d);
+    const f = d.fun; hbars("dxFun", d.ord.map((s, i) => ({k: s === "Nuevo" ? "Interesados" : s, v: f[i], note: i ? `${f[i - 1] ? Math.round(f[i] / f[i - 1] * 100) : 0}% pasa` : "", tip: [s === "Nuevo" ? "Interesados" : s, `[#1F6FAE]${f[i]} clientes`, i ? `${f[i - 1] ? Math.round(f[i] / f[i - 1] * 100) : 0}% de la etapa anterior` : "Total de clientes registrados"]})),
+      {label: "Embudo comercial", labW: 108, w: 360, fmt: v => String(v), extra: `<div class="dx-big"><b>${f[0] ? Math.round(f[3] / f[0] * 100) : 0}%</b><span>de los interesados separa o compra</span></div>`});
+    const A = d.age; hbars("dxAge", [["Por vencer (30 días)", A.fut, "#1F6FAE"], ["Vencido 1–30 días", A.a, "#F2B5AD"], ["Vencido 31–60 días", A.b, "#E07A6E"], ["Vencido 61–90 días", A.c, "#C0392B"], ["Vencido más de 90", A.d, "#8E2A1F"]].map(([k, v, c]) => ({k, v, color: c, tip: [k, `[${c}]${S(v)}`]})),
+      {label: "Cartera por cobrar según antigüedad", labW: 132, w: 360, fmt: K, extra: `<div class="dx-big"><b style="color:${late ? "#C0392B" : "#0B2236"}">${K(late)}</b><span>vencido · ${K(A.fut)} vence en 30 días</span></div>`});
+    const so = Object.entries(d.src).sort((a, b) => b[1].n - a[1].n).slice(0, 6);
+    hbars("dxSrc", so.map(([k, x]) => ({k, v: x.n, note: `${x.w} ${x.w === 1 ? "cierre" : "cierres"} · ${x.n ? Math.round(x.w / x.n * 100) : 0}%`, tip: [k, `[#1F6FAE]${x.n} clientes`, `${x.w} separaron o compraron`]})),
+      {label: "Origen de los clientes", labW: 82, w: 360, fmt: v => String(v), extra: so.length ? `<div class="dx-big"><b>${E(so.slice().sort((a, b) => b[1].w - a[1].w)[0][0])}</b><span>es el canal con más cierres</span></div>` : ""});
+    renderTeam();
+    // alertas
+    const h = typeof hoyItems === "function" ? hoyItems() : {cl: [], se: [], vi: []}, al = [];
+    if (late) al.push(["cr", "!", "Cuotas vencidas", `${A.nLate} ${A.nLate === 1 ? "cuota" : "cuotas"} sin pagar; la más antigua requiere gestión de cobranza`, K(late)]);
+    const lateCl = h.cl.filter(i => i.late).length; if (lateCl) al.push(["wa", "☎", "Clientes sin seguimiento", `${lateCl} ${lateCl === 1 ? "cliente tiene" : "clientes tienen"} la fecha de contacto vencida`, String(lateCl)]);
+    if (h.se.length) al.push(["wa", "✎", "Firmas de contrato por vencer", `${h.se.length} ${h.se.length === 1 ? "separación vence" : "separaciones vencen"} en los próximos 3 días`, String(h.se.length)]);
+    const sinRes = h.vi.filter(i => i.late).length; if (sinRes) al.push(["wa", "◷", "Visitas sin resultado", `${sinRes} ${sinRes === 1 ? "visita pasada no tiene" : "visitas pasadas no tienen"} resultado registrado`, String(sinRes)]);
+    if (tl && avail / tl < .2) al.push(["wa", "▦", "Inventario por agotarse", `Quedan ${avail} lotes disponibles; conviene preparar la siguiente etapa`, `${avail}`]);
+    if (cur.ven > prev.ven && prev.ven) al.push(["ok", "▲", "Ventas al alza", `Van ${Math.round((cur.ven - prev.ven) / prev.ven * 100)}% por encima del mismo periodo de ${d.M[4].L}`, K(cur.ven)]);
+    void prevFull;
+    if (!al.length) al.push(["ok", "✓", "Todo al día", "No hay cuotas vencidas, firmas por vencer ni clientes atrasados", ""]);
+    document.getElementById("dxAl").innerHTML = al.map(([c, ic, t, s, v]) => `<li class="${c}"><span class="ic" aria-hidden="true">${ic}</span><div><b>${E(t)}</b><span>${E(s)}</span></div><em>${E(v)}</em></li>`).join("");
+    const demo = (() => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } })(), nube = window.vivaldiNube && window.vivaldiNube.sesion;
+    document.getElementById("dxFoot").textContent = (demo ? "Datos de ejemplo. " : "") + (nube ? "Datos de todo el equipo desde la base de datos de Vivaldi." : "Datos registrados en este equipo. Con la base de datos activa, la gerencia ve aquí a todo el equipo.") + " Montos en soles; ventas según la fecha de registro de la venta.";
+  }
+  let teamP = "mes";
+  function renderTeam() {
+    const st = typeof advStats === "function" ? advStats(teamP) : [], box = "dxTeam";
+    if (!st.length) { document.getElementById(box).innerHTML = `<p class="dx-foot" style="margin:6px 0">Sin actividad en este periodo.</p>`; return; }
+    const rows = st.slice().sort((a, b) => b.amt - a.amt).slice(0, 8);
+    hbars(box, rows.map(s => ({k: s.adv, v: s.amt, note: `${s.sale} ${s.sale === 1 ? "venta" : "ventas"} · ${s.sep} sep.`, tip: [s.adv, `[#1F6FAE]Cotizado: ${S(s.amt)}`, `${s.pf} proformas · ${s.vis} visitas`, `${s.sale} ventas · ${s.sep} separaciones · cobrado ${S(s.paid)}`]})),
+      {label: "Monto cotizado por asesor", labW: 112, w: (document.getElementById(box).clientWidth || 560) < 440 ? 380 : 560, fmt: K});
+    document.getElementById(box).insertAdjacentHTML("beforeend", `<div class="dx-scroll" tabindex="0" role="region" aria-label="Resumen por asesor"><table class="dx-tbl" style="margin-top:14px;min-width:460px;font-size:.8rem"><thead><tr><th>Asesor</th><th>Visitas</th><th>Proformas</th><th>Separ.</th><th>Ventas</th><th>Cobrado</th><th>Conv.</th></tr></thead><tbody>${rows.map(s => `<tr><td>${E(s.adv)}</td><td>${s.vis}</td><td>${s.pf}</td><td>${s.sep}</td><td>${s.sale}</td><td>${S(s.paid)}</td><td>${s.pf ? Math.round(s.sale / s.pf * 100) + "%" : "—"}</td></tr>`).join("")}</tbody></table></div><p class="dx-foot" style="margin:8px 0 0">Separ.: separaciones. Conv.: ventas sobre proformas emitidas en el periodo.</p>`);
+  }
+  sec.querySelector(".dx-seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; teamP = b.dataset.p; sec.querySelectorAll(".dx-seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderTeam(); });
+  sec.addEventListener("click", e => { const b = e.target.closest("[data-tbl]"); if (!b) return; const t = document.querySelector("#" + b.dataset.tbl + " table"), s = document.querySelector("#" + b.dataset.tbl + " svg"); const show = t.hidden; t.hidden = !show; s.style.display = show ? "none" : ""; b.textContent = show ? "Ver gráfico" : "Ver tabla"; b.setAttribute("aria-expanded", String(show)); });
+  document.getElementById("dxFull").addEventListener("click", () => { if (document.fullscreenElement) document.exitFullscreen(); else if (sec.requestFullscreen) sec.requestFullscreen().catch(() => sec.scrollIntoView({behavior: "smooth"})); else sec.scrollIntoView({behavior: "smooth"}); });
+  document.addEventListener("fullscreenchange", () => { const on = document.fullscreenElement === sec; document.getElementById("dxFull").lastChild.textContent = on ? "Salir de pantalla completa" : "Presentar en pantalla"; });
+  document.getElementById("dxPrint").addEventListener("click", () => { document.body.classList.add("dx-print"); render(); setTimeout(() => { window.print(); }, 50); });
+  addEventListener("afterprint", () => document.body.classList.remove("dx-print"));
+
+  // tooltip: texto con textContent, una línea por valor
+  const showTip = (g, x, y) => { const parts = g.getAttribute("data-tip").split("|"); tip.textContent = "";
+    parts.forEach((p, i) => { const m = /^\[([^\]]+)\](.*)$/.exec(p), row = document.createElement("div"); row.className = i ? "r" : "";
+      if (m) { const k = document.createElement("i"); k.style.background = m[1]; row.appendChild(k); const b = document.createElement("b"); b.textContent = m[2]; row.appendChild(b); } else row.textContent = p; tip.appendChild(row); });
+    tip.classList.add("on"); const r = tip.getBoundingClientRect(); tip.style.left = Math.min(innerWidth - r.width - 8, x + 14) + "px"; tip.style.top = Math.max(8, y - r.height - 12) + "px"; };
+  sec.addEventListener("pointermove", e => { const g = e.target.closest("[data-tip]"); if (g) showTip(g, e.clientX, e.clientY); else tip.classList.remove("on"); });
+  sec.addEventListener("pointerleave", () => tip.classList.remove("on"));
+  sec.addEventListener("focusin", e => { const g = e.target.closest("[data-tip]"); if (g) { const r = g.getBoundingClientRect(); showTip(g, r.left + r.width / 2, r.top); } });
+  sec.addEventListener("focusout", () => tip.classList.remove("on"));
+  addEventListener("scroll", () => tip.classList.remove("on"), {passive: true});
+
+  render();
+  let vis = false; new IntersectionObserver(es => { vis = es[0].isIntersecting; if (vis) render(); }).observe(sec);
+  setInterval(() => { if (vis && !document.hidden) render(); }, 20000);
+  addEventListener("storage", () => { if (vis) render(); });
+})();
+</script>
+<!--direccion-end-->
 <!--growth-demo-start-->
 <style id="demo-css">
 #demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
@@ -5578,6 +5865,23 @@ section[id]{scroll-margin-top:76px}
     const lotes = [];
     [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
       lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
+    // historia de 5 meses (proformas, ventas pagando al día, clientes vendidos y lotes de Las Terrazas) para los gráficos de dirección
+    const md = (m, d) => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(1); x.setMonth(x.getMonth() - m); x.setDate(Math.min(d, 28)); return x.toISOString().slice(0, 10); };
+    const NOMBRES = ["Rocío Huamán Ccori", "Javier Quispe Llanos", "Patricia Rojas Villa", "Andrés Navarro Ruiz", "Gabriela Chávez Soto", "Ricardo León Paredes", "Milagros Vargas Tello", "Hugo Espinoza Mora", "Carmen Ríos Arce", "Fernando Salazar Peña", "Diana Campos Lazo", "Óscar Medina Cruz", "Liliana Torres Rivas", "Manuel Aguilar Ponce", "Verónica Flores Gil", "Raúl Castro Zegarra", "Silvia Ramírez Ortiz", "Eduardo Bravo Núñez", "Karina Palacios Ruiz", "Alberto Cárdenas Vega", "Natalia Ríos Benites", "Jorge Luna Herrera"];
+    const PRO = [[0, P, 200, 29000], [1, T, 200, 25000], [3, L, 90, 60000], [2, PO, 90, 37900]], ASES = [ADV, "Carlos Medina", "Diana Ríos"], SRC = ["Facebook", "Referido", "TikTok", "Web", "Google", "Instagram"];
+    let ni = 0, pn = 8;
+    [[5, 3, 1], [4, 4, 1], [3, 4, 2], [2, 5, 2], [1, 6, 3]].forEach(([m, nPf, nSale]) => {
+      for (let k = 0; k < nPf; k++) {
+        const [pi, pname, area, price] = PRO[(m + k) % PRO.length], who = NOMBRES[ni++ % NOMBRES.length], adv = ASES[(m + k) % ASES.length], at = md(m, 1 + k * 4), no = "PF-EJ-" + String(pn++).padStart(4, "0");
+        const r = pf(no, who, "9" + String(10000000 + ni * 7919).slice(0, 8), pi, pname, "", "", area, price, 0, 20, k % 2 ? 36 : 24, 0, adv); r.at = at; r.start = mon(1, at); proformas.push(r);
+        if (k < nSale) {
+          const sale = md(m, k ? 8 + k * 6 : 2), sc = sched(r.net, 20, r.term, mon(1, sale)), paid = {}; sc.forEach(q => { if (q.d < day(0)) paid[q.i] = q.d; });
+          cobranza.push({id: "demo-kh" + no.slice(-4), demo: true, at: sale, pf: no, sep: "", adv, name: who, phone: r.phone, projName: pname, lot: "Mz " + "CDEF"[k] + " Lt " + (m * 3 + k), sched: sc, paid});
+          clientes.push(c("h" + no.slice(-4), who, r.phone, pname, "Vendido", null, SRC[(m + k) % SRC.length], -(m * 30 + 6), {stageAt: sale, adv}));
+        }
+      }
+    });
+    for (let i = 1; i <= 12; i++) lotes.push({id: "demo-lTA" + i, demo: true, proj: T, mz: "A", lt: String(i), area: 200, price: 25000, loc: i <= 3 ? "Frente al parque" : "Interior", st: i <= 4 ? "Vendido" : i <= 6 ? "Separado" : "Disponible", client: ""});
     return {clientes, proformas, separaciones, cobranza, visitas, lotes};
   }
   function load() {
