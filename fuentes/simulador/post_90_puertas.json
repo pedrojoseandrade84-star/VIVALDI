@@ -81,7 +81,7 @@
 ],
 [
 "      cyl(0.25, 0.8, MAT.white, r.x + r.w - 0.4, y + 1.2, r.z + r.d - 0.4, L);\n      r.fx = {lav: [r.x + 0.5, y, r.z + r.d - 0.45], therma: [r.x + r.w - 0.4, y + 1.2, r.z + r.d - 0.4]};",
-"      const tp = [[r.x + r.w - 0.4, r.z + r.d - 0.4], [r.x + r.w - 0.4, r.z + r.d / 2], [r.x + 0.4, r.z + r.d / 2], [r.x + 0.4, r.z + r.d - 0.4], [r.x + r.w - 0.4, r.z + 0.6], [r.x + 0.4, r.z + 0.6]].find(([tx, tz]) => !zoneHit(r.lvl, tx - 0.25, tz - 0.25, tx + 0.25, tz + 0.25)) || [r.x + r.w - 0.4, r.z + r.d - 0.4];   // la terma no cuelga en el paso de una puerta\n      cyl(0.25, 0.8, MAT.white, tp[0], y + 1.2, tp[1], L);\n      r.fx = {lav: [r.x + 0.5, y, r.z + r.d - 0.45], therma: [tp[0], y + 1.2, tp[1]]};"
+"      const tp = [[r.x + r.w - 0.4, r.z + r.d - 0.4], [r.x + r.w - 0.4, r.z + r.d / 2], [r.x + 0.4, r.z + r.d / 2], [r.x + 0.4, r.z + r.d - 0.4], [r.x + r.w - 0.4, r.z + 0.6], [r.x + 0.4, r.z + 0.6]].find(([tx, tz]) => !zoneHit(r.lvl, tx - 0.25, tz - 0.25, tx + 0.25, tz + 0.25));\n      const ty = tp ? 1.2 : 1.92, tq = tp || [r.x + 0.4, r.z + r.d - 0.4];   // sin sitio libre: se instala alta, sobre la lavadora y por encima de la altura de paso   // la terma no cuelga en el paso de una puerta\n      cyl(0.25, tp ? 0.8 : 0.7, MAT.white, tq[0], y + ty, tq[1], L);\n      r.fx = {lav: [r.x + 0.5, y, r.z + r.d - 0.45], therma: [tq[0], y + ty, tq[1]]};"
 ],
 [
 "  bush(W - 0.6, D - 0.6, 0.55, L, true); bush(0.6, D - 0.6, 0.5, L);",
