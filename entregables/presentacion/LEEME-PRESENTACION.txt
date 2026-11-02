@@ -20,13 +20,23 @@ Paso previo: tener esta carpeta en la Mac (descargar el ZIP; la Mac lo
 descomprime sola con doble clic). Abrir 1-Presentacion/Presentacion-Vivaldi.html
 y presionar F para pantalla completa.
 
+MACBOOK PRO 2019: solo tiene puertos USB-C (Thunderbolt 3), no tiene
+HDMI. Necesita un adaptador USB-C a HDMI. Conviene uno "multipuerto"
+que tambien tenga entrada de carga USB-C, para conectar el cargador y el
+televisor al mismo tiempo. Si el televisor esta lejos, llevar un cable
+HDMI de 3 m. Atajo: con el televisor conectado, Comando + F1 (en la Touch
+Bar, mantener Fn para ver F1) cambia entre duplicar y pantalla extendida.
+
 Opcion 1 - Cable HDMI (la mas segura, no depende del wifi)
    - MacBook Pro 14"/16" (2021 en adelante): tienen puerto HDMI.
    - MacBook Air y otras: adaptador USB-C a HDMI (Apple o cualquier marca).
    1. Conectar el cable al televisor y elegir la entrada HDMI (boton
       Input o Source del control).
-   2. En la Mac: Configuracion del Sistema > Pantallas > en "Usar como",
-      elegir "Duplicar" (Mirror) para ver lo mismo en ambas pantallas.
+   2. En la Mac, para ver lo mismo en ambas pantallas:
+      - macOS Ventura o mas nuevo: Configuracion del Sistema > Pantallas >
+        elegir el televisor > "Usar como": Duplicar.
+      - macOS Monterey o anterior: Preferencias del Sistema > Pantallas >
+        Disposicion > marcar "Duplicar pantallas".
 
 Opcion 2 - AirPlay (sin cables)
    Sirve si el televisor tiene AirPlay (Apple TV, o Samsung, LG, Sony y
