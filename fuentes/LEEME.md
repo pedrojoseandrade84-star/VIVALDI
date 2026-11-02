@@ -28,3 +28,5 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 | `base-de-datos/` | Reglas de seguridad en PostgreSQL (`test.sql`, `test2.sql`), servidor de prueba con la misma interfaz que Supabase (`mock.js`), sincronización entre equipos (`tsync`) y solicitudes de la web (`tlead`) |
 
 `sync.html` y `webdb.html` son los módulos de base de datos que se insertan en la herramienta y en la web con `inject_sync.py` e `inject_db.py`.
+
+`demo.html` es el modo "Ver con datos de ejemplo" de la herramienta (para demostraciones); se inserta con `inject_demo.py`. Los registros de ejemplo llevan `demo: true`, se pueden quitar con un botón y la sincronización nunca los sube a la base de datos.

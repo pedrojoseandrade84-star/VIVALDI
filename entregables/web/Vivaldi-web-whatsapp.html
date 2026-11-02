@@ -162,7 +162,7 @@ section{position:relative}
 
 /* header: white over the photo, solid after scroll */
 header.site{position:sticky;top:0;z-index:50;transition:background-color 300ms ease, box-shadow 300ms ease}
-header.site.solid{background:rgba(237,242,241,.9);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 1px 0 var(--line)}
+header.site.solid{background:rgba(237,242,247,.9);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 1px 0 var(--line)}
 .nav{display:flex;align-items:center;gap:28px;height:76px}
 .logo{display:block;position:relative;height:34px;width:165px}
 .logo img{position:absolute;inset:0;height:100%;width:auto;transition:opacity 250ms ease}
@@ -186,7 +186,7 @@ header.solid .menu-btn{color:var(--ink)}
 }
 
 /* hero */
-.hero{position:relative;height:clamp(660px,100svh,1000px);margin-top:-76px;overflow:hidden;color:#fff;background:#163a40}
+.hero{position:relative;height:clamp(660px,100svh,1000px);margin-top:-76px;overflow:hidden;color:#fff;background:#16364F}
 .hero-media{position:absolute;inset:0}
 .hero-media img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;opacity:0;transform:scale(1.08);
   transition:opacity 1400ms ease}
@@ -196,7 +196,7 @@ header.solid .menu-btn{color:var(--ink)}
 .hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .hero-copy{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:24px;padding-bottom:clamp(56px,9vh,100px)}
 .hero-copy .h-xl em{font-style:italic;color:var(--sun)}
-.hero-copy .lead{color:#E0ECEB}
+.hero-copy .lead{color:#E0EAF3}
 .hero-row{display:flex;justify-content:space-between;align-items:end;gap:28px;flex-wrap:wrap}
 .hero-cta{display:flex;flex-wrap:wrap;gap:12px}
 .hero-dots{display:flex;gap:8px;align-items:center}
@@ -402,7 +402,7 @@ header.solid .menu-btn{color:var(--ink)}
 .proj-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
 .proj{background:var(--paper);border-radius:26px;overflow:hidden;display:grid;grid-template-rows:auto 1fr;box-shadow:inset 0 0 0 1px var(--line);transition:transform 300ms var(--ease-out), box-shadow 300ms ease}
 @media (hover:hover) and (pointer:fine){
-  .proj:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--line), 0 22px 44px rgba(10,43,49,.12)}
+  .proj:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--line), 0 22px 44px rgba(8,40,62,.12)}
   .proj:hover .proj-art img{transform:scale(1.05)}
 }
 .proj-art{aspect-ratio:16/11;position:relative;overflow:hidden;background:var(--line)}
@@ -466,7 +466,7 @@ header.solid .menu-btn{color:var(--ink)}
 .field label,.field .lbl{font-weight:700;font-size:.92rem;display:flex;justify-content:space-between;gap:10px}
 .field output{font-family:var(--f-mono);color:var(--sea)}
 select,input[type=text],input[type=tel],input[type=email],textarea{font:inherit;font-size:16px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--mist);color:var(--ink);width:100%;transition:border-color 150ms ease, box-shadow 150ms ease}
-select:focus,input:focus,textarea:focus{border-color:var(--sea);outline:none;box-shadow:0 0 0 3px rgba(20,112,122,.18)}
+select:focus,input:focus,textarea:focus{border-color:var(--sea);outline:none;box-shadow:0 0 0 3px rgba(31,110,171,.18)}
 input[type=range]{width:100%;accent-color:var(--sea)}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{border:0;box-shadow:inset 0 0 0 1.5px var(--line);background:var(--mist);padding:9px 14px;border-radius:999px;font-weight:700;cursor:pointer;transition:background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out)}
@@ -496,7 +496,7 @@ input[type=range]{width:100%;accent-color:var(--sea)}
 /* testimonials: real quotes from vivaldiinmobiliaria.com; owner photos are 100–300px so they live as crisp avatars, never stretched */
 .tst-wrap{position:relative;border-radius:32px;overflow:hidden;background:var(--deep);color:#fff;display:grid;grid-template-columns:1.35fr 1fr;min-height:520px}
 .tst-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none;opacity:.22;filter:saturate(.8)}
-.tst-wrap::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,43,49,.96) 30%,rgba(10,43,49,.55))}
+.tst-wrap::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,40,62,.96) 30%,rgba(8,40,62,.55))}
 .tst-quote{position:relative;z-index:1;padding:clamp(28px,5vw,64px);display:grid;align-content:space-between;gap:28px}
 .tst-mark{font-family:var(--f-display);font-size:7rem;line-height:.5;color:var(--sun);height:40px}
 .tst-text{font-family:var(--f-display);font-size:clamp(1.7rem,3.1vw,2.9rem);line-height:1.12;letter-spacing:-.01em;min-height:6.7em;transition:opacity 280ms ease, filter 280ms ease, transform 280ms var(--ease-out)}
@@ -528,7 +528,7 @@ input[type=range]{width:100%;accent-color:var(--sea)}
 .js img.fx{opacity:0;filter:blur(10px)}
 .js img.fx.ld{opacity:1;filter:var(--grade,none);transition:opacity 700ms ease, filter 900ms ease}
 .proj-art img,.gal-img img,.prog .ph img,.route-frame img,.hero-media img,.expand-img{--grade:saturate(1.08) contrast(1.04)}
-.proj-art,.gal-img,.prog .ph{background:linear-gradient(100deg,#E0EAF2 30%,#eef3f2 50%,#E0EAF2 70%);background-size:300% 100%;animation:shimmer 1.4s linear infinite}
+.proj-art,.gal-img,.prog .ph{background:linear-gradient(100deg,#E0EAF2 30%,#EEF3F8 50%,#E0EAF2 70%);background-size:300% 100%;animation:shimmer 1.4s linear infinite}
 @keyframes shimmer{to{background-position:-100% 0}}
 .proj-art:has(img.ld),.gal-img:has(img.ld),.prog .ph:has(img.ld){animation:none;background:var(--line)}
 @media (prefers-reduced-motion:reduce){.proj-art,.gal-img,.prog .ph{animation:none}}
@@ -603,7 +603,7 @@ footer.site{background:#041E30;color:#9DB6B7;padding-block:64px 96px;font-size:.
 @media (hover:hover){.foot-grid a:hover,.foot-grid .linkbtn:hover{color:#fff;text-decoration:underline}}
 .libro{display:inline-flex;gap:10px;align-items:center;box-shadow:inset 0 0 0 1.5px #3A5872;border-radius:12px;padding:10px 14px;margin-top:14px;color:#fff!important;font-weight:700}
 .foot-bottom .social a{color:#CADCEA}
-.foot-bottom{border-top:1px solid #1B3438;margin-top:40px;padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.8rem}
+.foot-bottom{border-top:1px solid #1B3247;margin-top:40px;padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.8rem}
 @media (max-width:860px){.foot-grid{grid-template-columns:1fr 1fr}}
 
 /* floating whatsapp */
@@ -708,19 +708,19 @@ section.lw canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;po
 
 /* collage of real projects that assembles, then the centre photo opens to full bleed */
 .collage{position:absolute;inset:0;pointer-events:none;z-index:1}
-.collage img{position:absolute;max-width:none;object-fit:cover;border-radius:14px;box-shadow:0 20px 50px rgba(10,43,49,.25);will-change:transform,opacity;opacity:0}
+.collage img{position:absolute;max-width:none;object-fit:cover;border-radius:14px;box-shadow:0 20px 50px rgba(8,40,62,.25);will-change:transform,opacity;opacity:0}
 .collage-title{position:absolute;z-index:2;top:9vh;left:0;right:0;text-align:center;display:grid;gap:8px;justify-items:center;padding-inline:20px}
 .collage-title .h-lg{color:var(--ink)}
 .collage-title .h-lg em{font-style:italic;color:var(--sea)}
 @media (max-width:760px){.collage img{border-radius:10px}}
 
 /* testimonials as a dark editorial grid */
-.tst-dark{background:#071E23;color:#EAF3FA}
+.tst-dark{background:#061B2B;color:#EAF3FA}
 .tst-dark .eyebrow{color:var(--foam)}
 .tst-dark .h-lg{color:#fff}
 .tst-dark .h-lg em{color:var(--sun)!important}
 .tgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.tcard{background:linear-gradient(160deg,#0E2D33,#0A2429);border-radius:22px;padding:24px;display:grid;gap:18px;align-content:space-between;box-shadow:inset 0 0 0 1px rgba(191,227,225,.1);
+.tcard{background:linear-gradient(160deg,#0D2C44,#09233A);border-radius:22px;padding:24px;display:grid;gap:18px;align-content:space-between;box-shadow:inset 0 0 0 1px rgba(191,227,225,.1);
   transition:transform 300ms var(--ease-out), box-shadow 300ms ease}
 @media (hover:hover) and (pointer:fine){.tcard:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px rgba(232,169,58,.45),0 24px 50px rgba(0,0,0,.3)}}
 .tcard.big{grid-column:span 2;grid-row:span 2;padding:clamp(26px,4vw,44px)}
@@ -759,7 +759,7 @@ dialog.sheet[open]{transform:none}
 @starting-style{dialog.sheet[open]{transform:translateX(100%);opacity:1}}
 .sheet-body{height:100%;overflow-y:auto;overscroll-behavior:contain;display:grid;align-content:start}
 .sh-media{position:relative;aspect-ratio:16/10;background:var(--deep-2);overflow:hidden}
-.ref-tag{position:absolute;left:12px;bottom:12px;z-index:3;padding:4px 10px;border-radius:999px;background:rgba(6,24,28,.72);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.02em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:none}
+.ref-tag{position:absolute;left:12px;bottom:12px;z-index:3;padding:4px 10px;border-radius:999px;background:rgba(5,22,36,.72);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.02em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:none}
 .sh-media img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;transition:opacity 450ms ease, filter 450ms ease, transform 700ms var(--ease-out)}
 .sh-media img.out{opacity:0;filter:blur(6px);transform:scale(1.03)}
 .sh-close{position:absolute;top:16px;right:16px;z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:1.2rem;cursor:pointer;transition:transform 160ms var(--ease-out)}
@@ -919,6 +919,8 @@ h2 em,h3 em,.fit-title em{font-style:normal}.route-card .km,.rl-body .km,.route-
 </style><!--marca-start--><style id="marca">
 :root{--mist:#F1F6FA;--deep:#083850;--deep-2:#0D4B6E;--ink:#0B2236;--muted:#4E6478;--line:#D4E2EC;--sea:#1F6EAB;--foam:#CFE6F7}
 main img:not([src^="data:image/svg"]){filter:saturate(1.12) contrast(1.04)}
+.expand-copy{text-shadow:0 2px 18px rgba(5,22,36,.7)}
+@media (max-width:760px){.expand-img{clip-path:none!important;opacity:1!important;transform:none!important}.expand-shade{opacity:1!important}.expand-copy{opacity:1!important;transform:none!important;pointer-events:auto!important}#collageTitle,#collage{display:none}}.expand-copy::before{content:"";position:absolute;inset:-18% -14%;z-index:-1;background:radial-gradient(ellipse at center,rgba(5,22,36,.62) 0%,rgba(5,22,36,.35) 45%,rgba(5,22,36,0) 72%);pointer-events:none}
 </style><!--marca-end-->
 </head>
 <body>
@@ -955,7 +957,7 @@ main img:not([src^="data:image/svg"]){filter:saturate(1.12) contrast(1.04)}
   <div class="hero-shade"></div>
   <canvas id="clouds" aria-hidden="true"></canvas>
   <div class="wrap hero-copy">
-    <div class="eyebrow fade-up" style="color:#CFE5E4">Lotes de playa · Asia y Cerro Azul · Km 100 a 118</div>
+    <div class="eyebrow fade-up" style="color:#D2E5F3">Lotes de playa · Asia y Cerro Azul · Km 100 a 118</div>
     <h1 class="h-xl"><span class="line"><span>Tu lugar</span></span><span class="line"><span><em>junto al mar.</em></span></span><span class="line"><span>Sin intereses.</span></span></h1>
     <div class="hero-row">
       <div style="display:grid;gap:20px">
@@ -1051,12 +1053,12 @@ main img:not([src^="data:image/svg"]){filter:saturate(1.12) contrast(1.04)}
       <h2 class="h-lg">Siete proyectos, <em>una misma costa</em></h2>
     </div>
     <div class="collage" id="collage" aria-hidden="true"></div>
-    <img class="expand-img" id="expandImg" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-v="2025/05/lirios-2.webp" alt="Vista aérea real de Lirios del Mar de Asia" loading="lazy" decoding="async">
+    <img class="expand-img" id="expandImg" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-v="2026/01/dron-terrazas.png" alt="Vista aérea de Las Terrazas de Cerro Azul (render referencial)" loading="lazy" decoding="async">
     <div class="expand-shade" id="expandShade"></div>
     <div class="expand-copy" id="expandCopy">
-      <div class="eyebrow" style="color:#CFE5E4">Las Terrazas de Cerro Azul · Km 117.5</div>
+      <div class="eyebrow" style="color:#D2E5F3">Las Terrazas de Cerro Azul · Km 117.5 · Render referencial</div>
       <h2 class="h-xl">Listo para<br><em>construir.</em></h2>
-      <p class="lead" style="color:#E0ECEB">Lotes de 200 m² desde <b style="color:#fff">S/ 25,000</b>, con vista al mar y club privado.</p>
+      <p class="lead" style="color:#E0EAF3">Lotes de 200 m² desde <b style="color:#fff">S/ 25,000</b>, con vista al mar y club privado.</p>
       <button class="btn btn-sun" type="button" data-sheet="terrazas" style="pointer-events:auto">Ver Las Terrazas</button>
     </div>
   </div>

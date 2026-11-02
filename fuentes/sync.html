@@ -138,7 +138,7 @@
       const up = [];
       for (const [name, C] of Object.entries(COLS)) {
         const arr = C.get() || [], seen = new Set();
-        for (const r of arr) { const k = C.key(r); if (!k || k === "|") continue; const mk = name + "|" + k; seen.add(mk); const h = hash(r), kn = ST.rows[mk];
+        for (const r of arr) { if (r && r.demo) continue; const k = C.key(r); if (!k || k === "|") continue; const mk = name + "|" + k; seen.add(mk); const h = hash(r), kn = ST.rows[mk];
           if (!kn || kn.h !== h) up.push({mk, h, body: {id: kn ? kn.id : `${name}:${name === "lotes" ? "" : ses.user.id + ":"}${k}`, coleccion: name, contenido: r, eliminado: false}}); }
         const gone = Object.entries(ST.rows).filter(([mk]) => mk.startsWith(name + "|") && !seen.has(mk));
         // protección: si una lista entera quedó vacía de golpe no se borra nada en el servidor
