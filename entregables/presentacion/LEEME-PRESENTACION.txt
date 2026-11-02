@@ -1,0 +1,75 @@
+PRESENTACION PARA VIVALDI INMOBILIARIA
+Propuesta integral - Pedrojose Andrade Paredes - Noviembre 2026
+=================================================================
+
+QUE HAY EN ESTA CARPETA
+
+1-Presentacion
+   Presentacion-Vivaldi.html -> LA PRINCIPAL (20 diapositivas).
+   Doble clic para abrir. Funciona sin internet.
+2-Presentacion-PDF            -> la misma, en PDF.
+3-Video-e-imagenes-para-TV    -> video que avanza solo (4 min) e imagenes.
+4-Guion-para-presentar        -> que decir, tiempos y como cerrar. Solo para ti.
+5-Demostracion-en-vivo        -> web, herramienta y simulador funcionando.
+6-Documentos-para-entregar    -> propuesta y planes para enviar al final.
+
+
+COMO PONERLO EN EL TELEVISOR CON UNA MAC (sin USB)
+
+Paso previo: tener esta carpeta en la Mac (descargar el ZIP; la Mac lo
+descomprime sola con doble clic). Abrir 1-Presentacion/Presentacion-Vivaldi.html
+y presionar F para pantalla completa.
+
+Opcion 1 - Cable HDMI (la mas segura, no depende del wifi)
+   - MacBook Pro 14"/16" (2021 en adelante): tienen puerto HDMI.
+   - MacBook Air y otras: adaptador USB-C a HDMI (Apple o cualquier marca).
+   1. Conectar el cable al televisor y elegir la entrada HDMI (boton
+      Input o Source del control).
+   2. En la Mac: Configuracion del Sistema > Pantallas > en "Usar como",
+      elegir "Duplicar" (Mirror) para ver lo mismo en ambas pantallas.
+
+Opcion 2 - AirPlay (sin cables)
+   Sirve si el televisor tiene AirPlay (Apple TV, o Samsung, LG, Sony y
+   otras marcas desde 2018 aprox.) y si la Mac y el televisor estan en la
+   MISMA red wifi.
+   1. En la Mac: Centro de Control (icono de dos interruptores, arriba a la
+      derecha) > Duplicar pantalla > elegir el televisor.
+   2. Si el televisor muestra un codigo, escribirlo en la Mac.
+   3. Abrir la presentacion y presionar F.
+   Si la red de la oficina tiene clave para invitados, pedirla antes.
+
+Opcion 3 - Chromecast o Google TV
+   Abrir la presentacion en Google Chrome > menu de los tres puntos >
+   Enviar (Cast) > Fuente: "Enviar pantalla" > elegir el televisor.
+
+Opcion 4 - Solo el televisor, sin computadora
+   Si el televisor tiene navegador o lector de archivos, se puede abrir el
+   video de la carpeta 3 desde un USB o desde Google Drive / YouTube (subido
+   como "no listado"). El video avanza solo; se pausa con el control.
+
+Plan de respaldo: llevar el PDF y el video tambien en el celular. Un
+iPhone puede enviar el video al televisor con AirPlay.
+
+
+CONTROLES DE LA PRESENTACION
+
+   Flecha derecha, espacio o clic ..... siguiente
+   Flecha izquierda .................... anterior
+   Numero + Enter (ej. 15 Enter) ....... ir a esa diapositiva
+   B ................................... pantalla negra (otra vez B para volver)
+   F ................................... pantalla completa (en Safari tambien
+                                         Control + Comando + F)
+   H ................................... ayuda
+   Esc ................................. salir de pantalla completa
+
+
+EL DIA ANTERIOR
+
+[ ] Probar la conexion con el mismo televisor (o uno parecido).
+[ ] Llevar adaptador USB-C a HDMI y un cable HDMI, aunque se use AirPlay.
+[ ] Cargar la Mac al 100 % y llevar el cargador.
+[ ] Activar "No molestar" en la Mac para que no aparezcan notificaciones.
+[ ] Abrir antes la presentacion y, en otras pestanas, la web, la
+    herramienta y el simulador (carpeta 5) para la demostracion.
+[ ] Imprimir o tener a mano el guion (carpeta 4) y los montos de las
+    tres opciones.
