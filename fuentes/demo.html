@@ -28,6 +28,8 @@
       c("c7", "Elena Castillo Paredes", "983888999", PO, "Vendido", null, "Instagram", -60),
       c("c8", "Luis Gutiérrez Flores", "982111000", T, "Nuevo", -1, "Google", -1),
     ];
+    const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
+    clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
     const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at) => {
       const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
       return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv: ADV};

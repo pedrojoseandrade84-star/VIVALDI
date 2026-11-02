@@ -1,0 +1,54 @@
+<!--nav-menu-start-->
+<style>
+nav.top .navmore{position:relative;display:inline-flex;flex:none}
+nav.top .navmore>button{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 14px;background:none;border:0;color:rgba(255,255,255,.8);font:inherit;font-size:.9rem;font-weight:500;cursor:pointer;white-space:nowrap}
+nav.top .navmore>button:hover,nav.top .navmore>button[aria-expanded="true"]{color:#fff}
+nav.top .navmore>button.on{color:#fff;box-shadow:inset 0 -3px 0 #E8A93A}
+nav.top .navmore>button svg{width:12px;height:12px;transition:transform .2s}
+nav.top .navmore>button[aria-expanded="true"] svg{transform:rotate(180deg)}
+.navmenu{position:fixed;z-index:60;min-width:260px;max-height:calc(100vh - 90px);overflow:auto;background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(5,42,62,.28);padding:8px;display:none}
+.navmenu.open{display:block;animation:navIn .16s ease-out}
+@keyframes navIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.navmenu .ng{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#4A5B67;padding:10px 12px 4px}
+.navmenu a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0 12px;border-radius:9px;color:#0B2A3C!important;text-decoration:none;font-size:.92rem;font-weight:500;box-shadow:none!important}
+.navmenu a small{color:#4A5B67;font-size:.75rem;font-weight:400}
+.navmenu a:hover,.navmenu a:focus-visible{background:#EEF4F8;outline:none}
+.navmenu a.on{background:#FFF4DE;font-weight:700}
+.navmenu hr{border:0;border-top:1px solid #E3EAF0;margin:6px 4px}
+section[id]{scroll-margin-top:76px}
+@media print{.navmenu{display:none!important}}
+</style>
+<script>
+(() => {
+  const wrap = document.querySelector("nav.top .wrap"); if (!wrap) return;
+  const groups = [
+    ["Frente a la competencia", [["#duelo","comparar un proyecto"],["#precios","S/ por m²"],["#mapa","antes y después"],["#presupuesto","m² por tu dinero"],["#financiamiento","ahorro sin intereses"],["#plusvalia","valor en el tiempo"],["#comparativa","tabla completa"],["#oferta","ficha del proyecto"]]],
+    ["Ajustes", [["#datos","precios y tipo de cambio"],["#web","problemas de la web actual"]]]
+  ];
+  const links = {}; wrap.querySelectorAll("a[href^='#']").forEach(a => links[a.getAttribute("href")] = a);
+  const first = links["#duelo"]; if (!first) return;
+  const box = document.createElement("div"); box.className = "navmore";
+  box.innerHTML = '<button type="button" aria-haspopup="true" aria-expanded="false" aria-controls="navMenu">Análisis<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>';
+  const btn = box.firstChild;
+  const menu = document.createElement("div"); menu.className = "navmenu"; menu.id = "navMenu"; menu.setAttribute("aria-label", "Análisis");
+  groups.forEach(([title, items], gi) => {
+    if (gi) menu.appendChild(document.createElement("hr"));
+    const h = document.createElement("div"); h.className = "ng"; h.textContent = title; menu.appendChild(h);
+    items.forEach(([href, hint]) => { const a = links[href]; if (!a) return;
+      const s = document.createElement("small"); s.textContent = hint; a.appendChild(s); menu.appendChild(a); });
+  });
+  wrap.insertBefore(box, wrap.children[[...wrap.children].indexOf(links["#objeciones"]) + 1] || null);
+  document.body.appendChild(menu);
+  const place = () => { const r = btn.getBoundingClientRect(), w = Math.max(260, menu.offsetWidth);
+    menu.style.top = (r.bottom + 6) + "px"; menu.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + "px"; };
+  const setOpen = o => { menu.classList.toggle("open", o); btn.setAttribute("aria-expanded", String(o)); if (o) place(); };
+  btn.addEventListener("click", e => { e.stopPropagation(); setOpen(!menu.classList.contains("open")); if (menu.classList.contains("open")) { const f = menu.querySelector("a"); if (f && e.detail === 0) f.focus(); } });
+  menu.addEventListener("click", e => { if (e.target.closest("a")) setOpen(false); });
+  document.addEventListener("click", e => { if (!menu.contains(e.target)) setOpen(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && menu.classList.contains("open")) { setOpen(false); btn.focus(); } });
+  addEventListener("resize", () => setOpen(false)); wrap.addEventListener("scroll", () => setOpen(false), {passive: true});
+  const sync = () => btn.classList.toggle("on", !!menu.querySelector("a.on"));
+  new MutationObserver(sync).observe(menu, {subtree: true, attributes: true, attributeFilter: ["class"]}); sync();
+})();
+</script>
+<!--nav-menu-end-->
