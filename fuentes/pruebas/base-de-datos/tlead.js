@@ -1,0 +1,50 @@
+const {chromium, devices} = require("playwright"); const M = "http://127.0.0.1:54321", D = __dirname;
+const {execSync} = require("child_process"); const q = s => execSync(`psql -h /var/tmp/vvpg -p 5544 -U postgres -X -q -At -d vv -c "${s}"`, {encoding: "utf8"}).trim();
+const ok = (c, m) => { console.log((c ? "OK   " : "FAIL ") + m); if (!c) process.exitCode = 1; };
+(async () => { const b = await chromium.launch(); const errs = [];
+  // --- web, en celular
+  const wctx = await b.newContext(devices["iPhone 13"]); const w = await wctx.newPage(); w.on("pageerror", e => errs.push("web: " + e.message));
+  await w.route(/^https?:/, r => { const u = r.request().url(); return u.startsWith(M) || u.startsWith("file:") ? r.continue() : r.abort(); });
+  await w.goto("file://" + D + "/web_db.html?utm_source=facebook&utm_campaign=planicie-nov"); await w.waitForTimeout(2500);
+  await w.evaluate(() => { const c = document.querySelector("#cookie"); if (c) c.hidden = true; window.open = () => ({}); });
+  const lead = async (n, ph, plazo, acepta = true) => { await w.fill("#fName", n); await w.fill("#fPhone", ph); if (plazo) await w.selectOption("#gxPlazo", plazo).catch(() => {}); if (acepta) await w.check("#fPriv"); else await w.uncheck("#fPriv"); await w.evaluate(() => document.querySelector("#leadForm").requestSubmit()); await w.waitForTimeout(700); };
+  await lead("Lucía Torres", "987 111 222", "Este mes"); await lead("Jorge Ramos", "987333444"); await lead("Ana Díaz", "987555666"); await lead("Lucía Torres", "987111222");
+  await lead("Sin acepto", "987999000", "", false);
+  await w.waitForTimeout(800);
+  console.log(q("select nombre||' -> '||coalesce((select nombre from perfiles p where p.id=s.asesor),'-')||' | '||origen||' | '||coalesce(campana,'')||' | '||coalesce(plazo,'') from solicitudes s order by id"));
+  ok(q("select count(*) from solicitudes") === "3", "3 solicitudes guardadas; la repetida y la que no aceptó la política no se guardan (la repetida no se duplica)");
+  ok(q("select count(distinct asesor) from solicitudes") === "2", "reparto entre los 2 asesores activos");
+  ok(/Este mes/.test(q("select plazo from solicitudes where nombre='Lucía Torres'")), "plazo de compra guardado");
+  ok(/facebook/i.test(q("select origen from solicitudes limit 1")), "origen de campaña guardado");
+  // reclamo
+  await w.evaluate(() => document.querySelector('[data-dlg="libro"]').click()); await w.waitForTimeout(400);
+  await w.fill("#lbN", "María Pérez"); await w.fill("#lbD", "45678912"); await w.fill("#lbE", "maria@correo.pe"); await w.fill("#lbM", "No me entregaron la constancia de mi pago de octubre.");
+  await w.evaluate(() => { document.querySelector("#libroForm").requestSubmit(); }); await w.waitForTimeout(1000);
+  const shown = await w.evaluate(() => (document.querySelector("#lbOk") || {}).innerText || ""), code = (shown.match(/LR-[\d-]+/) || [""])[0];
+  const dbcode = q("select codigo||' vence '||vence from reclamos");
+  console.log("  web mostró:", code, "| base:", dbcode); ok(code && dbcode.startsWith(code), "reclamo guardado con el mismo número que vio el cliente");
+  // --- herramienta
+  const tool = async (mail, pass) => { const c = await b.newContext({viewport: {width: 1300, height: 900}}); const p = await c.newPage(); p.on("pageerror", e => errs.push(mail + ": " + e.message)); p.on("dialog", d => d.accept());
+    await p.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
+    await p.addInitScript(cfg => localStorage.setItem("nube-config", cfg), JSON.stringify({url: M, key: "anon-test-key"}));
+    await p.goto("file://" + D + "/tool_db.html#clientes"); await p.waitForTimeout(1500);
+    await p.evaluate(() => document.querySelector("#nubeBtn").click()); await p.fill("#nubeMail", mail); await p.fill("#nubePass", pass); await p.click("#nubeGo"); await p.waitForTimeout(3000); return p; };
+  const ana = await tool("ana@vivaldi.pe", "clave-ana");
+  const ac = await ana.evaluate(() => CLIENTS.map(c => `${c.name}/${c.src}/${c.adv}/${c.stage}`).join("; "));
+  console.log("  Ana:", ac); ok((ac.match(/\//g) || []).length / 3 === 2 && /Lucía Torres\/Facebook\/Ana Flores/.test(ac), "Ana recibe sus 2 clientes de la web con origen y asesor");
+  ok(await ana.evaluate(() => /Plazo de compra: Este mes/.test(CLIENTS.find(c => c.name === "Lucía Torres").notes)), "nota con plazo de compra");
+  ok(q("select count(*) from solicitudes where estado='en herramienta'") === "2", "solicitudes de Ana marcadas como atendidas");
+  ok(await ana.evaluate(() => /Lucía Torres/.test(document.body.innerText)), "aparecen en pantalla");
+  await ana.evaluate(() => vivaldiNube.sync()); ok((await ana.evaluate(() => CLIENTS.length)) === 2, "no se duplican al sincronizar otra vez");
+  // la solicitud de Beto envejece 2 horas
+  q("alter table solicitudes disable trigger solicitudes_antes; update solicitudes set fecha = now() - interval '2 hours' where estado='nueva'; alter table solicitudes enable trigger solicitudes_antes;");
+  const jefa = await tool("jefa@vivaldi.pe", "clave-jefa");
+  const jm = await jefa.evaluate(() => ({btn: document.querySelector("#nubeBtn").innerText, msg: document.querySelector("#nubeMsg").innerText, n: CLIENTS.length}));
+  console.log("  Jefa:", jm.btn, "|", jm.msg); ok(jm.btn === "Clientes sin atender" && /Jorge Ramos/.test(jm.msg), "jefatura recibe alerta de cliente sin atender"); ok(!/p\. m\.\./.test(jm.msg), "texto sin doble punto");
+  ok(/Libro de Reclamaciones: 1 sin responder/.test(jm.msg), "jefatura ve el reclamo y su plazo");
+  ok(jm.n === 2, "jefatura ve los clientes ya cargados por Ana (" + jm.n + ")");
+  const beto = await tool("beto@vivaldi.pe", "clave-beto");
+  ok((await beto.evaluate(() => CLIENTS.map(c => c.name).join(","))) === "Jorge Ramos", "Beto recibe su cliente");
+  await jefa.evaluate(() => vivaldiNube.sync()); await jefa.waitForTimeout(500);
+  ok((await jefa.evaluate(() => document.querySelector("#nubeBtn").innerText)) === "Sincronizado", "la alerta desaparece cuando Beto lo atiende");
+  console.log("errs", errs); await b.close(); })();

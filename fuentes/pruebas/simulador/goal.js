@@ -1,0 +1,10 @@
+const {chromium} = require("playwright");
+const F = "file:///home/user/VIVALDI/entregables/simulador/Simulador-3D-Lotes-Vivaldi.html";
+(async () => { const b = await chromium.launch({args: ["--use-gl=swiftshader"]}); const errs = [];
+  const p = await (await b.newContext({viewport: {width: 700, height: 500}})).newPage(); p.on("pageerror", e => errs.push(e.message));
+  await p.goto(F); await p.waitForTimeout(4000);
+  await p.evaluate(() => { __sim.state.mode = "walk"; __sim.applyMode(true); __sim.walk.z = __sim.design.z0 + 1; __sim.walk.x = 1.1; __sim.walk.goal = {x: 3.5, z: __sim.design.z0 + 2.6}; });
+  const a = await p.evaluate(() => [__sim.walk.x, __sim.walk.z]);
+  await p.waitForTimeout(15000);
+  console.log("de", a.map(v => v.toFixed(2)), "a", await p.evaluate(() => [__sim.walk.x.toFixed(2), __sim.walk.z.toFixed(2), JSON.stringify(__sim.walk.goal)]));
+  console.log("errors", errs); await b.close(); })();

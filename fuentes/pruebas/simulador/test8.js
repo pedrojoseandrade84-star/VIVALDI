@@ -1,0 +1,16 @@
+const {chromium, devices} = require("playwright");
+const F = "file:///home/user/VIVALDI/entregables/simulador/Simulador-3D-Lotes-Vivaldi.html";
+(async () => { const b = await chromium.launch({args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"]}); const errs = [];
+  const ctx = await b.newContext({...devices[process.env.DEV || "Pixel 7"], acceptDownloads: true}); const p = await ctx.newPage(); p.on("pageerror", e => errs.push(e.message));
+  await p.goto(F); await p.waitForTimeout(4000);
+  const setP = async id => { await p.click(".tabs button[data-t=conf]"); await p.selectOption("#proj", id); await p.click(".tabs button[data-t=view]"); await p.waitForTimeout(1500); await p.click("#modes button[data-m=site]"); await p.waitForTimeout(5000); };
+  await setP("portada"); await p.screenshot({path: "q1.png"});
+  await setP("esmeralda"); await p.screenshot({path: "q2.png"});
+  await setP("bahia"); await p.screenshot({path: "q3.png"});
+  await setP("portada");
+  await p.click("#maqBtn"); await p.waitForTimeout(800);
+  const bx = await p.locator("#maqImg").boundingBox(); await p.mouse.click(bx.x + bx.width * 0.55, bx.y + bx.height * 0.5); await p.waitForTimeout(300);
+  await p.screenshot({path: "q4.png"}); await p.click("#maqDlg .btn:not(.ghost)");
+  await p.click("#modes button[data-m=ext]"); await p.waitForTimeout(5000);
+  const [dl] = await Promise.all([p.waitForEvent("download", {timeout: 30000}), p.click("#ficha")]); await dl.saveAs("ficha.png");
+  console.log("mark", JSON.stringify(await p.evaluate(() => __sim.state.mark)), "errors", errs); await b.close(); })();

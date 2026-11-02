@@ -134,6 +134,12 @@ create table if not exists public.solicitudes (
   tomada        timestamptz
 );
 create index if not exists solicitudes_asesor_idx on public.solicitudes (asesor, estado);
+-- defensa adicional: los campos cortos que llegan desde la web pública no aceptan etiquetas HTML
+do $$ begin
+  alter table public.solicitudes add constraint solicitudes_sin_html check (
+    nombre !~ '[<>]' and coalesce(proyecto, '') !~ '[<>]' and coalesce(plazo, '') !~ '[<>]' and coalesce(pago, '') !~ '[<>]'
+    and coalesce(visita, '') !~ '[<>]' and origen !~ '[<>]' and coalesce(campana, '') !~ '[<>]');
+exception when duplicate_object then null; end $$;
 
 -- reparto por turno entre asesores activos; se ignora el mismo celular repetido en 24 horas
 create or replace function public.solicitudes_antes() returns trigger

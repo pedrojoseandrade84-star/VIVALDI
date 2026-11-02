@@ -13,6 +13,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | simulador/ | Simulador-3D-Lotes-Vivaldi.html (≈1.6 MB) | Simulación 3D de construcción en el lote, para asesores |
 | crecimiento/ | Plan-Crecimiento-Comercial-Vivaldi.pdf | Plan de crecimiento comercial para la Gerencia |
 | crecimiento/ | Plan-Contenidos-Redes-Vivaldi.pdf | Plan de contenidos de 30 días para redes sociales |
+| auditoria/ | Informe-Auditoria-Tecnica-Vivaldi.pdf | Auditoría técnica de simulador, herramienta, web e integración: hallazgos, correcciones, pruebas y pendientes |
 | automatizacion/ | Plan-Automatizacion-Vivaldi.pdf | Plan de automatización de procesos comerciales y de cobranza, por fases |
 | propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |

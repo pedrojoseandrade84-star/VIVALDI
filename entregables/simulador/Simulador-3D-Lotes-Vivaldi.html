@@ -64,7 +64,7 @@ header .cr{font-size:11px;color:#9FC3DD}
 main{display:grid;grid-template-columns:330px 1fr 350px;min-height:0}
 aside{background:#fff;overflow:auto;min-height:0;padding:16px;border-right:1px solid var(--line)}
 aside.right{border-right:0;border-left:1px solid var(--line)}
-h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--bl);margin:18px 0 8px}
+h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#1F6EAB;margin:18px 0 8px}
 h3:first-child{margin-top:0}
 h4{font-size:14px;color:var(--nv);margin:18px 0 8px}
 label{display:grid;gap:4px;font-size:12.5px;font-weight:600;color:var(--mut)}
@@ -127,7 +127,7 @@ dialog::backdrop{background:rgba(6,25,40,.5)}
 dialog p{font-size:13px;line-height:1.5;color:var(--mut);margin:8px 0}
 @media (max-width:980px){
   body{grid-template-rows:auto auto 1fr}
-  header .t,header .cr{display:none}
+  header .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}header .cr{display:none}
   .tabs{display:flex;background:#fff;border-bottom:1px solid var(--line)}
   .tabs button{flex:1;min-height:48px;border:0;background:#fff;font:800 14px Manrope,sans-serif;color:var(--mut);border-bottom:3px solid transparent}
   .tabs button.on{color:var(--nv);border-color:var(--nv)}
@@ -161,14 +161,14 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
 #toast{pointer-events:none}
 </style></head>
 <body data-tab="view">
-<header><span class="brand">VIVALDI</span><span class="t">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></span>
+<header><span class="brand">VIVALDI</span><h1 class="t" style="font:inherit;margin:0">Simulador de construcción 3D<br><span class="cr">Diseño y desarrollo: Pedrojose Andrade Paredes</span></h1>
   <span class="sp"><button id="ficha" type="button" title="Ficha para el cliente">Ficha cliente</button><button id="gear" type="button" aria-label="Configurar el asistente en línea">⚙</button></span></header>
 <nav class="tabs"><button data-t="conf">Configurar</button><button data-t="view" class="on">3D</button><button data-t="info">Análisis</button></nav>
 <main>
-<aside id="left">
+<aside id="left" aria-label="Datos del cliente y del lote"><h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Datos del cliente y del lote</h2>
   <h3>Lo que cuenta el cliente</h3>
   <div class="ai">
-    <textarea id="aiText" placeholder="Ej.: Somos una familia de 5 con dos niños y un perro, queremos casa de playa de 2 pisos con piscina y parrilla. / Quiero poner una cevichería llamada El Muelle con 2 pisos."></textarea>
+    <textarea id="aiText" aria-label="Lo que cuenta el cliente" placeholder="Ej.: Somos una familia de 5 con dos niños y un perro, queremos casa de playa de 2 pisos con piscina y parrilla. / Quiero poner una cevichería llamada El Muelle con 2 pisos."></textarea>
     <div class="ex" id="examples"><span>Ejemplos:</span><button type="button" data-t="Somos una familia de 5 con tres hijos y un perro, queremos una casa de playa de 2 pisos con piscina, parrilla y cochera.">Familia de playa</button><button type="button" data-t="Quiero poner una cevichería llamada El Muelle, de 2 pisos, con terraza arriba para ver el atardecer.">Cevichería</button><button type="button" data-t="Queremos un hospedaje de 6 habitaciones con baño propio para alquilar en verano y vivir en el último piso.">Hospedaje</button><button type="button" data-t="Una bodega en el primer piso y nuestra vivienda arriba, somos una pareja con nuestra mamá que usa bastón.">Bodega + vivienda</button></div>
     <div class="aiRow"><button id="micBtn" class="btn ghost" type="button" hidden aria-label="Dictar">🎤 Dictar</button><button id="aiGo" class="btn" type="button">Diseñar propuesta</button></div>
     <div id="aiOut"><p class="small">Escribe o dicta (micrófono del teclado) lo que el cliente cuenta: su familia, si quiere vivir, veranear o emprender un negocio. La herramienta arma la propuesta que mejor aprovecha su lote.</p></div>
@@ -205,7 +205,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
     <div class="pill" id="modes"><button data-m="site">Entorno</button><button data-m="ext" class="on">Exterior</button><button data-m="walk">Recorrer</button><button data-m="cut">Corte</button><button data-m="xray">Rayos X</button><button data-m="plan">Plano</button></div>
     <div class="pill" id="floors"></div>
     <div class="pill" id="timeSw"><button data-t="dia" class="on">Día</button><button data-t="tarde">Atardecer</button></div>
-    <div id="cutRow" hidden>Altura de corte <input id="cut" type="range" min="0.3" max="2.6" step="0.05" value="1.3"></div>
+    <div id="cutRow" hidden>Altura de corte <input id="cut" type="range" aria-label="Altura de corte" min="0.3" max="2.6" step="0.05" value="1.3"></div>
   </div>
   <div class="bar bot">
     <details class="layers"><summary>Capas e instalaciones</summary>
@@ -224,7 +224,7 @@ table.rooms.cmp td{text-align:center;font-weight:600}table.rooms.cmp td:last-chi
   <div id="joy" hidden><div id="joyKnob"></div></div>
   <div id="walkHelp" hidden>Arrastra para mirar. Camina con el control o con doble toque en el piso. Sube por la escalera para cambiar de piso.</div>
 </section>
-<aside class="right" id="right"><h3>Análisis del diseño</h3><div id="analysis"></div></aside>
+<aside class="right" id="right" aria-label="Análisis del diseño"><h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Análisis del diseño</h2><h3>Análisis del diseño</h3><div id="analysis"></div></aside>
 </main>
 <dialog id="keyDlg"><h4>Datos del asesor</h4>
   <p>Aparecen en la ficha que se envía al cliente por WhatsApp.</p>
@@ -1895,6 +1895,7 @@ const MC = (color, o = {}) => {   // material compartido para el entorno: mismas
 const MAT = {
   wall: M(0xf1ebe1, {map: makeTex("plaster")}), baseboard: M(0x8a7a68, {roughness: 0.6}), throw: M(0xb8664a, {roughness: 1}), counter: M(0x34302c, {roughness: 0.35, metalness: 0.05, envMapIntensity: 0.25}), wallExt: M(0xece2d3, {map: makeTex("plaster")}), accent: M(0x9b6a43, {roughness: 0.7}), slab: M(0xd8d3cb), glass: M(0x9fcbe6, {transparent: true, opacity: 0.32, roughness: 0.04, metalness: 0.5, envMapIntensity: 1.3}),
   frame: M(0x3b3f44, {metalness: 0.5, roughness: 0.4}),
+  door: M(0xb48a62, {map: makeTex("wood"), roughness: 0.55}), doorMain: M(0x6e4a2f, {map: makeTex("wood"), roughness: 0.5}), doorFrame: M(0xe9e2d6, {roughness: 0.5}), handle: M(0xc9ced3, {metalness: 0.85, roughness: 0.25}), swing: M(0x33414d, {roughness: 1, side: THREE.DoubleSide}),
   sand: M(0xffffff, {map: makeTex("sand")}), grass: M(0xffffff, {map: makeTex("grass")}), street: M(0xffffff, {map: makeTex("asphalt"), roughness: 0.95}), walk: M(0xffffff, {map: makeTex("pavers")}),
   pave: M(0xffffff, {map: makeTex("pavers")}), water: M(0x7fd3ee, {map: RIPPLE, transparent: true, opacity: 0.9, roughness: 0.04, metalness: 0.2, envMapIntensity: 1.2}), sea: M(0x5aa3c4, {map: RIPPLE2, roughness: 0.1, metalness: 0.3, envMapIntensity: 1}),
   poolEdge: M(0xf0ebe2, {roughness: 0.6}), wood: M(0xffffff, {map: makeTex("wood")}), deck: M(0xffffff, {map: makeTex("deck")}),
@@ -1907,7 +1908,7 @@ const MAT = {
   cold: M(0x1e88e5, {emissive: 0x0a2f55}), hot: M(0xe53935, {emissive: 0x4a0c0c}), sew: M(0x8d6e63, {emissive: 0x2a1d18}),
   court: M(0x2f7d6d), courtLine: M(0xffffff), clay: M(0xb55b3c), toy1: M(0xe53935), toy2: M(0xffc107), toy3: M(0x1e88e5),
 };
-const BUILD_MATS = ["baseboard", "throw", "counter", "wall", "wallExt", "accent", "slab", "glass", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "white", "dark", "fabric", "fabric2", "cushion", "rug", "bedding", "steel", "tank", "light", "bulb", "water", "poolEdge", "leaf", "leaf2", "trunk", "pot", "flower", "toy1", "toy2", "toy3", "stone"];
+const BUILD_MATS = ["door", "doorMain", "doorFrame", "handle", "swing", "baseboard", "throw", "counter", "wall", "wallExt", "accent", "slab", "glass", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "white", "dark", "fabric", "fabric2", "cushion", "rug", "bedding", "steel", "tank", "light", "bulb", "water", "poolEdge", "leaf", "leaf2", "trunk", "pot", "flower", "toy1", "toy2", "toy3", "stone"];
 [...BUILD_MATS, "e1", "e2", "e3", "cold", "hot", "sew", "meter"].forEach(k => { MAT[k].clippingPlanes = [cutPlane]; });
 ["wall", "baseboard", "throw", "floorLiving", "floorWet", "floorBed", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "wood", "accent", "slab", "pot", "flower"].forEach(k => { MAT[k].envMapIntensity = 0.12; });   // interiores: sin reflejo azul del cielo
 
@@ -2026,9 +2027,10 @@ function build(keep) {
   buildStairs(d, h);
   buildFurniture(d, h);
   buildInstalls(d, h);
-  d.rooms.forEach(r => label(r.name, r.x + r.w / 2, r.lvl * h + 0.9, r.z + r.d / 2, 0.42, r.type === "stair" ? "" : `${fmt(r.w)} × ${fmt(r.d)} m · ${fmt(r.area)} m²`));
+  d.rooms.forEach(r => { const s = label(r.name, r.x + r.w / 2, r.lvl * h + 0.9, r.z + r.d / 2, 0.42, r.type === "stair" || Math.min(r.w, r.d) < 2.4 ? "" : `${fmt(r.w)} × ${fmt(r.d)} m · ${fmt(r.area)} m²`); s.userData.fit = [r.w, r.d]; s.userData.lvl = r.lvl; });   // en ambientes chicos, solo el nombre (las medidas siguen en la tabla de ambientes)
   label(`Frente ${fmt(d.W)} m`, d.W / 2, 0.3, -0.6, 0.5); label(`Fondo ${fmt(d.D)} m`, d.W + 1.8, 0.3, d.D / 2, 0.5);
   if (d.pool) label("Piscina", d.pool.x + d.pool.w / 2, 0.6, d.pool.z + d.pool.d / 2, 0.45, `${fmt(d.pool.w)} × ${fmt(d.pool.d)} m`);
+  if (window.__furnLog) window.__furnLog = (groups.mob ? groups.mob.children : []).map(o => { const b = new THREE.Box3().setFromObject(o); return [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z]; });   // solo para pruebas automáticas
   Object.values(groups).forEach(g => { if (g.name !== "etiquetas" && g.name !== "lugares") mergeMeshes(g); });
   setTime(); applyLayers(); applyMode(!keep);
 }
@@ -2281,11 +2283,23 @@ function buildLot(d) {
   [[-0.12, 0.12], [W, 0.12]].forEach(([x, t]) => box(t, 1.8, D - n.rf, MAT.wallExt, x, 0, n.rf, "terreno"));
   box(W + 0.24, 1.8, 0.12, MAT.wallExt, -0.12, 0, D, "terreno");
   // jardín frontal
-  bush(0.6, 0.7, 0.45, L, true); if (!d.parking || W > 7) palm(W / 2 - 0.5, 1.0, 4.2, "jardin");
+  if (!d.parking || W > 7) palm(W / 2 - 0.5, 1.0, 4.2, "jardin");
   { const x1 = d.parking ? W - 3.2 : W;   // cerco bajo con reja y jardinera; la puerta peatonal queda libre frente al ingreso
     if (x1 - 1.9 > 0.6) { box(x1 - 1.9, 0.55, 0.2, MAT.stone, 1.9, 0, 0, "terreno"); for (let x = 2.0; x < x1 - 0.05; x += 0.12) box(0.03, 0.85, 0.03, MAT.dark, x, 0.55, 0.08, "terreno", {cast: false}); box(x1 - 1.9, 0.04, 0.05, MAT.dark, 1.9, 1.4, 0.07, "terreno", {cast: false});
       plane(1.9, 0.25, x1 - 1.9, 0.7, 0.03, MAT.grass, "terreno", 2); for (let x = 2.3; x < x1 - 0.3; x += 0.9) bush(x, 0.6, 0.28, "terreno", (x * 10 | 0) % 2 === 0); }
     [0.05, 1.75].forEach(x => box(0.15, 1.5, 0.22, MAT.stone, x, 0, -0.01, "terreno"));
+    // reja peatonal entre los pilares, con marco, barrotes y manija
+    box(1.55, 0.05, 0.05, MAT.dark, 0.2, 0.08, 0.06, "terreno"); box(1.55, 0.05, 0.05, MAT.dark, 0.2, 1.33, 0.06, "terreno");
+    for (let x = 0.2; x <= 1.71; x += 0.11) box(0.025, 1.3, 0.025, MAT.dark, x, 0.08, 0.072, "terreno", {cast: false});
+    box(0.03, 0.03, 0.12, MAT.handle, 1.6, 1.0, 0.0, "terreno", {cast: false});
+    if (d.parking) {   // cochera: pilares, riel y portón corredizo abierto detrás del cerco; rebaje en la vereda para el auto
+      [x1 - 0.15, W - 0.15].forEach(x => box(0.15, 1.5, 0.22, MAT.stone, x, 0, -0.01, "terreno"));
+      box(W - x1, 0.015, 0.06, MAT.steel, x1, 0, 0.08, "terreno", {cast: false});
+      const gw = Math.min(W - x1, x1 - 0.2), gx = x1 - gw + 0.1;
+      box(gw, 0.05, 0.05, MAT.dark, gx, 0.1, 0.3, "terreno"); box(gw, 0.05, 0.05, MAT.dark, gx, 1.35, 0.3, "terreno");
+      for (let x = gx; x <= gx + gw - 0.02; x += 0.11) box(0.025, 1.3, 0.025, MAT.dark, x, 0.1, 0.312, "terreno", {cast: false});
+      box(W - x1, 0.012, 1.4, MC(0xb9b4ab, {roughness: 0.9}), x1, 0.07, -1.4, "entorno", {cast: false});
+    }
     ball(0.07, MAT.bulb, 0.35, 2.25, d.z0 - 0.06, "terreno"); glow(0.9, d.z0 - 0.9, 1.4); }
   if (d.parking) { const p = d.parking;   // el auto mide 4.5 m: si el retiro no alcanza, queda estacionado en la calle junto a la vereda
     if (p.short) car(Math.min(p.x + p.w / 2, W - 2.4), -2.45, -Math.PI / 2, 0x2a6fa8, L);
@@ -2314,13 +2328,58 @@ function buildLot(d) {
 /* ---------------- mobiliario y ambientación interior ---------------- */
 function buildFurniture(d, h) {
   let tables = 0;
+  // zonas de paso de cada puerta (vano y 0.8 m a cada lado): ningún mueble debe quedar ahí
+  const DZ = [];
+  for (let lvl = 0; lvl < d.pisos; lvl++) {
+    const Lr = d.rooms.filter(q => q.lvl === lvl), cl = Lr.filter(q => !q.open);
+    cl.forEach(q => { if (q.type === "stair") { [q.z, q.z + q.d].forEach(c => DZ.push({lvl, o: "h", c, a: q.x, b: q.x + q.w})); return; }
+      roomDoors(q, cl, lvl, d.z0, Lr).forEach(dd => DZ.push({lvl, o: dd.o, c: dd.c, a: dd.a, b: dd.b})); });
+  }
+  const zoneHit = (lvl, x0, z0, x1, z1) => DZ.some(z => z.lvl === lvl && (z.o === "h" ? (x0 < z.b - 0.05 && x1 > z.a + 0.05 && z0 < z.c + 0.8 && z1 > z.c - 0.8) : (z0 < z.b - 0.05 && z1 > z.a + 0.05 && x0 < z.c + 0.8 && x1 > z.c - 0.8)));
   d.rooms.forEach(r => {
-    const y = r.lvl * h, cx = r.x + r.w / 2, cz = r.z + r.d / 2, L = "mob", at = (o) => { o.position.y += y; return o; };
-    const G = (fn) => { const before = groups[L] ? groups[L].children.length : 0; fn(); if (groups[L]) groups[L].children.slice(before).forEach(o => o.position.y += y); };
+    const y = r.lvl * h, cx = r.x + r.w / 2, cz = r.z + r.d / 2, L = "mob", at = (o) => { o.position.y += y; return o; }, placed = [];
+    // cada mueble que invade el paso de una puerta se corre a la posición libre más cercana dentro del ambiente; si es un adorno chico y no cabe, se quita
+    const G = (fn) => {
+      const before = groups[L] ? groups[L].children.length : 0; fn(); const items = groups[L] ? groups[L].children.slice(before) : [];
+      // piezas: mallas cuyos volúmenes se tocan forman un mismo mueble (cama con colchón y cabecera); piezas separadas se mueven por separado
+      const boxes = items.map(o => new THREE.Box3().setFromObject(o)), par = items.map((_, i) => i), find = i => par[i] === i ? i : (par[i] = find(par[i]));
+      const flat = b => b.max.y - b.min.y < 0.06;
+      for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) { const a = boxes[i], b = boxes[j]; if (flat(a) || flat(b)) continue;
+        if (a.min.x < b.max.x + 0.02 && a.max.x > b.min.x - 0.02 && a.min.z < b.max.z + 0.02 && a.max.z > b.min.z - 0.02) par[find(i)] = find(j); }
+      const pieces = new Map(); items.forEach((o, i) => { const k = find(i); (pieces.get(k) || pieces.set(k, []).get(k)).push(i); });
+      for (const idx of pieces.values()) {
+        const bb = new THREE.Box3(); idx.forEach(i => bb.union(boxes[i]));
+        if (bb.max.y - bb.min.y < 0.06) continue;   // alfombras y superficies planas no estorban el paso
+        const fits = (dx, dz) => { const x0 = bb.min.x + dx, x1 = bb.max.x + dx, z0 = bb.min.z + dz, z1 = bb.max.z + dz;
+          if (x0 < r.x - 0.02 || x1 > r.x + r.w + 0.02 || z0 < r.z - 0.02 || z1 > r.z + r.d + 0.02 || zoneHit(r.lvl, x0, z0, x1, z1)) return false;
+          return !placed.some(p => x0 < p[2] && x1 > p[0] && z0 < p[3] && z1 > p[1]); };
+        let dx = 0, dz = 0;
+        if (zoneHit(r.lvl, bb.min.x, bb.min.z, bb.max.x, bb.max.z)) {
+          let ok = false;
+          for (let s = 0.15; s <= 3.01 && !ok; s += 0.15) for (const [a, b] of [[s, 0], [-s, 0], [0, s], [0, -s]]) if (fits(a, b)) { dx = a; dz = b; ok = true; break; }
+          if (ok) idx.forEach(i => { items[i].position.x += dx; items[i].position.z += dz; });
+          if (!ok) {   // mueble grande: se prueba un modelo más angosto en el sentido del muro (hasta 30 % menos) y se vuelve a buscar sitio
+            const c = bb.getCenter(new THREE.Vector3());
+            for (const kf of [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]) { for (const ax of ["x", "z"]) {
+              const sb = bb.clone(); sb.min[ax] = c[ax] + (bb.min[ax] - c[ax]) * kf; sb.max[ax] = c[ax] + (bb.max[ax] - c[ax]) * kf;
+              const fitsS = (a, b) => { const x0 = sb.min.x + a, x1 = sb.max.x + a, z0 = sb.min.z + b, z1 = sb.max.z + b;
+                if (x0 < r.x - 0.02 || x1 > r.x + r.w + 0.02 || z0 < r.z - 0.02 || z1 > r.z + r.d + 0.02 || zoneHit(r.lvl, x0, z0, x1, z1)) return false;
+                return !placed.some(p => x0 < p[2] && x1 > p[0] && z0 < p[3] && z1 > p[1]); };
+              for (let s = 0; s <= 1.51 && !ok; s += 0.15) for (const [a, b] of [[s, 0], [-s, 0], [0, s], [0, -s]]) if (fitsS(a, b)) {
+                idx.forEach(i => { const o = items[i]; o.scale[ax] *= kf; o.position[ax] = c[ax] + (o.position[ax] - c[ax]) * kf; o.position.x += a; o.position.z += b; });
+                bb.copy(sb); dx = a; dz = b; ok = true; break; }
+              if (ok) break; } if (ok) break; }
+          }
+          if (ok) {} else if ((bb.max.x - bb.min.x) * (bb.max.z - bb.min.z) < 1.2) { idx.forEach(i => { groups[L].remove(items[i]); if (!SHARED_GEO.has(items[i].geometry)) items[i].geometry.dispose(); items[i] = null; }); continue; }
+        }
+        placed.push([bb.min.x + dx, bb.min.z + dz, bb.max.x + dx, bb.max.z + dz]);
+      }
+      items.forEach(o => { if (o) o.position.y += y; });
+    };
     const pend = () => { cyl(0.01, 0.6, MAT.dark, cx, y + h - 0.85, cz, L, 4); cyl(0.22, 0.2, MAT.fabric2, cx, y + h - 1.0, cz, L, 14, 0.12); };
     if (r.type === "bed" || r.type === "guest") {
       const kids = /niños/.test(r.name), big = !kids && r.area >= 10.5, bw = big ? 1.6 : 1.0, bl = 2.0, bz = r.z + r.d - bl - 0.12;
-      const beds = kids && r.w >= 2.8 ? [cx - 0.85, cx + 0.85 - bw] : [cx - bw / 2];
+      const beds = kids && r.w >= 2.8 ? [cx - bw - 0.1, cx + 0.1] : [cx - bw / 2];   // dos camas individuales con 20 cm entre ambas
       G(() => beds.forEach(bx => { box(bw, 0.35, bl, MAT.wood, bx, 0, bz, L); box(bw - 0.06, 0.2, bl - 0.1, MAT.bedding, bx + 0.03, 0.35, bz + 0.05, L); box(bw, 0.9, 0.08, MAT.fabric2, bx, 0.2, bz + bl - 0.02, L); box(bw - 0.1, 0.12, 0.35, MAT.white, bx + 0.05, 0.55, bz + bl - 0.5, L); box(bw + 0.04, 0.05, 0.8, kids ? MAT.toy3 : MAT.throw, bx - 0.02, 0.55, bz + 0.15, L); box(bw + 0.04, 0.2, 0.05, kids ? MAT.toy3 : MAT.throw, bx - 0.02, 0.37, bz + 0.12, L); }));
       if (!kids && r.w > bw + 1.2) G(() => [cx - bw / 2 - 0.5, cx + bw / 2 + 0.05].forEach(nx => { box(0.45, 0.5, 0.4, MAT.wood, nx, 0, r.z + r.d - 0.55, L); cyl(0.1, 0.3, MAT.light, nx + 0.22, 0.5, r.z + r.d - 0.35, L, 10, 0.07); }));
       G(() => { plane(cx - 1, bz - 0.9, 2, 1.4, 0.03, MAT.rug, L); box(Math.min(1.8, r.w - 0.4), 2.2, 0.55, MAT.white, r.x + 0.2, 0, r.z + 0.25, L); });
@@ -2381,6 +2440,63 @@ function buildFurniture(d, h) {
   d.tables = tables;
 }
 
+/* puertas: cada vano se ubica en el tramo libre del muro, sin caer sobre el encuentro con otro muro, y de preferencia
+   hacia la circulación (hall, sala, comedor, escalera) antes que hacia un baño o un dormitorio. Ancho 0.90 m; en muros cortos
+   0.80 o 0.70 m (medidas usuales de baño y lavandería). s indica hacia qué lado está el ambiente, hacia donde abre la hoja. */
+const DOOR_RANK = t => /^(hall|living|dining|reception|stair|corridor)$/.test(t) ? 0 : /^(kitchen|prokitchen|study|shop|office)$/.test(t) ? 1 : /^(laundry|storage)$/.test(t) ? 2 : 3;
+function fitDoor(o, c, lo, hi, pref, others, far = 0, all = null, lvl = 0) {
+  const edges = [];
+  others.forEach(q => {
+    if (q.open) return;
+    const s0 = o === "h" ? q.x : q.z, s1 = o === "h" ? q.x + q.w : q.z + q.d, n0 = o === "h" ? q.z : q.x, n1 = o === "h" ? q.z + q.d : q.x + q.w;
+    if (n0 > c + 0.02 || n1 < c - 0.02) return;
+    [s0, s1].forEach(e => { if (e > lo + 0.01 && e < hi - 0.01) edges.push(e); });
+  });
+  const pts = [lo, ...edges.sort((x, y) => x - y), hi];
+  const rank = (a0, b0) => {   // qué hay del otro lado del muro en ese tramo
+    if (!all || !far) return 0;
+    const m = (a0 + b0) / 2, x = o === "h" ? m : c + far * 0.25, z = o === "h" ? c + far * 0.25 : m;
+    const q = all.find(q => x > q.x + 0.01 && x < q.x + q.w - 0.01 && z > q.z + 0.01 && z < q.z + q.d - 0.01);
+    if (!q) return lvl === 0 ? 1.5 : 9;
+    // muro de fondo de cocinas, lavanderías, depósitos, estudios y dormitorios: ahí van el mostrador, las máquinas, los estantes, el escritorio o la cama
+    const back = o === "h" && Math.abs(c - (q.z + q.d)) < 0.03 && /^(kitchen|prokitchen|laundry|storage|study|bed|guest|shop)$/.test(q.type);
+    return (q.open ? 0.5 : DOOR_RANK(q.type)) + (back ? 3 : 0);
+  };
+  const cand = [];   // primero hacia dónde abre (circulación), luego el ancho mayor, luego la cercanía a su posición natural
+  for (let i = 0; i < pts.length - 1; i++) { const a0 = pts[i] + 0.1, b0 = pts[i + 1] - 0.1, k = rank(pts[i], pts[i + 1]);
+    for (const w of [0.9, 0.8, 0.7]) if (b0 - a0 >= w) { cand.push({m: Math.min(Math.max(pref, a0 + w / 2), b0 - w / 2), w, k}); break; } }
+  if (!cand.length) return null;
+  cand.sort((x, y) => x.k - y.k || y.w - x.w || Math.abs(x.m - pref) - Math.abs(y.m - pref));
+  return {m: cand[0].m, w: cand[0].w, k: cand[0].k};
+}
+function roomDoors(r, closed, lvl, fz0, all = closed) {
+  const front = Math.abs(r.z - fz0) < 0.01, others = closed.filter(q => q !== r), out = [];
+  const put = (o, c, f, s) => out.push({o, c, a: f.m - f.w / 2, b: f.m + f.w / 2, s});
+  const side = r.x > 0.01 ? fitDoor("v", r.x, r.z, r.z + r.d, r.z + r.d / 2, others, -1, all, lvl) : null;
+  if (front && lvl === 0 && r.x === 0) out.push({o: "h", c: r.z, a: r.x + 0.6, b: r.x + 1.6, main: true, s: 1});
+  else {
+    const c = front ? r.z + r.d : r.z, sg = front ? -1 : 1, f = fitDoor("h", c, r.x, r.x + r.w, front ? r.x + r.w / 2 : r.x + Math.min(r.w / 2, 1.2), others, -sg, all, lvl);
+    if (f && !(side && f.k >= 3 && side.k < 3)) put("h", c, f, sg);   // si ya tiene una buena puerta lateral, no se abre otra hacia un muro con muebles fijos
+    else if (!f && !side) put("h", c, {m: front ? r.x + r.w / 2 : r.x + Math.min(r.w / 2, 1.2), w: Math.min(0.9, r.w - 0.2)}, sg);   // sin tramo libre ni muro lateral: se mantiene el acceso
+  }
+  if (side && !(out.length && !out[0].main && side.k >= 3)) put("v", r.x, side, 1);   // y viceversa
+  // terrazas: cada una recibe una puerta desde el ambiente vecino más adecuado (hall, estar o sala; si no, el que comparte más muro)
+  all.filter(t => t.open && t.lvl === lvl).forEach(t => {
+    const shared = q => { const ox = Math.min(q.x + q.w, t.x + t.w) - Math.max(q.x, t.x), oz = Math.min(q.z + q.d, t.z + t.d) - Math.max(q.z, t.z);
+      if (ox >= 1.0 && Math.abs(q.z + q.d - t.z) < 0.02) return {o: "h", c: t.z, lo: Math.max(q.x, t.x), hi: Math.min(q.x + q.w, t.x + t.w), s: -1, len: ox};
+      if (ox >= 1.0 && Math.abs(t.z + t.d - q.z) < 0.02) return {o: "h", c: q.z, lo: Math.max(q.x, t.x), hi: Math.min(q.x + q.w, t.x + t.w), s: 1, len: ox};
+      if (oz >= 1.0 && Math.abs(q.x + q.w - t.x) < 0.02) return {o: "v", c: t.x, lo: Math.max(q.z, t.z), hi: Math.min(q.z + q.d, t.z + t.d), s: -1, len: oz};
+      if (oz >= 1.0 && Math.abs(t.x + t.w - q.x) < 0.02) return {o: "v", c: q.x, lo: Math.max(q.z, t.z), hi: Math.min(q.z + q.d, t.z + t.d), s: 1, len: oz};
+      return null; };
+    const cands = closed.filter(q => q.type !== "stair").map(q => ({q, e: shared(q)})).filter(x => x.e)
+      .sort((a, b) => DOOR_RANK(a.q.type) - DOOR_RANK(b.q.type) || b.e.len - a.e.len);
+    if (!cands.length || cands[0].q !== r) return;
+    const e = cands[0].e, f = fitDoor(e.o, e.c, e.lo, e.hi, e.lo + 0.55, others);   // cerca de una esquina: deja libre el centro del muro (cama, sofá)
+    if (f) put(e.o, e.c, f, e.s);
+  });
+  return out;
+}
+
 function buildWalls(rooms, lvl, h) {
   const y = lvl * h, H = new Map(), V = new Map(), doors = [];
   const fz0 = design.z0, fz1 = design.z0 + design.fd, W = design.W;
@@ -2389,14 +2505,10 @@ function buildWalls(rooms, lvl, h) {
   closed.forEach(r => {
     if (r.type === "stair") {   // escalera: abierta adelante y atrás para poder subir y llegar
       addL(V, r.x, r.z, r.z + r.d); addL(V, r.x + r.w, r.z, r.z + r.d);
-      doors.push({o: "h", c: r.z, a: r.x + 0.02, b: r.x + r.w - 0.02}, {o: "h", c: r.z + r.d, a: r.x + 0.02, b: r.x + r.w - 0.02}); return;
+      doors.push({o: "h", c: r.z, a: r.x + 0.02, b: r.x + r.w - 0.02, pass: true}, {o: "h", c: r.z + r.d, a: r.x + 0.02, b: r.x + r.w - 0.02, pass: true}); return;
     }
     addL(H, r.z, r.x, r.x + r.w); addL(H, r.z + r.d, r.x, r.x + r.w); addL(V, r.x, r.z, r.z + r.d); addL(V, r.x + r.w, r.z, r.z + r.d);
-    const front = Math.abs(r.z - fz0) < 0.01;
-    if (front && lvl === 0 && r.x === 0) doors.push({o: "h", c: r.z, a: r.x + 0.6, b: r.x + 1.6, main: true});
-    else if (front && lvl > 0) doors.push({o: "h", c: r.z + r.d, a: r.x + r.w / 2 - 0.45, b: r.x + r.w / 2 + 0.45});
-    else if (!front) doors.push({o: "h", c: r.z, a: r.x + Math.min(r.w / 2, 1.2) - 0.45, b: r.x + Math.min(r.w / 2, 1.2) + 0.45});
-    if (r.x > 0.01) doors.push({o: "v", c: r.x, a: r.z + r.d / 2 - 0.45, b: r.z + r.d / 2 + 0.45});
+    doors.push(...roomDoors(r, closed, lvl, fz0, rooms));
   });
   rooms.filter(r => r.open).forEach(r => {   // parapetos de terrazas
     if (Math.abs(r.z + r.d - fz1) < 0.01) box(r.w, 1.0, 0.12, MAT.wallExt, r.x, y, r.z + r.d - 0.12, "muros");
@@ -2417,20 +2529,38 @@ function buildWalls(rooms, lvl, h) {
     if (o === "h") { [[w0, ww, y + sill], [w0, ww, y + 2.15]].forEach(([a0, l, yy]) => box(l, 0.05, t + 0.04, MAT.frame, a0, yy, c - t / 2 - 0.02, "muros", {cast: false})); [w0, w1 - 0.05, w0 + ww / 2 - 0.025].forEach(xx => box(0.05, 2.2 - sill, t + 0.04, MAT.frame, xx, y + sill, c - t / 2 - 0.02, "muros", {cast: false})); }
     walls.push({o, c, a, b: w0, t, y0: y, y1: y + h}, {o, c, a: w1, b, t, y0: y, y1: y + h}, {o, c, a: w0, b: w1, t, y0: y, y1: y + h});
   };
+  // puerta real: marco, hoja abierta hacia su ambiente, manija y arco de giro (este último solo en Plano y Corte)
+  const doorUnit = (dd, o, k, t) => {
+    if (dd.pass) return;
+    const fw = 0.05, L = dd.b - dd.a - 2 * fw, hh = 2.05, s = dd.s || 1, mat = dd.main ? MAT.doorMain : MAT.door, ft = t + 0.04;
+    const B = (al0, al1, y0, y1, n0, n1, m, lay = "muros", cast = true) => o === "h" ? box(al1 - al0, y1 - y0, n1 - n0, m, al0, y + y0, n0, lay, {cast}) : box(n1 - n0, y1 - y0, al1 - al0, m, n0, y + y0, al0, lay, {cast});
+    B(dd.a, dd.a + fw, 0, hh + fw, k - ft / 2, k + ft / 2, MAT.doorFrame); B(dd.b - fw, dd.b, 0, hh + fw, k - ft / 2, k + ft / 2, MAT.doorFrame);
+    B(dd.a, dd.b, hh, hh + fw, k - ft / 2, k + ft / 2, MAT.doorFrame);
+    const n0 = s > 0 ? k + t / 2 : k - t / 2 - L, n1 = s > 0 ? k + t / 2 + L : k - t / 2, h0 = dd.a + fw, lt = dd.main ? 0.05 : 0.04;
+    B(h0, h0 + lt, 0.01, hh - 0.01, n0, n1, mat);
+    if (dd.main) [0.55, 1.05, 1.55].forEach(yy => B(h0 - 0.004, h0 + lt + 0.004, yy, yy + 0.02, n0 + 0.08, n1 - 0.08, MAT.dark, "muros", false));
+    const tip = s > 0 ? n1 - 0.09 : n0 + 0.09;   // manija cerca del borde libre de la hoja
+    B(h0 - 0.05, h0 + lt + 0.05, 1.0, 1.03, tip - 0.06, tip, MAT.handle, "muros", false);
+    const g = new THREE.RingGeometry(L - 0.012, L + 0.012, 18, 1, o === "h" ? (s > 0 ? -Math.PI / 2 : 0) : (s > 0 ? -Math.PI / 2 : Math.PI), Math.PI / 2); g.rotateX(-Math.PI / 2);
+    const arc = new THREE.Mesh(g, MAT.swing);
+    if (o === "h") arc.position.set(h0 + lt / 2, y + 0.03, k + s * t / 2); else { arc.position.set(k + s * t / 2, y + 0.03, h0 + lt / 2); }
+    arc.renderOrder = 2; add(arc, "puertas2d");
+    if (dd.main) box(dd.b - dd.a + 0.3, 0.04, 0.45, MAT.stone, dd.a - 0.15, y, k - t / 2 - 0.45, "muros");   // umbral de piedra en el ingreso
+  };
   for (const [k, l] of H) {
     const ext = Math.abs(k - fz0) < 0.02 || Math.abs(k - fz1) < 0.02;
     const segs = cut(merge(l), doors.filter(dd => dd.o === "h" && Math.abs(dd.c - k) < 0.02));
     segs.forEach(([a, b]) => wallSeg("h", k, a, b, ext, false));
     doors.filter(dd => dd.o === "h" && Math.abs(dd.c - k) < 0.02).forEach(dd => {
       box(dd.b - dd.a, h - 2.1, ext ? 0.2 : 0.13, ext ? MAT.wallExt : MAT.wall, dd.a, y + 2.1, k - (ext ? 0.1 : 0.065), "muros");
-      if (dd.main) { const door = box(0.05, 2.08, 0.95, MAT.wood, dd.a, y, k, "muros"); door.rotation.y = 0; }
+      doorUnit(dd, "h", k, ext ? 0.2 : 0.13);
     });
   }
   for (const [k, l] of V) {
     const ext = Math.abs(k) < 0.02 || Math.abs(k - W) < 0.02;
     const gaps = doors.filter(dd => dd.o === "v" && Math.abs(dd.c - k) < 0.02);
     cut(merge(l), gaps).forEach(([a, b]) => wallSeg("v", k, a, b, ext, ext));
-    gaps.forEach(dd => box(0.13, h - 2.1, dd.b - dd.a, MAT.wall, k - 0.065, y + 2.1, dd.a, "muros"));
+    gaps.forEach(dd => { box(0.13, h - 2.1, dd.b - dd.a, MAT.wall, k - 0.065, y + 2.1, dd.a, "muros"); doorUnit(dd, "v", k, 0.13); });
   }
   // fachada: listones de madera en el frente del último piso y volado de balcón
   if (lvl > 0 && state.prog.terraza && state.norm.rf >= 2) {
@@ -2564,15 +2694,15 @@ function buildInstalls(d, h) {
 /* ---------------- capas y modos ---------------- */
 function applyLayers() {
   const L = state.layers, xr = state.mode === "xray";
-  const vis = {muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true, jardin: state.mode !== "cut" && state.mode !== "plan", noche: state.time === "tarde"};
+  const vis = {puertas2d: L.muros && (state.mode === "plan" || state.mode === "cut"), muros: L.muros, losas: L.losas, mob: L.mob, elec: L.elec, agua: L.agua, caliente: L.caliente, desague: L.desague, etiquetas: L.etiquetas && state.mode !== "ext" && state.mode !== "site", vecinos: L.vecinos, entorno: true, terreno: true, jardin: state.mode !== "cut" && state.mode !== "plan", noche: state.time === "tarde"};
   if (["walk", "ext", "site"].includes(state.mode)) ["elec", "agua", "caliente", "desague"].forEach(k => vis[k] = false);   // las tuberías van empotradas: se ven en Corte, Rayos X y Plano   // al recorrer, las tuberías quedan dentro de los muros: se ven en Rayos X y Corte
   Object.entries(groups).forEach(([k, g]) => g.visible = vis[k] !== false);
-  ["wall", "wallExt", "slab", "accent", "frame", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "steel", "dark", "stone"].forEach(k => {
+  ["wall", "wallExt", "slab", "accent", "frame", "door", "doorMain", "doorFrame", "handle", "floorLiving", "floorWet", "floorBed", "floorTerr", "wood", "deck", "fabric", "fabric2", "cushion", "rug", "bedding", "white", "steel", "dark", "stone"].forEach(k => {
     const m = MAT[k], t = xr ? (k.startsWith("floor") ? 0.35 : 0.12) : 1;
     m.transparent = xr; m.opacity = t; m.depthWrite = !xr; m.needsUpdate = true;
   });
   const f = state.mode === "plan" ? 2.3 * clamp(canvas.clientWidth / 900, 0.72, 1) : state.mode === "walk" ? 0.35 : 1.15;
-  if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) s.scale.copy(s.userData.base).multiplyScalar(f); if (state.mode !== "walk") s.visible = true; });
+  if (groups.etiquetas) groups.etiquetas.children.forEach(s => { s.material.depthTest = state.mode === "walk"; if (s.userData.base) { s.scale.copy(s.userData.base).multiplyScalar(f); const fit = s.userData.fit; if (fit && state.mode === "plan") { const k = Math.min(1, fit[0] * 0.92 / s.scale.x, fit[1] * 0.8 / s.scale.y); s.scale.multiplyScalar(k); } } if (state.mode !== "walk") s.visible = !(s.userData.lvl !== undefined && (state.mode === "plan" || state.mode === "cut") && s.userData.lvl !== state.floor); });
 }
 let walk = null, tween = null;
 const far = () => clamp(1.15 * Math.max(1, canvas.clientHeight) / Math.max(1, canvas.clientWidth), 1, 2.1);   // en celular vertical la cámara se aleja para que entre la casa completa
@@ -3100,7 +3230,7 @@ function wrap(g, t, x, y, w, lh) { const ws = t.split(" "); let line = ""; ws.fo
 /* ---------------- inicio ---------------- */
 syncForm(); regen();
 requestAnimationFrame(frame);
-window.__sim = {state, get design() { return design; }, regen, applyMode, cam, controls, renderer, generate, syncForm, scene, get walk() { return walk; }, get stairs() { return stairs; }, get walls() { return walls; }, blocked, floorAt, localParse};
+window.__sim = {state, roomDoors, get design() { return design; }, regen, applyMode, cam, controls, renderer, generate, syncForm, scene, get walk() { return walk; }, get stairs() { return stairs; }, get walls() { return walls; }, blocked, floorAt, localParse};
 })();
 </script>
 </body></html>

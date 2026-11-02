@@ -1,0 +1,15 @@
+const {chromium, devices} = require("playwright");
+const F = "file:///home/user/VIVALDI/entregables/simulador/Simulador-3D-Lotes-Vivaldi.html";
+(async () => { const b = await chromium.launch({args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"]}); const errs = [];
+  const m = await b.newContext({...devices["Pixel 7"], acceptDownloads: true}); const mp = await m.newPage(); mp.on("pageerror", e => errs.push(e.message));
+  await mp.goto(F); await mp.waitForTimeout(3500);
+  await mp.click(".tabs button[data-t=conf]"); await mp.waitForTimeout(300);
+  await mp.fill("#aiText", "Quiero poner una cevichería llamada El Muelle, de 2 pisos, con terraza arriba para atardecer, y tenemos dos hijos");
+  await mp.click("#aiGo"); await mp.waitForTimeout(3500);
+  const st = await mp.evaluate(() => ({u: __sim.state.prog.estilo, n: __sim.state.prog.negocio, amb: __sim.state.prog.amb, p: __sim.state.prog.pisos, out: document.querySelector("#aiOut").innerText}));
+  console.log(JSON.stringify(st));
+  await mp.click("#timeSw button[data-t=tarde]"); await mp.waitForTimeout(1200); await mp.screenshot({path: "p1.png"});
+  await mp.click(".tabs button[data-t=info]"); await mp.waitForTimeout(300); await mp.screenshot({path: "p2.png"});
+  await mp.click(".tabs button[data-t=conf]"); await mp.waitForTimeout(200); await mp.screenshot({path: "p3.png"});
+  const bodyText = await mp.evaluate(() => document.body.innerText); console.log("menciona IA:", /\bIA\b|inteligencia artificial/i.test(bodyText));
+  console.log("errors", errs); await b.close(); })();

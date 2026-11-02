@@ -1,6 +1,6 @@
 # Simulador 3D de construcción · Vivaldi
 
-Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin internet y se puede enviar por WhatsApp; se abre en Android, iPhone y computadora. Diseño y desarrollo: Pedrojose Andrade Paredes.
+Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.8 MB). Funciona sin internet y se puede enviar por WhatsApp; se abre en Android, iPhone y computadora. Diseño y desarrollo: Pedrojose Andrade Paredes.
 
 ## Qué hace
 - El asesor escribe o dicta lo que cuenta el cliente ("cevichería de 2 pisos con terraza para el atardecer, tenemos dos hijos") y la herramienta arma la propuesta que mejor aprovecha el lote.
@@ -13,6 +13,9 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin inte
 - Casas vecinas de distintos estilos y colores, con techos, tanques de agua, jardines, autos y carteles de "Lote disponible"; cielo, mar, huarangos y sombras suaves.
 - Botón **▶ Presentar**: recorrido automático para mostrar al cliente (condominio, llegada a la casa, vuelta completa, atardecer y ambientes por piso). Un toque en la pantalla lo detiene.
 - **Doble toque** en cualquier punto del 3D para acercarse ahí; en Recorrer, doble toque en el piso para caminar hasta ese punto.
+- **Puertas reales**: cada puerta tiene marco, hoja abierta hacia su ambiente y manija; la principal, hoja con paneles y umbral de piedra. En **Plano** y **Corte** se dibuja el arco de giro de cada puerta, como en un plano de arquitectura. Las puertas abren de preferencia hacia el hall, la sala o el comedor, y cada terraza tiene su puerta.
+- **Accesos**: reja peatonal, portón corredizo de cochera y rebaje de vereda. Si el retiro frontal no alcanza para el auto (menos de 5 m), el auto queda estacionado en la calle y el análisis lo advierte.
+- Los muebles se ubican sin tapar el paso de las puertas.
 - **Plano** con escala gráfica; **Rayos X** solo vuelve transparente la casa del cliente.
 - **Dictar** por voz lo que cuenta el cliente, con ejemplos rápidos para demostraciones. La propuesta aparece al instante y el asistente en línea la afina en segundo plano.
 - **Comparar opciones** (Compacta, Equilibrada, Máximo) en Análisis.
@@ -34,6 +37,7 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.6 MB). Funciona sin inte
 - Lo que se escribe se envía a estos servicios: no incluir DNI, teléfonos ni datos bancarios del cliente.
 
 ## Por confirmar
+- Kilómetro de La Portada del Sol: el simulador usa Km 115.2 (maqueta); la web y la herramienta dicen 111.5. Confirmar con Vivaldi.
 - La Bahía de Paracas: las medidas del lote (8 × 20 m) y las áreas del club son referenciales; ajustarlas con el plano oficial.
 
 ## Cómo abrirlo en el celular

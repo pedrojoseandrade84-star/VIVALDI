@@ -1,0 +1,1 @@
+[["if (rebuild) { controls.target.set(d.W / 2, d.pisos * h * 0.4, d.z0 + d.fd * 0.55); cam.position.set(d.W / 2 + 7, 3.2 + d.pisos * 1.9, -9.5); }", "if (rebuild) { controls.target.set(d.W / 2, d.pisos * h * 0.45, d.z0 + d.fd * 0.45); cam.position.set(d.W / 2 - 8, 2.6 + d.pisos * 1.6, -10.5); }"]]
