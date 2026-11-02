@@ -34,3 +34,5 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 `navmenu.html` agrupa en el menú "Análisis" las secciones de comparación con la competencia y los ajustes, para que el menú quepa en pantalla; se inserta con `inject_navmenu.py`.
 
 `direccion.html` es el Tablero de dirección de la herramienta (indicadores del mes, cotizado y vendido por mes, inventario, embudo, cartera por antigüedad, origen de clientes, equipo y alertas); se inserta con `inject_direccion.py` después de `navmenu.html`.
+
+`borrar.html` agrega el borrado de clientes: botón Eliminar de un toque con Deshacer, botón Borrar cliente en el formulario y Borrar varios; se inserta con `inject_borrar.py`. Pruebas: `auditoria/borrar_clientes.js` y `base-de-datos/tborrar.js` (el borrado llega al servidor y Deshacer lo recupera).

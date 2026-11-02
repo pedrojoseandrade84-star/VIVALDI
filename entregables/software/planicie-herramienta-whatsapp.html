@@ -5261,206 +5261,6 @@ let rt, lastW = innerWidth; addEventListener("resize", () => { clearTimeout(rt);
 })();
 </script>
 <!--growth-crm-end-->
-<!--growth-sync-start-->
-<style id="nube-css">
-#nubeBtn{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink,#13242E);border-radius:999px;padding:7px 12px;font:600 12px Manrope,Arial,sans-serif;min-height:36px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.08)}
-#nubeBtn i{width:9px;height:9px;border-radius:50%;background:#9AA7AE;display:block}
-#nubeBtn.ok i{background:#1F8A4C}#nubeBtn.busy i{background:#E8A93A}#nubeBtn.err i{background:#C62828}
-#nubeDlg{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(6,25,40,.5);padding:16px}#nubeDlg[hidden]{display:none}
-#nubeDlg .card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:20px;display:grid;gap:10px;color:#13242E;font:14px Manrope,Arial,sans-serif;max-height:92vh;overflow:auto}
-#nubeDlg h3{margin:0;font-size:1.15rem}#nubeDlg p{margin:0;color:#4C5E68;font-size:.86rem;line-height:1.45}
-#nubeDlg label{display:grid;gap:4px;font-size:.8rem;font-weight:700;color:#4C5E68}
-#nubeDlg input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #D5DEE3;border-radius:10px;min-height:44px}
-#nubeDlg .row{display:flex;gap:8px;flex-wrap:wrap}#nubeDlg button{font:inherit;font-weight:700;border-radius:999px;min-height:42px;padding:0 16px;cursor:pointer;border:1px solid #D5DEE3;background:#fff}
-#nubeDlg button.pri{background:#0A3856;border-color:#0A3856;color:#fff}#nubeDlg details summary{cursor:pointer;font-weight:700;font-size:.82rem;min-height:32px;display:flex;align-items:center}
-#nubeMsg{font-size:.84rem;white-space:pre-line;line-height:1.45}
-</style>
-<button id="nubeBtn" type="button" aria-label="Base de datos"><i></i><span>Sin conectar</span></button>
-<div id="nubeDlg" hidden role="dialog" aria-modal="true" aria-labelledby="nubeT"><div class="card">
-  <h3 id="nubeT">Base de datos de Vivaldi</h3>
-  <p id="nubeInfo">Entra con tu usuario para guardar tus clientes, proformas y cobranzas en la base de datos de la empresa. Sin internet sigues trabajando y se sincroniza al volver la señal.</p>
-  <div id="nubeLogin"><label>Correo<input id="nubeMail" type="email" autocomplete="username" inputmode="email"></label><label style="margin-top:8px">Contraseña<input id="nubePass" type="password" autocomplete="current-password"></label></div>
-  <div id="nubeMsg" role="status"></div>
-  <div class="row"><button class="pri" type="button" id="nubeGo">Entrar</button><button type="button" id="nubeSync" hidden>Sincronizar ahora</button><button type="button" id="nubeOut" hidden>Cerrar sesión</button><button type="button" id="nubeX">Cerrar</button></div>
-  <details><summary>Servidor (solo administrador)</summary><label>URL del proyecto<input id="nubeUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label><label style="margin-top:8px">Clave pública (anon)<input id="nubeKey" autocomplete="off"></label><div class="row" style="margin-top:8px"><button type="button" id="nubeSave">Guardar servidor</button></div></details>
-</div></div>
-<script id="growth-sync">
-/* Sincronización con la base de datos (Supabase). Sigue funcionando sin internet: guarda en el equipo y sube los cambios al volver la señal.
-   El administrador puede dejar fijos la URL y la clave pública aquí abajo antes de entregar el archivo a los asesores. */
-(() => {
-  const SERVIDOR = {url: "", key: ""};
-  const $q = s => document.querySelector(s);
-  const L = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} }};
-  // claves sin el prefijo "vivaldi-": no entran en el respaldo en archivo (no se comparten credenciales)
-  const cfg = () => { try { return Object.assign({}, SERVIDOR, JSON.parse(L.get("nube-config") || "{}")); } catch (e) { return SERVIDOR; } };
-  let ses = null; try { ses = JSON.parse(L.get("nube-sesion") || "null"); } catch (e) {}
-  const COLS = {
-    clientes:     {ls: "vivaldi-clientes-v1",     key: r => r.id,                      get: () => CLIENTS, set: a => { CLIENTS = a; }},
-    proformas:    {ls: "vivaldi-proformas-v1",    key: r => (r.no || "") + "|" + (r.adv || ""), get: () => PFLOG, set: a => { PFLOG = a; }},
-    separaciones: {ls: "vivaldi-separaciones-v1", key: r => r.no,                      get: () => SEPS, set: a => { SEPS = a; }},
-    cobranza:     {ls: "vivaldi-cobranza-v1",     key: r => r.id,                      get: () => COB, set: a => { COB = a; }},
-    visitas:      {ls: "vivaldi-visitas-v1",      key: r => r.id,                      get: () => VISITS, set: a => { VISITS = a; }},
-    lotes:        {ls: "vivaldi-lotes-v1",        key: r => r.id,                      get: () => INV, set: a => { INV = a; }},
-  };
-  // estado: por cada registro conocido, su id en el servidor y la huella del contenido ya sincronizado
-  let ST = {}; try { ST = JSON.parse(L.get("nube-estado") || "{}"); } catch (e) {} ST.rows = ST.rows || {}; ST.since = ST.since || "1970-01-01T00:00:00Z";
-  const saveST = () => L.set("nube-estado", JSON.stringify(ST));
-  const hash = o => { const s = JSON.stringify(o); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length; };
-  const btn = $q("#nubeBtn"), msg = t => { $q("#nubeMsg").textContent = t || ""; };
-  const status = (cls, t) => { btn.className = cls || ""; btn.querySelector("span").textContent = t; };
-
-  async function api(path, opt = {}, retry = true) {
-    const c = cfg(); if (!c.url || !c.key) throw new Error("Falta configurar el servidor");
-    const h = Object.assign({apikey: c.key, "Content-Type": "application/json"}, ses ? {Authorization: "Bearer " + ses.access_token} : {}, opt.headers || {});
-    const r = await fetch(c.url.replace(/\/$/, "") + path, Object.assign({}, opt, {headers: h}));
-    if (r.status === 401 && retry && ses && ses.refresh_token) { await refresh(); return api(path, opt, false); }
-    if (!r.ok) { let m = ""; try { const j = await r.json(); m = j.message || j.msg || j.error_description || j.error || ""; } catch (e) {} throw new Error(m || "Error " + r.status); }
-    return r.status === 204 ? null : r.json().catch(() => null);
-  }
-  async function login(mail, pass) {
-    const j = await api("/auth/v1/token?grant_type=password", {method: "POST", body: JSON.stringify({email: mail, password: pass})}, false);
-    ses = {access_token: j.access_token, refresh_token: j.refresh_token, user: {id: j.user.id, email: j.user.email}};
-    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=nombre,rol,activo`, {method: "GET"});
-    if (!p || !p.length || p[0].activo === false) { ses = null; throw new Error("Tu usuario no está habilitado. Pide acceso a la jefatura."); }
-    ses.nombre = p[0].nombre; ses.rol = p[0].rol;
-    if (ST.user && ST.user !== ses.user.id) {
-      // equipo compartido: los datos del usuario anterior ya están en la base; se quitan de este equipo para no mezclarlos
-      if (!confirm(`Este equipo tiene los datos de ${ST.nombre || "otro usuario"}. Para entrar como ${ses.nombre} se quitarán de este equipo (siguen guardados en la base de datos). ¿Continuar?`)) { ses = null; throw new Error("Ingreso cancelado."); }
-      quiet(() => Object.values(COLS).forEach(C => { C.set([]); L.set(C.ls, "[]"); })); rerender();
-      ST = {rows: {}, since: "1970-01-01T00:00:00Z"};
-    }
-    L.set("nube-sesion", JSON.stringify(ses)); ST.user = ses.user.id; ST.nombre = ses.nombre; saveST();
-    try { if (!localStorage.getItem("vivaldi-asesor") && ses.rol === "asesor") localStorage.setItem("vivaldi-asesor", ses.nombre); } catch (e) {}
-  }
-  async function refresh() {
-    const j = await api("/auth/v1/token?grant_type=refresh_token", {method: "POST", body: JSON.stringify({refresh_token: ses.refresh_token})}, false);
-    ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
-  }
-
-
-  // clientes que llegaron solos desde la web: entran a "Mis clientes" del asesor asignado
-  let avisados = "";
-  async function traerSolicitudes() {
-    const jefe = ses.rol === "jefatura";
-    const filtro = jefe ? "" : `&asesor=eq.${ses.user.id}`;
-    let rows = []; try { rows = await api(`/rest/v1/solicitudes?select=*&estado=eq.nueva${filtro}&order=fecha.asc&limit=200`, {method: "GET"}) || []; } catch (e) { if (/does not exist|schema cache|404/i.test(e.message)) return; throw e; }
-    const mias = rows.filter(r => r.asesor === ses.user.id || (jefe && !r.asesor));
-    let nuevos = 0;
-    for (const r of mias) {
-      const phone = String(r.celular || "").slice(-9), ex = CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
-      const note = [r.plazo && `Plazo de compra: ${r.plazo}`, r.pago && `Forma de pago: ${r.pago}`, r.visita && `Visita solicitada: ${r.visita}`, r.mensaje && `Mensaje: ${r.mensaje}`, r.campana && `Origen web: ${r.campana}`, r.acepta_promos ? "Acepta recibir promociones" : "No autorizó promociones"].filter(Boolean).join("\n");
-      const src = /facebook/i.test(r.origen) ? "Facebook" : /instagram/i.test(r.origen) ? "Instagram" : /tiktok/i.test(r.origen) ? "TikTok" : /google/i.test(r.origen) ? "Google" : "Web";
-      let id;
-      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (r.plazo) ex.plazo = r.plazo; if (r.pago) ex.pago = r.pago; id = ex.id; }
-      else { id = "w" + r.id; const d = (r.fecha || "").slice(0, 10) || todayIso();
-        CLIENTS.unshift({id, created: d, ts: Date.parse(r.fecha) || Date.now(), name: r.nombre, phone, proj: r.proyecto || (VIV[0] || {}).name || "", stage: r.visita ? "Visita agendada" : "Nuevo", stageAt: d, next: todayIso(), budget: 0, notes: note, src, plazo: r.plazo || "", pago: r.pago || "", adv: ses.nombre}); nuevos++; }
-      await api(`/rest/v1/solicitudes?id=eq.${r.id}`, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "en herramienta", cliente_id: id})});
-    }
-    if (mias.length) { quiet(() => L.set(COLS.clientes.ls, JSON.stringify(CLIENTS))); rerender(); toast(nuevos === 1 ? "Llegó 1 cliente nuevo desde la web" : `Llegaron ${mias.length} clientes desde la web`); }
-    // jefatura: solicitudes que siguen sin atender después de una hora
-    if (jefe) {
-      const tarde = rows.filter(r => r.asesor && r.asesor !== ses.user.id && Date.now() - Date.parse(r.fecha) > 3600000);
-      const k = tarde.map(r => r.id).join(",");
-      ALERTA = tarde.length ? `${tarde.length} ${tarde.length === 1 ? "cliente de la web lleva" : "clientes de la web llevan"} más de una hora sin que su asesor abra la herramienta: ${tarde.slice(0, 5).map(r => r.nombre).join(", ")}${tarde.length > 5 ? "…" : ""}.` : "";
-      if (k && k !== avisados) toast("Hay clientes de la web sin atender. Revisa el botón de la base de datos.");
-      avisados = k;
-      try { const rc = await api(`/rest/v1/reclamos?select=codigo,vence,tipo,nombre&estado=eq.abierto&order=vence.asc&limit=50`, {method: "GET"}) || [];
-        RECL = rc; } catch (e) { RECL = []; }
-    }
-  }
-  let ALERTA = "", RECL = [];
-  let busy = false, again = false;
-  async function sync() {
-    if (!ses) { status("", "Sin conectar"); return; }
-    if (busy) { again = true; return; } busy = true; status("busy", "Sincronizando…");
-    try {
-      await traerSolicitudes();
-      // 1) bajar lo nuevo del servidor
-      let changed = new Set(), page = 0;
-      while (true) {
-        const rows = await api(`/rest/v1/registros?select=id,coleccion,asesor,contenido,eliminado,actualizado&actualizado=gt.${encodeURIComponent(new Date(Date.parse(ST.since) - 120000).toISOString())}&order=actualizado.asc&limit=500&offset=${page * 500}`, {method: "GET"});
-        for (const row of rows || []) {
-          const C = COLS[row.coleccion]; if (!C) continue;
-          // el registro se reconoce por su id en el servidor; si es nuevo para este equipo, por su clave
-          let mk = Object.keys(ST.rows).find(m => ST.rows[m].id === row.id);
-          if (!mk) { if (row.eliminado) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; } mk = row.coleccion + "|" + C.key(row.contenido || {}); }
-          const key = mk.slice(mk.indexOf("|") + 1), known = ST.rows[mk], arr = C.get().slice(), idx = arr.findIndex(x => C.key(x) === key);
-          if (known && !row.eliminado && known.h === hash(row.contenido)) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; }   // nada nuevo (o borrado aquí, pendiente de subir)
-          const localDirty = idx >= 0 && known && hash(arr[idx]) !== known.h;
-          if (localDirty) { /* el cambio hecho en este equipo es más reciente: se sube a continuación */ }
-          else if (row.eliminado) { if (idx >= 0) { arr.splice(idx, 1); C.set(arr); changed.add(row.coleccion); } delete ST.rows[mk]; }
-          else if (idx >= 0 && hash(arr[idx]) === hash(row.contenido)) ST.rows[mk] = {id: row.id, h: hash(row.contenido)};
-          else { if (idx >= 0) arr[idx] = row.contenido; else arr.unshift(row.contenido); C.set(arr); changed.add(row.coleccion); ST.rows[mk] = {id: row.id, h: hash(row.contenido)}; }
-          if (row.actualizado > ST.since) ST.since = row.actualizado;
-        }
-        if (!rows || rows.length < 500) break; page++;
-      }
-      for (const c of changed) quiet(() => L.set(COLS[c].ls, JSON.stringify(COLS[c].get())));
-      saveST();
-      // 2) subir lo que cambió en este equipo
-      const up = [];
-      for (const [name, C] of Object.entries(COLS)) {
-        const arr = C.get() || [], seen = new Set();
-        for (const r of arr) { if (r && r.demo) continue; const k = C.key(r); if (!k || k === "|") continue; const mk = name + "|" + k; seen.add(mk); const h = hash(r), kn = ST.rows[mk];
-          if (!kn || kn.h !== h) up.push({mk, h, body: {id: kn ? kn.id : `${name}:${name === "lotes" ? "" : ses.user.id + ":"}${k}`, coleccion: name, contenido: r, eliminado: false}}); }
-        const gone = Object.entries(ST.rows).filter(([mk]) => mk.startsWith(name + "|") && !seen.has(mk));
-        // protección: si una lista entera quedó vacía de golpe no se borra nada en el servidor
-        if (!arr.length && gone.length > 3) { gone.forEach(([mk]) => delete ST.rows[mk]); ST.since = "1970-01-01T00:00:00Z"; continue; }
-        for (const [mk, kn] of gone) up.push({mk, del: true, body: {id: kn.id}});
-      }
-      // lo borrado en el equipo se marca como eliminado (el contenido queda en el servidor y en el historial)
-      for (const u of up.filter(u => u.del)) {
-        const res = await api(`/rest/v1/registros?id=eq.${encodeURIComponent(u.body.id)}`, {method: "PATCH", headers: {Prefer: "return=representation"}, body: JSON.stringify({eliminado: true})});
-        delete ST.rows[u.mk]; (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; }); saveST();
-      }
-      const ups = up.filter(u => !u.del);
-      for (let i = 0; i < ups.length; i += 200) {
-        const chunk = ups.slice(i, i + 200);
-        const res = await api("/rest/v1/registros?on_conflict=id", {method: "POST", headers: {Prefer: "resolution=merge-duplicates,return=representation"}, body: JSON.stringify(chunk.map(u => u.body))});
-        chunk.forEach(u => { ST.rows[u.mk] = {id: u.body.id, h: u.h}; });
-        (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; });
-        saveST();
-      }
-      if (changed.size) rerender();
-      L.set("nube-ultima", new Date().toISOString());
-      const hoyIso = todayIso(), rtxt = RECL.length ? ` Libro de Reclamaciones: ${RECL.length} sin responder; el más próximo vence el ${RECL[0].vence.split("-").reverse().join("/")} (${RECL[0].codigo}, ${RECL[0].nombre})${RECL.some(r => r.vence <= hoyIso) ? ". Hay plazos vencidos o que vencen hoy." : "."}` : "";
-      status(ALERTA || RECL.some(r => r.vence <= hoyIso) ? "busy" : "ok", ALERTA ? "Clientes sin atender" : "Sincronizado");
-      msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}).replace(/\.$/, "")}.` + (ALERTA ? "\n\n⚠ " + ALERTA : "") + (rtxt ? "\n\n" + rtxt.trim() : ""));
-    } catch (e) {
-      const off = !navigator.onLine || /fetch|network|Failed/i.test(e.message);
-      status(off ? "" : "err", off ? "Sin señal: guardado en el equipo" : "Error al sincronizar"); msg(off ? "No hay conexión. Todo queda guardado en este equipo y se subirá al volver la señal." : "No se pudo sincronizar: " + e.message);
-    } finally { busy = false; if (again) { again = false; setTimeout(sync, 300); } }
-  }
-  let quietOn = false; const quiet = f => { quietOn = true; try { f(); } finally { quietOn = false; } };
-  function rerender() { ["renderCrm", "renderSep", "renderCob", "renderInv", "renderVis", "renderPanel", "renderNumbers", "renderRank", "renderHoy", "renderPfLog"].forEach(n => { try { if (typeof window[n] === "function") window[n](); } catch (e) {} }); }
-  // cada vez que la herramienta guarda algo, se programa la subida
-  const tracked = new Set(Object.values(COLS).map(c => c.ls)); let tmr = null;
-  const _set = Storage.prototype.setItem;
-  Storage.prototype.setItem = function (k, v) { _set.call(this, k, v); if (!quietOn && this === window.localStorage && tracked.has(k) && ses) { clearTimeout(tmr); tmr = setTimeout(sync, 2500); } };
-  addEventListener("online", () => sync()); document.addEventListener("visibilitychange", () => { if (!document.hidden) sync(); });
-  setInterval(() => { if (!document.hidden) sync(); }, 60000);
-
-  // interfaz
-  const dlg = $q("#nubeDlg"), view = () => {
-    const on = !!ses; $q("#nubeLogin").hidden = on; $q("#nubeGo").hidden = on; $q("#nubeSync").hidden = !on; $q("#nubeOut").hidden = !on;
-    const c = cfg(); $q("#nubeUrl").value = c.url || ""; $q("#nubeKey").value = c.key || "";
-    if (!on) msg(c.url ? "" : "Falta configurar el servidor (lo hace el administrador una sola vez).");
-  };
-  btn.addEventListener("click", () => { view(); dlg.hidden = false; });
-  $q("#nubeX").addEventListener("click", () => dlg.hidden = true);
-  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.hidden = true; });
-  $q("#nubeSave").addEventListener("click", () => { L.set("nube-config", JSON.stringify({url: $q("#nubeUrl").value.trim(), key: $q("#nubeKey").value.trim()})); msg("Servidor guardado."); });
-  $q("#nubeGo").addEventListener("click", async () => {
-    const m = $q("#nubeMail").value.trim(), p = $q("#nubePass").value; if (!m || !p) { msg("Escribe tu correo y contraseña."); return; }
-    msg("Entrando…"); try { await login(m, p); $q("#nubePass").value = ""; view(); await sync(); } catch (e) { msg(/invalid|credentials/i.test(e.message) ? "Correo o contraseña incorrectos." : e.message); status("err", "Sin conectar"); }
-  });
-  $q("#nubeSync").addEventListener("click", () => sync());
-  $q("#nubeOut").addEventListener("click", async () => { if (!confirm("¿Cerrar sesión en este equipo? Antes se suben los cambios pendientes.")) return; await sync(); ses = null; L.del("nube-sesion"); view(); status("", "Sin conectar"); msg("Sesión cerrada."); });
-  window.vivaldiNube = {sync, get sesion() { return ses; }, get estado() { return ST; }};
-  if (ses) setTimeout(sync, 800); else status("", "Sin conectar");
-})();
-</script>
-<!--growth-sync-end-->
 <!--nav-menu-start-->
 <style>
 nav.top .navmore{position:relative;display:inline-flex;flex:none}
@@ -5802,6 +5602,80 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--direccion-end-->
+<!--borrar-start-->
+<style>
+.delbar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);opacity:0;z-index:70;background:#0B2236;color:#fff;border-radius:999px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:14px;font-size:.9rem;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.23,1,.32,1),opacity .2s;max-width:calc(100vw - 24px)}
+.delbar.on{transform:translate(-50%,0);opacity:1}
+.delbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.delbar button{border:0;border-radius:999px;background:#FFC861;color:#0B2236;font:inherit;font-weight:800;min-height:40px;padding:0 16px;cursor:pointer;flex:none}
+.crm-bulk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 4px}
+.crm-bulk button{min-height:40px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;padding:0 14px;cursor:pointer;border:1px solid var(--line,#D4E2EC);background:#fff;color:var(--ink,#0B2236)}
+.crm-bulk button.danger{background:#C0392B;border-color:#C0392B;color:#fff}
+.crm-bulk button.danger:disabled{opacity:.45;cursor:default}
+.crm-bulk .n{font-size:.82rem;color:var(--muted,#4E6478)}
+.crm-pick{display:none;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:var(--muted,#4E6478);margin-bottom:6px;cursor:pointer;min-height:32px}
+.crm-pick input{width:20px;height:20px;accent-color:#C0392B}
+.bulk-on .crm-pick{display:flex}
+.bulk-on .crm-item.pick{outline:2px solid #C0392B;outline-offset:-2px}
+#cDel{color:#C0392B;border-color:#E9B4AD}
+#cDel[hidden],.crm-bulk [hidden]{display:none!important}
+</style>
+<script>
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("crmList")) return;
+  const list = document.getElementById("crmList");
+  // barra "Cliente eliminado · Deshacer"
+  const bar = document.createElement("div"); bar.className = "delbar"; bar.setAttribute("role", "status");
+  bar.innerHTML = '<span id="delMsg"></span><button type="button" id="delUndo">Deshacer</button>'; document.body.appendChild(bar);
+  let undo = null, timer = 0;
+  const done = () => { bar.classList.remove("on"); undo = null; };
+  function remove(ids) {
+    const set = new Set(ids), gone = []; CLIENTS.forEach((c, i) => { if (set.has(c.id)) gone.push([i, c]); });
+    if (!gone.length) return;
+    CLIENTS = CLIENTS.filter(c => !set.has(c.id));
+    if (typeof crmEdit !== "undefined" && set.has(crmEdit) && typeof resetCrmForm === "function") resetCrmForm();
+    crmSave(); renderCrm();
+    document.getElementById("delMsg").textContent = gone.length === 1 ? `${gone[0][1].name || "Cliente"} eliminado` : `${gone.length} clientes eliminados`;
+    undo = () => { gone.forEach(([i, c]) => { if (!CLIENTS.some(x => x.id === c.id)) CLIENTS.splice(Math.min(i, CLIENTS.length), 0, c); }); crmSave(); renderCrm(); done(); toast(gone.length === 1 ? "Cliente recuperado" : "Clientes recuperados"); };
+    bar.classList.add("on"); clearTimeout(timer); timer = setTimeout(done, 7000);
+  }
+  document.getElementById("delUndo").addEventListener("click", () => { clearTimeout(timer); undo && undo(); });
+
+  // 1) botón Eliminar de cada tarjeta: un toque, con opción de deshacer (sin ventana de confirmación)
+  list.addEventListener("click", e => { const b = e.target.closest('button[data-a="del"]'); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
+    const it = b.closest("[data-id]"); if (it) remove([it.dataset.id]); }, true);
+
+  // 2) botón "Borrar cliente" en el formulario cuando se está editando
+  const cancel = document.getElementById("cCancel");
+  if (cancel) { const del = document.createElement("button"); del.type = "button"; del.className = "btn ghost"; del.id = "cDel"; del.textContent = "Borrar cliente"; del.hidden = cancel.hidden; cancel.after(del);
+    new MutationObserver(() => del.hidden = cancel.hidden).observe(cancel, {attributes: true, attributeFilter: ["hidden"]});
+    del.addEventListener("click", () => { if (typeof crmEdit !== "undefined" && crmEdit) remove([crmEdit]); }); }
+
+  // 3) borrar varios: casillas en las tarjetas y un botón
+  const tools = document.createElement("div"); tools.className = "crm-bulk";
+  tools.innerHTML = '<button type="button" id="bulkOn">Borrar varios</button><button type="button" id="bulkAll" hidden>Seleccionar los visibles</button><button type="button" class="danger" id="bulkGo" hidden disabled>Borrar seleccionados</button><button type="button" id="bulkOff" hidden>Cancelar</button><span class="n" id="bulkN" hidden></span>';
+  list.before(tools);
+  const pick = new Set(), $b = id => document.getElementById(id);
+  const sync = () => { const on = list.classList.contains("bulk-on");
+    $b("bulkOn").hidden = on; ["bulkAll", "bulkGo", "bulkOff", "bulkN"].forEach(id => $b(id).hidden = !on);
+    list.querySelectorAll(".crm-item[data-id]").forEach(it => { let lb = it.querySelector(".crm-pick");
+      if (!lb) { lb = document.createElement("label"); lb.className = "crm-pick"; lb.innerHTML = '<input type="checkbox"> Seleccionar'; it.prepend(lb); }
+      const ck = lb.querySelector("input"); ck.checked = pick.has(it.dataset.id); ck.setAttribute("aria-label", "Seleccionar " + ((it.querySelector(".crm-row b") || {}).textContent || "cliente")); it.classList.toggle("pick", ck.checked); });
+    [...pick].forEach(id => { if (!CLIENTS.some(c => c.id === id)) pick.delete(id); });
+    $b("bulkN").textContent = pick.size ? `${pick.size} seleccionado${pick.size === 1 ? "" : "s"}` : "Marca los clientes a borrar";
+    $b("bulkGo").disabled = !pick.size; $b("bulkGo").textContent = pick.size ? `Borrar ${pick.size}` : "Borrar seleccionados"; };
+  new MutationObserver(sync).observe(list, {childList: true});
+  list.addEventListener("change", e => { const ck = e.target.closest(".crm-pick input"); if (!ck) return; const id = ck.closest("[data-id]").dataset.id; ck.checked ? pick.add(id) : pick.delete(id); sync(); });
+  $b("bulkOn").addEventListener("click", () => { list.classList.add("bulk-on"); pick.clear(); sync(); });
+  $b("bulkOff").addEventListener("click", () => { list.classList.remove("bulk-on"); pick.clear(); sync(); });
+  $b("bulkAll").addEventListener("click", () => { list.querySelectorAll(".crm-item[data-id]").forEach(it => pick.add(it.dataset.id)); sync(); });
+  $b("bulkGo").addEventListener("click", () => { const ids = [...pick]; if (!ids.length) return;
+    if (ids.length > 1 && !confirm(`¿Borrar ${ids.length} clientes? Podrás deshacerlo durante unos segundos.`)) return;
+    pick.clear(); list.classList.remove("bulk-on"); remove(ids); sync(); });
+  sync();
+})();
+</script>
+<!--borrar-end-->
 <!--growth-demo-start-->
 <style id="demo-css">
 #demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
@@ -5908,5 +5782,207 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--growth-demo-end-->
+<!--growth-sync-start-->
+<style id="nube-css">
+#nubeBtn{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink,#13242E);border-radius:999px;padding:7px 12px;font:600 12px Manrope,Arial,sans-serif;min-height:36px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+#nubeBtn i{width:9px;height:9px;border-radius:50%;background:#9AA7AE;display:block}
+#nubeBtn.ok i{background:#1F8A4C}#nubeBtn.busy i{background:#E8A93A}#nubeBtn.err i{background:#C62828}
+#nubeDlg{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(6,25,40,.5);padding:16px}#nubeDlg[hidden]{display:none}
+#nubeDlg .card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:20px;display:grid;gap:10px;color:#13242E;font:14px Manrope,Arial,sans-serif;max-height:92vh;overflow:auto}
+#nubeDlg h3{margin:0;font-size:1.15rem}#nubeDlg p{margin:0;color:#4C5E68;font-size:.86rem;line-height:1.45}
+#nubeDlg label{display:grid;gap:4px;font-size:.8rem;font-weight:700;color:#4C5E68}
+#nubeDlg input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #D5DEE3;border-radius:10px;min-height:44px}
+#nubeDlg .row{display:flex;gap:8px;flex-wrap:wrap}#nubeDlg button{font:inherit;font-weight:700;border-radius:999px;min-height:42px;padding:0 16px;cursor:pointer;border:1px solid #D5DEE3;background:#fff}
+#nubeDlg button.pri{background:#0A3856;border-color:#0A3856;color:#fff}#nubeDlg details summary{cursor:pointer;font-weight:700;font-size:.82rem;min-height:32px;display:flex;align-items:center}
+#nubeMsg{font-size:.84rem;white-space:pre-line;line-height:1.45}
+</style>
+<button id="nubeBtn" type="button" aria-label="Base de datos"><i></i><span>Sin conectar</span></button>
+<div id="nubeDlg" hidden role="dialog" aria-modal="true" aria-labelledby="nubeT"><div class="card">
+  <h3 id="nubeT">Base de datos de Vivaldi</h3>
+  <p id="nubeInfo">Entra con tu usuario para guardar tus clientes, proformas y cobranzas en la base de datos de la empresa. Sin internet sigues trabajando y se sincroniza al volver la señal.</p>
+  <div id="nubeLogin"><label>Correo<input id="nubeMail" type="email" autocomplete="username" inputmode="email"></label><label style="margin-top:8px">Contraseña<input id="nubePass" type="password" autocomplete="current-password"></label></div>
+  <div id="nubeMsg" role="status"></div>
+  <div class="row"><button class="pri" type="button" id="nubeGo">Entrar</button><button type="button" id="nubeSync" hidden>Sincronizar ahora</button><button type="button" id="nubeOut" hidden>Cerrar sesión</button><button type="button" id="nubeX">Cerrar</button></div>
+  <details><summary>Servidor (solo administrador)</summary><label>URL del proyecto<input id="nubeUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label><label style="margin-top:8px">Clave pública (anon)<input id="nubeKey" autocomplete="off"></label><div class="row" style="margin-top:8px"><button type="button" id="nubeSave">Guardar servidor</button></div></details>
+</div></div>
+<script id="growth-sync">
+/* Sincronización con la base de datos (Supabase). Sigue funcionando sin internet: guarda en el equipo y sube los cambios al volver la señal.
+   El administrador puede dejar fijos la URL y la clave pública aquí abajo antes de entregar el archivo a los asesores. */
+(() => {
+  const SERVIDOR = {url: "", key: ""};
+  const $q = s => document.querySelector(s);
+  const L = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} }};
+  // claves sin el prefijo "vivaldi-": no entran en el respaldo en archivo (no se comparten credenciales)
+  const cfg = () => { try { return Object.assign({}, SERVIDOR, JSON.parse(L.get("nube-config") || "{}")); } catch (e) { return SERVIDOR; } };
+  let ses = null; try { ses = JSON.parse(L.get("nube-sesion") || "null"); } catch (e) {}
+  const COLS = {
+    clientes:     {ls: "vivaldi-clientes-v1",     key: r => r.id,                      get: () => CLIENTS, set: a => { CLIENTS = a; }},
+    proformas:    {ls: "vivaldi-proformas-v1",    key: r => (r.no || "") + "|" + (r.adv || ""), get: () => PFLOG, set: a => { PFLOG = a; }},
+    separaciones: {ls: "vivaldi-separaciones-v1", key: r => r.no,                      get: () => SEPS, set: a => { SEPS = a; }},
+    cobranza:     {ls: "vivaldi-cobranza-v1",     key: r => r.id,                      get: () => COB, set: a => { COB = a; }},
+    visitas:      {ls: "vivaldi-visitas-v1",      key: r => r.id,                      get: () => VISITS, set: a => { VISITS = a; }},
+    lotes:        {ls: "vivaldi-lotes-v1",        key: r => r.id,                      get: () => INV, set: a => { INV = a; }},
+  };
+  // estado: por cada registro conocido, su id en el servidor y la huella del contenido ya sincronizado
+  let ST = {}; try { ST = JSON.parse(L.get("nube-estado") || "{}"); } catch (e) {} ST.rows = ST.rows || {}; ST.since = ST.since || "1970-01-01T00:00:00Z";
+  const saveST = () => L.set("nube-estado", JSON.stringify(ST));
+  // huella independiente del orden de los campos (el servidor los guarda ordenados)
+  const canon = o => Array.isArray(o) ? "[" + o.map(x => x === undefined ? "null" : canon(x)).join(",") + "]" : o && typeof o === "object" ? "{" + Object.keys(o).filter(k => o[k] !== undefined && typeof o[k] !== "function").sort().map(k => JSON.stringify(k) + ":" + canon(o[k])).join(",") + "}" : JSON.stringify(o === undefined ? null : o);
+  const hash = o => { const s = canon(o); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length; };
+  const btn = $q("#nubeBtn"), msg = t => { $q("#nubeMsg").textContent = t || ""; };
+  const status = (cls, t) => { btn.className = cls || ""; btn.querySelector("span").textContent = t; };
+
+  async function api(path, opt = {}, retry = true) {
+    const c = cfg(); if (!c.url || !c.key) throw new Error("Falta configurar el servidor");
+    const h = Object.assign({apikey: c.key, "Content-Type": "application/json"}, ses ? {Authorization: "Bearer " + ses.access_token} : {}, opt.headers || {});
+    const r = await fetch(c.url.replace(/\/$/, "") + path, Object.assign({}, opt, {headers: h}));
+    if (r.status === 401 && retry && ses && ses.refresh_token) { await refresh(); return api(path, opt, false); }
+    if (!r.ok) { let m = ""; try { const j = await r.json(); m = j.message || j.msg || j.error_description || j.error || ""; } catch (e) {} throw new Error(m || "Error " + r.status); }
+    return r.status === 204 ? null : r.json().catch(() => null);
+  }
+  async function login(mail, pass) {
+    const j = await api("/auth/v1/token?grant_type=password", {method: "POST", body: JSON.stringify({email: mail, password: pass})}, false);
+    ses = {access_token: j.access_token, refresh_token: j.refresh_token, user: {id: j.user.id, email: j.user.email}};
+    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=nombre,rol,activo`, {method: "GET"});
+    if (!p || !p.length || p[0].activo === false) { ses = null; throw new Error("Tu usuario no está habilitado. Pide acceso a la jefatura."); }
+    ses.nombre = p[0].nombre; ses.rol = p[0].rol;
+    if (ST.user && ST.user !== ses.user.id) {
+      // equipo compartido: los datos del usuario anterior ya están en la base; se quitan de este equipo para no mezclarlos
+      if (!confirm(`Este equipo tiene los datos de ${ST.nombre || "otro usuario"}. Para entrar como ${ses.nombre} se quitarán de este equipo (siguen guardados en la base de datos). ¿Continuar?`)) { ses = null; throw new Error("Ingreso cancelado."); }
+      quiet(() => Object.values(COLS).forEach(C => { C.set([]); L.set(C.ls, "[]"); })); rerender();
+      ST = {rows: {}, since: "1970-01-01T00:00:00Z"};
+    }
+    L.set("nube-sesion", JSON.stringify(ses)); ST.user = ses.user.id; ST.nombre = ses.nombre; saveST();
+    try { if (!localStorage.getItem("vivaldi-asesor") && ses.rol === "asesor") localStorage.setItem("vivaldi-asesor", ses.nombre); } catch (e) {}
+  }
+  async function refresh() {
+    const j = await api("/auth/v1/token?grant_type=refresh_token", {method: "POST", body: JSON.stringify({refresh_token: ses.refresh_token})}, false);
+    ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
+  }
+
+
+  // clientes que llegaron solos desde la web: entran a "Mis clientes" del asesor asignado
+  let avisados = "";
+  async function traerSolicitudes() {
+    const jefe = ses.rol === "jefatura";
+    const filtro = jefe ? "" : `&asesor=eq.${ses.user.id}`;
+    let rows = []; try { rows = await api(`/rest/v1/solicitudes?select=*&estado=eq.nueva${filtro}&order=fecha.asc&limit=200`, {method: "GET"}) || []; } catch (e) { if (/does not exist|schema cache|404/i.test(e.message)) return; throw e; }
+    const mias = rows.filter(r => r.asesor === ses.user.id || (jefe && !r.asesor));
+    let nuevos = 0;
+    for (const r of mias) {
+      const phone = String(r.celular || "").slice(-9), ex = CLIENTS.find(c => String(c.phone || "").replace(/\D/g, "").slice(-9) === phone);
+      const note = [r.plazo && `Plazo de compra: ${r.plazo}`, r.pago && `Forma de pago: ${r.pago}`, r.visita && `Visita solicitada: ${r.visita}`, r.mensaje && `Mensaje: ${r.mensaje}`, r.campana && `Origen web: ${r.campana}`, r.acepta_promos ? "Acepta recibir promociones" : "No autorizó promociones"].filter(Boolean).join("\n");
+      const src = /facebook/i.test(r.origen) ? "Facebook" : /instagram/i.test(r.origen) ? "Instagram" : /tiktok/i.test(r.origen) ? "TikTok" : /google/i.test(r.origen) ? "Google" : "Web";
+      let id;
+      if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (r.plazo) ex.plazo = r.plazo; if (r.pago) ex.pago = r.pago; id = ex.id; }
+      else { id = "w" + r.id; const d = (r.fecha || "").slice(0, 10) || todayIso();
+        CLIENTS.unshift({id, created: d, ts: Date.parse(r.fecha) || Date.now(), name: r.nombre, phone, proj: r.proyecto || (VIV[0] || {}).name || "", stage: r.visita ? "Visita agendada" : "Nuevo", stageAt: d, next: todayIso(), budget: 0, notes: note, src, plazo: r.plazo || "", pago: r.pago || "", adv: ses.nombre}); nuevos++; }
+      await api(`/rest/v1/solicitudes?id=eq.${r.id}`, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "en herramienta", cliente_id: id})});
+    }
+    if (mias.length) { quiet(() => L.set(COLS.clientes.ls, JSON.stringify(CLIENTS))); rerender(); toast(nuevos === 1 ? "Llegó 1 cliente nuevo desde la web" : `Llegaron ${mias.length} clientes desde la web`); }
+    // jefatura: solicitudes que siguen sin atender después de una hora
+    if (jefe) {
+      const tarde = rows.filter(r => r.asesor && r.asesor !== ses.user.id && Date.now() - Date.parse(r.fecha) > 3600000);
+      const k = tarde.map(r => r.id).join(",");
+      ALERTA = tarde.length ? `${tarde.length} ${tarde.length === 1 ? "cliente de la web lleva" : "clientes de la web llevan"} más de una hora sin que su asesor abra la herramienta: ${tarde.slice(0, 5).map(r => r.nombre).join(", ")}${tarde.length > 5 ? "…" : ""}.` : "";
+      if (k && k !== avisados) toast("Hay clientes de la web sin atender. Revisa el botón de la base de datos.");
+      avisados = k;
+      try { const rc = await api(`/rest/v1/reclamos?select=codigo,vence,tipo,nombre&estado=eq.abierto&order=vence.asc&limit=50`, {method: "GET"}) || [];
+        RECL = rc; } catch (e) { RECL = []; }
+    }
+  }
+  let ALERTA = "", RECL = [];
+  let busy = false, again = false;
+  async function sync() {
+    if (!ses) { status("", "Sin conectar"); return; }
+    if (busy) { again = true; return; } busy = true; status("busy", "Sincronizando…");
+    try {
+      await traerSolicitudes();
+      // 1) bajar lo nuevo del servidor
+      let changed = new Set(), page = 0;
+      while (true) {
+        const rows = await api(`/rest/v1/registros?select=id,coleccion,asesor,contenido,eliminado,actualizado&actualizado=gt.${encodeURIComponent(new Date(Date.parse(ST.since) - 120000).toISOString())}&order=actualizado.asc&limit=500&offset=${page * 500}`, {method: "GET"});
+        for (const row of rows || []) {
+          const C = COLS[row.coleccion]; if (!C) continue;
+          // el registro se reconoce por su id en el servidor; si es nuevo para este equipo, por su clave
+          let mk = Object.keys(ST.rows).find(m => ST.rows[m].id === row.id);
+          if (!mk) { if (row.eliminado) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; } mk = row.coleccion + "|" + C.key(row.contenido || {}); }
+          const key = mk.slice(mk.indexOf("|") + 1), known = ST.rows[mk], arr = C.get().slice(), idx = arr.findIndex(x => C.key(x) === key);
+          if (known && !row.eliminado && known.h === hash(row.contenido)) { if (row.actualizado > ST.since) ST.since = row.actualizado; continue; }   // nada nuevo (o borrado aquí, pendiente de subir)
+          const localDirty = idx >= 0 && known && hash(arr[idx]) !== known.h;
+          if (localDirty) { /* el cambio hecho en este equipo es más reciente: se sube a continuación */ }
+          else if (row.eliminado) { if (idx >= 0) { arr.splice(idx, 1); C.set(arr); changed.add(row.coleccion); } delete ST.rows[mk]; }
+          else if (idx >= 0 && hash(arr[idx]) === hash(row.contenido)) ST.rows[mk] = {id: row.id, h: hash(row.contenido)};
+          else { if (idx >= 0) arr[idx] = row.contenido; else arr.unshift(row.contenido); C.set(arr); changed.add(row.coleccion); ST.rows[mk] = {id: row.id, h: hash(row.contenido)}; }
+          if (row.actualizado > ST.since) ST.since = row.actualizado;
+        }
+        if (!rows || rows.length < 500) break; page++;
+      }
+      for (const c of changed) quiet(() => L.set(COLS[c].ls, JSON.stringify(COLS[c].get())));
+      saveST();
+      // 2) subir lo que cambió en este equipo
+      const up = [];
+      for (const [name, C] of Object.entries(COLS)) {
+        const arr = C.get() || [], seen = new Set();
+        for (const r of arr) { if (r && r.demo) continue; const k = C.key(r); if (!k || k === "|") continue; const mk = name + "|" + k; seen.add(mk); const h = hash(r), kn = ST.rows[mk];
+          if (!kn || kn.h !== h) up.push({mk, h, body: {id: kn ? kn.id : `${name}:${name === "lotes" ? "" : ses.user.id + ":"}${k}`, coleccion: name, contenido: r, eliminado: false}}); }
+        const gone = Object.entries(ST.rows).filter(([mk]) => mk.startsWith(name + "|") && !seen.has(mk));
+        // protección: si una lista entera quedó vacía de golpe no se borra nada en el servidor
+        if (!arr.length && gone.length > 3) { gone.forEach(([mk]) => delete ST.rows[mk]); ST.since = "1970-01-01T00:00:00Z"; continue; }
+        for (const [mk, kn] of gone) up.push({mk, del: true, body: {id: kn.id}});
+      }
+      // lo borrado en el equipo se marca como eliminado (el contenido queda en el servidor y en el historial)
+      for (const u of up.filter(u => u.del)) {
+        const res = await api(`/rest/v1/registros?id=eq.${encodeURIComponent(u.body.id)}`, {method: "PATCH", headers: {Prefer: "return=representation"}, body: JSON.stringify({eliminado: true})});
+        delete ST.rows[u.mk]; (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; }); saveST();
+      }
+      const ups = up.filter(u => !u.del);
+      for (let i = 0; i < ups.length; i += 200) {
+        const chunk = ups.slice(i, i + 200);
+        const res = await api("/rest/v1/registros?on_conflict=id", {method: "POST", headers: {Prefer: "resolution=merge-duplicates,return=representation"}, body: JSON.stringify(chunk.map(u => u.body))});
+        chunk.forEach(u => { ST.rows[u.mk] = {id: u.body.id, h: u.h}; });
+        (res || []).forEach(r => { if (r.actualizado > ST.since) ST.since = r.actualizado; });
+        saveST();
+      }
+      if (changed.size) rerender();
+      L.set("nube-ultima", new Date().toISOString());
+      const hoyIso = todayIso(), rtxt = RECL.length ? ` Libro de Reclamaciones: ${RECL.length} sin responder; el más próximo vence el ${RECL[0].vence.split("-").reverse().join("/")} (${RECL[0].codigo}, ${RECL[0].nombre})${RECL.some(r => r.vence <= hoyIso) ? ". Hay plazos vencidos o que vencen hoy." : "."}` : "";
+      status(ALERTA || RECL.some(r => r.vence <= hoyIso) ? "busy" : "ok", ALERTA ? "Clientes sin atender" : "Sincronizado");
+      msg(`Conectado como ${ses.nombre} (${ses.rol}). Última sincronización: ${new Date().toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}).replace(/\.$/, "")}.` + (ALERTA ? "\n\n⚠ " + ALERTA : "") + (rtxt ? "\n\n" + rtxt.trim() : ""));
+    } catch (e) {
+      const off = !navigator.onLine || /fetch|network|Failed/i.test(e.message);
+      status(off ? "" : "err", off ? "Sin señal: guardado en el equipo" : "Error al sincronizar"); msg(off ? "No hay conexión. Todo queda guardado en este equipo y se subirá al volver la señal." : "No se pudo sincronizar: " + e.message);
+    } finally { busy = false; if (again) { again = false; setTimeout(sync, 300); } }
+  }
+  let quietOn = false; const quiet = f => { quietOn = true; try { f(); } finally { quietOn = false; } };
+  function rerender() { ["renderCrm", "renderSep", "renderCob", "renderInv", "renderVis", "renderPanel", "renderNumbers", "renderRank", "renderHoy", "renderPfLog"].forEach(n => { try { if (typeof window[n] === "function") window[n](); } catch (e) {} }); }
+  // cada vez que la herramienta guarda algo, se programa la subida
+  const tracked = new Set(Object.values(COLS).map(c => c.ls)); let tmr = null;
+  const _set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) { _set.call(this, k, v); if (!quietOn && this === window.localStorage && tracked.has(k) && ses) { clearTimeout(tmr); tmr = setTimeout(sync, 2500); } };
+  addEventListener("online", () => sync()); document.addEventListener("visibilitychange", () => { if (!document.hidden) sync(); });
+  setInterval(() => { if (!document.hidden) sync(); }, 60000);
+
+  // interfaz
+  const dlg = $q("#nubeDlg"), view = () => {
+    const on = !!ses; $q("#nubeLogin").hidden = on; $q("#nubeGo").hidden = on; $q("#nubeSync").hidden = !on; $q("#nubeOut").hidden = !on;
+    const c = cfg(); $q("#nubeUrl").value = c.url || ""; $q("#nubeKey").value = c.key || "";
+    if (!on) msg(c.url ? "" : "Falta configurar el servidor (lo hace el administrador una sola vez).");
+  };
+  btn.addEventListener("click", () => { view(); dlg.hidden = false; });
+  $q("#nubeX").addEventListener("click", () => dlg.hidden = true);
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.hidden = true; });
+  $q("#nubeSave").addEventListener("click", () => { L.set("nube-config", JSON.stringify({url: $q("#nubeUrl").value.trim(), key: $q("#nubeKey").value.trim()})); msg("Servidor guardado."); });
+  $q("#nubeGo").addEventListener("click", async () => {
+    const m = $q("#nubeMail").value.trim(), p = $q("#nubePass").value; if (!m || !p) { msg("Escribe tu correo y contraseña."); return; }
+    msg("Entrando…"); try { await login(m, p); $q("#nubePass").value = ""; view(); await sync(); } catch (e) { msg(/invalid|credentials/i.test(e.message) ? "Correo o contraseña incorrectos." : e.message); status("err", "Sin conectar"); }
+  });
+  $q("#nubeSync").addEventListener("click", () => sync());
+  $q("#nubeOut").addEventListener("click", async () => { if (!confirm("¿Cerrar sesión en este equipo? Antes se suben los cambios pendientes.")) return; await sync(); ses = null; L.del("nube-sesion"); view(); status("", "Sin conectar"); msg("Sesión cerrada."); });
+  window.vivaldiNube = {sync, get sesion() { return ses; }, get estado() { return ST; }};
+  if (ses) setTimeout(sync, 800); else status("", "Sin conectar");
+})();
+</script>
+<!--growth-sync-end-->
 </body>
 </html>

@@ -1,0 +1,16 @@
+const {chromium}=require('playwright');const {execSync}=require('child_process');const M='http://127.0.0.1:54321';
+const q=s=>execSync(`psql -h /var/tmp/vvpg -p 5544 -U postgres -X -At -d vv -c "${s}"`).toString().trim();
+(async()=>{const b=await chromium.launch();const p=await (await b.newContext({viewport:{width:1300,height:900}})).newPage();const errs=[];const reqs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
+p.on('request',r=>{if(r.url().startsWith('http://127.0.0.1:54321/rest'))reqs.push(r.method()+' '+r.url().slice(26,90))});await p.route(/^https?:/,r=>r.request().url().startsWith(M)?r.continue():r.abort());
+await p.addInitScript(cfg=>{if(!localStorage.getItem('nube-config'))localStorage.setItem('nube-config',cfg)},JSON.stringify({url:M,key:'anon-test-key'}));
+await p.goto('file:///home/user/VIVALDI/entregables/software/planicie-herramienta-'+process.argv[2]+'.html');await p.waitForTimeout(1500);
+await p.evaluate(()=>document.querySelector('#nubeBtn').click());await p.fill('#nubeMail','ana@vivaldi.pe');await p.fill('#nubePass','clave-ana');await p.click('#nubeGo');await p.waitForTimeout(3000);await p.keyboard.press('Escape');await p.waitForTimeout(300);await p.evaluate(()=>{const d=document.getElementById('nubeDlg');if(d&&!d.hidden){const x=d.querySelector('[data-close],.close,button[aria-label*="errar"]');x?x.click():d.hidden=true}});const st=await p.evaluate(()=>document.querySelector('#nubeBtn').innerText);console.log('estado',st);
+await p.fill('#cName','Cliente Para Borrar');await p.fill('#cPhone','999111222');await p.click('#cSave');await p.waitForTimeout(3500);
+const id=await p.evaluate(()=>CLIENTS.find(c=>c.name==='Cliente Para Borrar').id);
+const s0=q(`select eliminado from registros where contenido->>'id'='${id}'`);
+await p.locator(`#crmList .crm-item[data-id="${id}"] button[data-a="del"]`).click();await p.waitForTimeout(500);
+console.log('local',await p.evaluate(()=>[JSON.parse(localStorage.getItem('vivaldi-clientes-v1')).map(c=>c.id),Object.keys(JSON.parse(localStorage.getItem('nube-estado')||'{}').rows||{})]));console.log('reqs',reqs.slice(-8));console.log('srv',q(`select id,eliminado,contenido->>'id' from registros`));let s1;for(let i=0;i<20;i++){await p.waitForTimeout(1000);s1=q(`select eliminado from registros where contenido->>'id'='${id}'`);if(s1==='t')break}const secs=i=>i;
+const s1x=q(`select eliminado from registros where contenido->>'id'='${id}'`);
+await p.click('#delUndo').catch(e=>errs.push('undo vencido'));await p.waitForTimeout(500);await p.evaluate(()=>window.vivaldiNube&&vivaldiNube.sync&&vivaldiNube.sync());await p.waitForTimeout(4000);
+const s2=q(`select eliminado from registros where contenido->>'id'='${id}'`);
+console.log(process.argv[2],{creado:s0,trasBorrar:s1,trasDeshacer:s2,errs});await b.close()})();

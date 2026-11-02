@@ -1,0 +1,74 @@
+<!--borrar-start-->
+<style>
+.delbar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);opacity:0;z-index:70;background:#0B2236;color:#fff;border-radius:999px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:14px;font-size:.9rem;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);transition:transform .25s cubic-bezier(.23,1,.32,1),opacity .2s;max-width:calc(100vw - 24px)}
+.delbar.on{transform:translate(-50%,0);opacity:1}
+.delbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.delbar button{border:0;border-radius:999px;background:#FFC861;color:#0B2236;font:inherit;font-weight:800;min-height:40px;padding:0 16px;cursor:pointer;flex:none}
+.crm-bulk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 4px}
+.crm-bulk button{min-height:40px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;padding:0 14px;cursor:pointer;border:1px solid var(--line,#D4E2EC);background:#fff;color:var(--ink,#0B2236)}
+.crm-bulk button.danger{background:#C0392B;border-color:#C0392B;color:#fff}
+.crm-bulk button.danger:disabled{opacity:.45;cursor:default}
+.crm-bulk .n{font-size:.82rem;color:var(--muted,#4E6478)}
+.crm-pick{display:none;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:var(--muted,#4E6478);margin-bottom:6px;cursor:pointer;min-height:32px}
+.crm-pick input{width:20px;height:20px;accent-color:#C0392B}
+.bulk-on .crm-pick{display:flex}
+.bulk-on .crm-item.pick{outline:2px solid #C0392B;outline-offset:-2px}
+#cDel{color:#C0392B;border-color:#E9B4AD}
+#cDel[hidden],.crm-bulk [hidden]{display:none!important}
+</style>
+<script>
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("crmList")) return;
+  const list = document.getElementById("crmList");
+  // barra "Cliente eliminado · Deshacer"
+  const bar = document.createElement("div"); bar.className = "delbar"; bar.setAttribute("role", "status");
+  bar.innerHTML = '<span id="delMsg"></span><button type="button" id="delUndo">Deshacer</button>'; document.body.appendChild(bar);
+  let undo = null, timer = 0;
+  const done = () => { bar.classList.remove("on"); undo = null; };
+  function remove(ids) {
+    const set = new Set(ids), gone = []; CLIENTS.forEach((c, i) => { if (set.has(c.id)) gone.push([i, c]); });
+    if (!gone.length) return;
+    CLIENTS = CLIENTS.filter(c => !set.has(c.id));
+    if (typeof crmEdit !== "undefined" && set.has(crmEdit) && typeof resetCrmForm === "function") resetCrmForm();
+    crmSave(); renderCrm();
+    document.getElementById("delMsg").textContent = gone.length === 1 ? `${gone[0][1].name || "Cliente"} eliminado` : `${gone.length} clientes eliminados`;
+    undo = () => { gone.forEach(([i, c]) => { if (!CLIENTS.some(x => x.id === c.id)) CLIENTS.splice(Math.min(i, CLIENTS.length), 0, c); }); crmSave(); renderCrm(); done(); toast(gone.length === 1 ? "Cliente recuperado" : "Clientes recuperados"); };
+    bar.classList.add("on"); clearTimeout(timer); timer = setTimeout(done, 7000);
+  }
+  document.getElementById("delUndo").addEventListener("click", () => { clearTimeout(timer); undo && undo(); });
+
+  // 1) botón Eliminar de cada tarjeta: un toque, con opción de deshacer (sin ventana de confirmación)
+  list.addEventListener("click", e => { const b = e.target.closest('button[data-a="del"]'); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
+    const it = b.closest("[data-id]"); if (it) remove([it.dataset.id]); }, true);
+
+  // 2) botón "Borrar cliente" en el formulario cuando se está editando
+  const cancel = document.getElementById("cCancel");
+  if (cancel) { const del = document.createElement("button"); del.type = "button"; del.className = "btn ghost"; del.id = "cDel"; del.textContent = "Borrar cliente"; del.hidden = cancel.hidden; cancel.after(del);
+    new MutationObserver(() => del.hidden = cancel.hidden).observe(cancel, {attributes: true, attributeFilter: ["hidden"]});
+    del.addEventListener("click", () => { if (typeof crmEdit !== "undefined" && crmEdit) remove([crmEdit]); }); }
+
+  // 3) borrar varios: casillas en las tarjetas y un botón
+  const tools = document.createElement("div"); tools.className = "crm-bulk";
+  tools.innerHTML = '<button type="button" id="bulkOn">Borrar varios</button><button type="button" id="bulkAll" hidden>Seleccionar los visibles</button><button type="button" class="danger" id="bulkGo" hidden disabled>Borrar seleccionados</button><button type="button" id="bulkOff" hidden>Cancelar</button><span class="n" id="bulkN" hidden></span>';
+  list.before(tools);
+  const pick = new Set(), $b = id => document.getElementById(id);
+  const sync = () => { const on = list.classList.contains("bulk-on");
+    $b("bulkOn").hidden = on; ["bulkAll", "bulkGo", "bulkOff", "bulkN"].forEach(id => $b(id).hidden = !on);
+    list.querySelectorAll(".crm-item[data-id]").forEach(it => { let lb = it.querySelector(".crm-pick");
+      if (!lb) { lb = document.createElement("label"); lb.className = "crm-pick"; lb.innerHTML = '<input type="checkbox"> Seleccionar'; it.prepend(lb); }
+      const ck = lb.querySelector("input"); ck.checked = pick.has(it.dataset.id); ck.setAttribute("aria-label", "Seleccionar " + ((it.querySelector(".crm-row b") || {}).textContent || "cliente")); it.classList.toggle("pick", ck.checked); });
+    [...pick].forEach(id => { if (!CLIENTS.some(c => c.id === id)) pick.delete(id); });
+    $b("bulkN").textContent = pick.size ? `${pick.size} seleccionado${pick.size === 1 ? "" : "s"}` : "Marca los clientes a borrar";
+    $b("bulkGo").disabled = !pick.size; $b("bulkGo").textContent = pick.size ? `Borrar ${pick.size}` : "Borrar seleccionados"; };
+  new MutationObserver(sync).observe(list, {childList: true});
+  list.addEventListener("change", e => { const ck = e.target.closest(".crm-pick input"); if (!ck) return; const id = ck.closest("[data-id]").dataset.id; ck.checked ? pick.add(id) : pick.delete(id); sync(); });
+  $b("bulkOn").addEventListener("click", () => { list.classList.add("bulk-on"); pick.clear(); sync(); });
+  $b("bulkOff").addEventListener("click", () => { list.classList.remove("bulk-on"); pick.clear(); sync(); });
+  $b("bulkAll").addEventListener("click", () => { list.querySelectorAll(".crm-item[data-id]").forEach(it => pick.add(it.dataset.id)); sync(); });
+  $b("bulkGo").addEventListener("click", () => { const ids = [...pick]; if (!ids.length) return;
+    if (ids.length > 1 && !confirm(`¿Borrar ${ids.length} clientes? Podrás deshacerlo durante unos segundos.`)) return;
+    pick.clear(); list.classList.remove("bulk-on"); remove(ids); sync(); });
+  sync();
+})();
+</script>
+<!--borrar-end-->

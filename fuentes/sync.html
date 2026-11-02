@@ -42,7 +42,9 @@
   // estado: por cada registro conocido, su id en el servidor y la huella del contenido ya sincronizado
   let ST = {}; try { ST = JSON.parse(L.get("nube-estado") || "{}"); } catch (e) {} ST.rows = ST.rows || {}; ST.since = ST.since || "1970-01-01T00:00:00Z";
   const saveST = () => L.set("nube-estado", JSON.stringify(ST));
-  const hash = o => { const s = JSON.stringify(o); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length; };
+  // huella independiente del orden de los campos (el servidor los guarda ordenados)
+  const canon = o => Array.isArray(o) ? "[" + o.map(x => x === undefined ? "null" : canon(x)).join(",") + "]" : o && typeof o === "object" ? "{" + Object.keys(o).filter(k => o[k] !== undefined && typeof o[k] !== "function").sort().map(k => JSON.stringify(k) + ":" + canon(o[k])).join(",") + "}" : JSON.stringify(o === undefined ? null : o);
+  const hash = o => { const s = canon(o); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length; };
   const btn = $q("#nubeBtn"), msg = t => { $q("#nubeMsg").textContent = t || ""; };
   const status = (cls, t) => { btn.className = cls || ""; btn.querySelector("span").textContent = t; };
 
