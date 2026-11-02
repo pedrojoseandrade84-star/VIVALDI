@@ -4725,6 +4725,7 @@ $("invTpl").addEventListener("click", async () => {
   ws.views = [{state:"frozen", ySplit:1, showGridLines:false}];
   ws.autoFilter = {from:{row:1, column:1}, to:{row:1, column:8}};
   ws.pageSetup = {paperSize:9, orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:"1:1", margins:{left:.4, right:.4, top:.5, bottom:.6, header:.2, footer:.3}};
+  { const lg = wb.addImage({base64: LOGO, extension: "png"}); ws.getColumn(9).width = 3; ws.addImage(lg, {tl:{col:9.2, row:0.3}, ext:{width:170, height:35}}); }
   const wi = wb.addWorksheet("Instrucciones", {properties:{tabColor:{argb:XL.bl}}}); let r = xlHead(wb, wi, 4, "PLANTILLA DE LOTES", "Cómo llenarla e importarla en la herramienta");
   r = xlTable(wi, r, [{h:"Columna", w:16}, {h:"Qué escribir", w:46, wrap:true}, {h:"Ejemplo", w:20}, {h:"¿Obligatoria?", w:14, al:"center"}], [
     ["Proyecto", "Elige de la lista. Si la dejas vacía se usa el proyecto elegido en la herramienta al importar.", VIV[0].name, "No"],
