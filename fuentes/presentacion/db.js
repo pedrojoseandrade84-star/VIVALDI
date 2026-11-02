@@ -1,0 +1,33 @@
+const {chromium} = require('playwright'); const L = require('./lib'); const {execSync} = require('child_process'); const M = 'http://127.0.0.1:54321';
+const F = 'file:///home/user/VIVALDI/entregables/software/planicie-herramienta-whatsapp.html';
+const badge = (t, c) => `(() => { const f = () => { const d = document.createElement('div'); d.textContent = ${JSON.stringify(t)}; d.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:2147483640;background:${c};color:#fff;font:800 22px Manrope,Arial,sans-serif;letter-spacing:.06em;padding:12px 26px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.3);pointer-events:none'; document.documentElement.appendChild(d); }; document.readyState === 'loading' ? addEventListener('DOMContentLoaded', f) : f(); })();`;
+(async () => { const b = await chromium.launch(); const errs = [];
+  const mk = async (label, color, seed) => { const ctx = await b.newContext({viewport: {width: 800, height: 900}}); const p = await ctx.newPage(); p.on('dialog', d => d.accept()); p.on('pageerror', e => errs.push(e.message));
+    await p.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
+    await p.addInitScript(([cfg, seed]) => { if (!localStorage.getItem('nube-config')) { localStorage.setItem('nube-config', cfg); if (seed) localStorage.setItem('vivaldi-clientes-v1', seed); } }, [JSON.stringify({url: M, key: 'anon-test-key'}), seed || '']);
+    await p.addInitScript(L.CURSOR); await p.addInitScript(badge(label, color)); await p.goto(F); await L.sleep(1200); return p; };
+  const day = n => { const x = new Date(); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+  const seed = JSON.stringify([['a1', 'Jorge Ramos Quispe', '987333444', 'Visita agendada', 1], ['a2', 'Lucía Torres Ramírez', '987111222', 'Nuevo', 0], ['a3', 'Ana Díaz Huamán', '987555666', 'Contactado', 2]]
+    .map(([id, name, phone, stage, n]) => ({id, created: day(-3), name, phone, proj: 'La Planicie de Asia', stage, next: day(n), budget: 0, notes: '', src: 'Web'})));
+  const ana = await mk('ASESORA · EN SU CELULAR', '#1F6FAE', seed), jefa = await mk('GERENCIA · EN LA OFICINA', '#0B2236');
+  const login = async (p, m, k) => { await p.evaluate(() => document.querySelector('#nubeBtn').click()); await p.fill('#nubeMail', m); await p.fill('#nubePass', k); await p.click('#nubeGo'); await L.sleep(3000); await p.keyboard.press('Escape'); await L.sleep(300);
+    await p.evaluate(() => { const d = document.getElementById('nubeDlg'); if (d && !d.hidden) d.hidden = true; }); };
+  await login(ana, 'ana@vivaldi.pe', 'clave-ana'); await login(jefa, 'jefa@vivaldi.pe', 'clave-jefa'); await jefa.evaluate(() => vivaldiNube.sync()); await L.sleep(2500);
+  for (const p of [ana, jefa]) { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; const e = document.getElementById('crmForm'); scrollTo(0, e.getBoundingClientRect().top + scrollY - 70); }); }
+  await jefa.evaluate(() => { const e = document.getElementById('crmList'); scrollTo(0, e.getBoundingClientRect().top + scrollY - 120); });
+  console.log('jefa ve', await jefa.evaluate(() => CLIENTS.map(c => c.name)));
+  const RA = await L.recorder(ana, __dirname + '/fr_ana'), RJ = await L.recorder(jefa, __dirname + '/fr_jefa');
+  const t0 = Date.now() / 1000; await RA.start(); await RJ.start(); await ana.mouse.move(400, 300); await jefa.mouse.move(500, 600); await L.sleep(1800);
+  await L.type(ana, '#cName', 'Rosa Vargas Lima', 60); await L.type(ana, '#cPhone', '981234567', 60); await L.sleep(300);
+  await L.click(ana, '#cSave', 600); await L.sleep(3600);
+  await jefa.evaluate(() => vivaldiNube.sync()); await L.sleep(2600);
+  const seen = await jefa.evaluate(() => CLIENTS.some(c => c.name === 'Rosa Vargas Lima')); await L.moveTo(jefa, '#crmList .crm-item[data-id] >> nth=0'); await L.sleep(1800);
+  await ana.evaluate(() => { const e = document.getElementById('crmList'); scrollTo({top: e.getBoundingClientRect().top + scrollY - 120, behavior: 'smooth'}); }); await L.sleep(1400);
+  const idx = await ana.evaluate(() => [...document.querySelectorAll('#crmList .crm-item[data-id] .crm-row b')].findIndex(b => b.textContent === 'Ana Díaz Huamán'));
+  await L.click(ana, `#crmList .crm-item[data-id] >> nth=${idx} >> button[data-a="del"]`, 900); await L.sleep(8600);
+  await jefa.evaluate(() => vivaldiNube.sync()); await L.sleep(2800);
+  const gone = await jefa.evaluate(() => !CLIENTS.some(c => c.name === 'Ana Díaz Huamán'));
+  const ra = await RA.stop(), rj = await RJ.stop(); const end = Math.max(ra.end, rj.end); ra.end = rj.end = end;
+  L.build(ra, __dirname + '/db_a.mp4', {w: 800, h: 900, t0, hold: 0}); L.build(rj, __dirname + '/db_j.mp4', {w: 800, h: 900, t0, hold: 0});
+  execSync(`ffmpeg -y -loglevel error -i ${__dirname}/db_a.mp4 -i ${__dirname}/db_j.mp4 -filter_complex "[0:v]pad=804:900:0:0:color=#0B2236[a];[a][1:v]hstack=inputs=2,scale=1600:-2,pad=1600:900:0:(oh-ih)/2:color=#0B2236,format=yuv420p" -c:v libx264 -preset slow -crf 24 -profile:v high -level 4.1 -movflags +faststart ${__dirname}/db.mp4`);
+  console.log({seen, gone, errs}); await b.close(); })();
