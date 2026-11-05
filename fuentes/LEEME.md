@@ -47,5 +47,5 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - Pruebas: `pruebas/base-de-datos/test7.sql` (reglas nuevas en PostgreSQL), `tasesor.js` (enlace del asesor en la web), `tgestion.js` (herramienta), `tcrm.js` (historial), `twhatsapp.mjs` (función de envío contra una API de Meta simulada) y `pruebas/landings/` (formularios, datos en vivo y visibilidad).
 
 ## Cotización y paquete de venta
-- `cotizacion/cotizacion.html` → `node cotizacion/pdf.js ../entregables/cotizacion/Cotizacion-Vivaldi-COT-2026-001.pdf`
+- `cotizacion/cotizacion.html` → `node cotizacion/pdf.js ../entregables/cotizacion/Cotizacion-Vivaldi-COT-2026-002.pdf`
 - `entrega/build_paquete.py <destino>` arma `Vivaldi-Sistema-Comercial.zip` con el índice de entrega en PDF. Excluye la presentación, el guion, la propuesta anterior y el documento interno de investigación.
