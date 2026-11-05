@@ -1,0 +1,24 @@
+import http from 'node:http'; import {execSync} from 'node:child_process';
+const q = s => execSync(`psql -h /var/tmp/vvpg -p 5544 -U postgres -X -At -d vv -c "${s}"`).toString().trim();
+const META = []; let n = 0;
+const srv = http.createServer((req, res) => { let b = ''; req.on('data', d => b += d); req.on('end', () => { const j = JSON.parse(b); META.push({url: req.url, auth: req.headers.authorization, j}); n++;
+  if (j.to === '51981234568' && n < 99) { res.writeHead(400, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({error: {message: 'Template name does not exist', code: 132001}})); }
+  res.writeHead(200, {'Content-Type': 'application/json'}); res.end(JSON.stringify({messages: [{id: 'wamid.' + n}]})); }); }).listen(54399);
+Object.assign(process.env, {SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SERVICE_ROLE_KEY: 'service-test-key', WHATSAPP_TOKEN: 'tok-x', WHATSAPP_PHONE_ID: '1234567890', ENVIOS_CLAVE: 'clave-larga', WHATSAPP_API: 'http://127.0.0.1:54399'});
+const {atender} = await import('./fn.mjs');
+const call = async (k) => { const r = await atender(new Request('http://x', {method: 'POST', headers: {'x-envios-clave': k}})); return [r.status, await r.json()]; };
+console.log('sin clave', await call('mala'));
+q("update perfiles set codigo='ana', celular='911111111' where nombre='Ana Flores'");
+await fetch('http://127.0.0.1:54321/rest/v1/solicitudes', {method: 'POST', headers: {apikey: 'anon-test-key', 'Content-Type': 'application/json'}, body: JSON.stringify({nombre: 'Rosa Vargas', celular: '981234567', proyecto: 'Las Terrazas de Cerro Azul', asesor_codigo: 'ana'})});
+await fetch('http://127.0.0.1:54321/rest/v1/solicitudes', {method: 'POST', headers: {apikey: 'anon-test-key', 'Content-Type': 'application/json'}, body: JSON.stringify({nombre: 'Luis Paz', celular: '981234568'})});
+q("update mensajes set enviar_desde = now() - interval '1 minute'");
+console.log('cola', q("select string_agg(plantilla||'>'||para, ', ' order by id) from mensajes"));
+console.log('envio 1', await call('clave-larga'));
+console.log('estados', q("select string_agg(para||':'||estado||':'||intentos||':'||coalesce(left(error,30),'')||':'||coalesce(wa_id,''), ' | ' order by id) from mensajes"));
+console.log('meta pedido', JSON.stringify(META[0].j), META[0].url, META[0].auth);
+q("update mensajes set enviar_desde = now() - interval '1 minute' where estado='pendiente'");
+await call('clave-larga'); q("update mensajes set enviar_desde = now() - interval '1 minute' where estado='pendiente'"); await call('clave-larga');
+console.log('tras 3 intentos', q("select string_agg(para||':'||estado||':'||intentos, ' | ' order by id) from mensajes"));
+const anon = await fetch('http://127.0.0.1:54321/rest/v1/rpc/tomar_mensajes', {method: 'POST', headers: {apikey: 'anon-test-key', 'Content-Type': 'application/json'}, body: '{}'});
+console.log('anon tomar_mensajes', anon.status, (await anon.text()).slice(0, 80));
+srv.close();

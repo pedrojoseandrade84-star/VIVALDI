@@ -1,0 +1,31 @@
+const {chromium, devices} = require('playwright'); const fs = require('fs'); const M = 'http://127.0.0.1:54321', D = __dirname;
+const {execSync} = require('child_process'); const q = s => execSync(`psql -h /var/tmp/vvpg -p 5544 -U postgres -X -q -At -d vv -c "${s}"`, {encoding: 'utf8'}).trim();
+const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
+for (const id of ['terrazas', 'extranjeros']) { const s = fs.readFileSync('/home/user/VIVALDI/entregables/landings/' + id + '.html', 'utf8'); fs.writeFileSync(`${D}/${id}_db.html`, s.replace('const BASE = {url: "", key: ""};', `const BASE = {url: "${M}", key: "anon-test-key"};`)); }
+(async () => { const b = await chromium.launch(); const errs = [];
+  q("update perfiles set codigo='beto', celular='922222222' where nombre='Beto Ruiz'");
+  const ctx = await b.newContext(devices['iPhone 13']); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
+  await p.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort()); const pops = []; ctx.on('page', x => pops.push(x.url()));
+  await p.goto(`file://${D}/terrazas_db.html?asesor=beto&n=Beto%20Ruiz&t=922222222&utm_source=facebook`); await p.waitForTimeout(1500);
+  ok(/Beto Ruiz/.test(await p.textContent('.vv-asesor')), 'landing muestra al asesor del enlace');
+  await p.evaluate(() => document.getElementById('contacto').scrollIntoView()); await p.waitForTimeout(400);
+  await p.fill('#fN', 'Lucía Paredes'); await p.fill('#fT', '987 111 333'); await p.click('.days button >> nth=1'); await p.selectOption('#fPl', 'Este mes'); await p.check('#fOk');
+  await p.click('#lead button[type=submit]'); await p.waitForTimeout(2000);
+  const r = q("select s.proyecto||'|'||p.nombre||'|'||s.visita||'|'||s.plazo||'|'||s.origen||'|'||coalesce(s.campana,'') from solicitudes s join perfiles p on p.id=s.asesor where s.celular='987111333'");
+  ok(/^Las Terrazas de Cerro Azul\|Beto Ruiz\|(sáb|dom) \d+ \w+\|Este mes\|Landing Las Terrazas de Cerro Azul\|facebook$/.test(r), 'solicitud de la landing guardada y asignada: ' + r);
+  ok(pops.some(u => /phone=51922222222|wa\.me\/51922222222/.test(u)), 'WhatsApp abre el del asesor');
+  ok(await p.isVisible('#okMsg'), 'mensaje de confirmación visible');
+  const nmsg = q("select count(*) from mensajes where para='987111333' and plantilla='bienvenida_cliente'"); ok(nmsg === '1', 'bienvenida automática encolada');
+  // extranjero
+  const p2 = await (await b.newContext({viewport: {width: 1280, height: 900}, locale: 'en-US'})).newPage(); p2.on('pageerror', e => errs.push(e.message));
+  await p2.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
+  p2.on('request', r => { if (r.url().includes('solicitudes')) console.log('   req', (r.postData()||'').slice(0,120)); }); p2.on('response', r => { if (r.url().includes('solicitudes')) console.log('   resp', r.status()); }); await p2.goto(`file://${D}/extranjeros_db.html`); await p2.waitForTimeout(1200);
+  ok(/bought from wherever/.test(await p2.textContent('h1')), 'en navegador en inglés abre en inglés');
+  await p2.fill('#fN', 'John Smith'); await p2.selectOption('#fC', 'Estados Unidos'); await p2.fill('#fT', '415 555 0123'); await p2.check('#fOk');
+  await p2.click('#lead button[type=submit]'); await p2.waitForTimeout(800);
+  ok(!(await p2.isVisible('#okMsg')), 'número sin código de país no se acepta');
+  await p2.fill('#fT', '+1 415 555 0123'); await p2.selectOption('#fP', {index: 1}); await p2.click('#lead button[type=submit]'); await p2.waitForTimeout(2000);
+  const r2 = q("select celular||'|'||pais||'|'||proyecto||'|'||visita||'|'||origen from solicitudes where nombre='John Smith'");
+  ok(/^\+14155550123\|Estados Unidos\|La Planicie de Asia\|Videollamada · Morning/.test(r2), 'cliente del extranjero guardado: ' + r2);
+  await p2.click('#lang button[data-l="es"]'); ok(/comprado desde donde estés/.test(await p2.textContent('h1')), 'cambio a español');
+  console.log('errores', errs); await b.close(); })();

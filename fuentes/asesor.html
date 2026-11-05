@@ -1,0 +1,50 @@
+<!--vv-asesor-start-->
+<style>
+.vv-asesor{position:relative;z-index:60;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:9px 16px;background:linear-gradient(90deg,#062B44,#0E4C72);color:#fff;font:600 14px/1.35 Manrope,Arial,sans-serif;text-align:center}
+.vv-asesor b{color:#FFC861}
+.vv-asesor a{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;background:#17733F;color:#fff;text-decoration:none;font-weight:800}
+.vv-asesor a:focus-visible{outline:3px solid #FFC861;outline-offset:2px}
+</style>
+<script id="vv-asesor">
+/* Enlace personal del asesor: ?asesor=codigo&n=Nombre&t=celular
+   - muestra quién atiende al cliente, lleva los WhatsApp de la página al celular del asesor
+   - la solicitud que deja el cliente llega asignada a ese asesor en la base de datos (asesor_codigo)
+   Además, si la base de datos está configurada, la página toma de ella los precios y estados que actualiza la jefatura. */
+(() => {
+  const MAIN = "51922549723", KEY = "vv-asesor", DIAS = 30;
+  const clean = s => String(s || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
+  const safe = s => String(s || "").replace(/[<>"'`]/g, "").trim().slice(0, 60);
+  const q = new URLSearchParams(location.search); let a = null;
+  try {
+    const cod = clean(q.get("asesor"));
+    if (cod) { const tel = String(q.get("t") || "").replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, "");
+      a = {codigo: cod, nombre: safe(q.get("n")), celular: /^9\d{8}$/.test(tel) ? tel : ""}; localStorage.setItem(KEY, JSON.stringify({a, exp: Date.now() + DIAS * 864e5})); }
+    else { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.exp > Date.now() && s.a && s.a.codigo) a = s.a; }
+  } catch (e) {}
+  const B = window.VV_BASE || {};
+  const api = (path, body) => fetch(B.url.replace(/\/$/, "") + path, {method: body ? "POST" : "GET", headers: {apikey: B.key, Authorization: "Bearer " + B.key, "Content-Type": "application/json"}, body: body ? JSON.stringify(body) : undefined}).then(r => r.ok ? r.json() : Promise.reject(r.status));
+  if (a) {
+    window.VV_ASESOR = a;
+    const fix = u => (a.celular && typeof u === "string") ? u.replace(/wa\.me\/51922549723/, "wa.me/51" + a.celular) : u;
+    document.addEventListener("click", e => { const l = e.target.closest && e.target.closest('a[href*="wa.me/' + MAIN + '"]'); if (l && a.celular) l.href = fix(l.href); }, true);
+    const op = window.open; window.open = function (u, ...r) { return op.call(this, fix(u), ...r); };
+    const bar = document.createElement("div"); bar.className = "vv-asesor"; bar.setAttribute("role", "note");
+    const paint = () => { bar.textContent = ""; const t = document.createElement("span"); t.append("Te atiende ", Object.assign(document.createElement("b"), {textContent: a.nombre || "tu asesor de Vivaldi"}), a.nombre ? ", asesor de Vivaldi Inmobiliaria" : ""); bar.appendChild(t);
+      if (a.celular) { const w = document.createElement("a"); w.href = `https://wa.me/51${a.celular}?text=${encodeURIComponent("Hola " + (a.nombre ? a.nombre.split(" ")[0] : "") + ", vi la página de Vivaldi y quiero información.")}`; w.target = "_blank"; w.rel = "noopener"; w.textContent = "Escribirle por WhatsApp"; bar.appendChild(w); } };
+    paint(); const put = () => document.body.prepend(bar); document.body ? put() : addEventListener("DOMContentLoaded", put);
+    if (B.url && B.key && (!a.nombre || !a.celular)) api("/rest/v1/rpc/asesor_publico", {c: a.codigo}).then(r => { const x = r && r[0]; if (x) { a.nombre = a.nombre || safe(x.nombre); a.celular = a.celular || x.celular || ""; try { localStorage.setItem(KEY, JSON.stringify({a, exp: Date.now() + DIAS * 864e5})); } catch (e) {} paint(); } }).catch(() => {});
+  }
+  // precios, estados y textos de proyectos que actualiza la jefatura (si la base de datos está configurada)
+  if (B.url && B.key) api("/rest/v1/proyectos?select=id,contenido").then(rows => {
+    window.VV_PROYECTOS = rows;
+    if (typeof window.VV_APLICAR_PROYECTOS === "function") return window.VV_APLICAR_PROYECTOS(rows);
+    if (typeof PROJ === "undefined") return;
+    const ST = {"Preventa": "pre", "En construcción": "obra", "Entrega inmediata": "ok", "Vendido 100%": "sold"};
+    rows.forEach(({id, contenido: c}) => { const p = PROJ.find(x => x.id === id); if (!p || !c) return;
+      if (c.nombre) p.name = c.nombre; if ("precio" in c) p.price = c.precio; if ("m2" in c) p.m2 = c.m2; if (c.km) p.km = c.km;
+      if (c.estado) { p.stL = c.estado; p.st = ST[c.estado] || "tbd"; } if (c.resumen) p.feat = c.resumen; });
+    try { if (typeof renderProjects === "function") renderProjects("all"); } catch (e) {}
+  }).catch(() => {});
+})();
+</script>
+<!--vv-asesor-end-->
