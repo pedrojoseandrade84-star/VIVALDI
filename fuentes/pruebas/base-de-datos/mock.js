@@ -38,7 +38,7 @@ http.createServer((req, res) => {
       const r = sql(uid, `with x as (select * from jsonb_to_recordset(${lit(JSON.stringify(arr))}::jsonb) as y(id text, contenido jsonb)),
         i as (insert into public.proyectos (id, contenido) select id, contenido from x on conflict (id) do update set contenido = excluded.contenido returning *) select coalesce(json_agg(i), '[]') from i`);
       return r.ok ? send(res, 201, JSON.parse(r.out)) : send(res, 403, {message: r.err}); }
-    const m = u.pathname.match(/^\/rest\/v1\/(perfiles|registros|solicitudes|reclamos|proyectos|mensajes)$/); if (!m) return send(res, 404, {message: "not found"});
+    const m = u.pathname.match(/^\/rest\/v1\/(perfiles|registros|solicitudes|reclamos|proyectos|mensajes|no_contactar)$/); if (!m) return send(res, 404, {message: "not found"});
     const t = m[1], p = u.searchParams;
     if (req.method === "GET") {
       const w = [];
@@ -66,6 +66,12 @@ http.createServer((req, res) => {
       const r = sql(uid, `insert into public.${t} select * from json_populate_recordset(null::public.${t}, ${lit(JSON.stringify(arr))}::json)`.replace("select *", t === "solicitudes" ? "select nextval('solicitudes_id_seq'), now(), nombre, celular, proyecto, plazo, pago, visita, mensaje, coalesce(acepta_promos,false), coalesce(origen,'Web'), campana, null, 'nueva', null, null, asesor_codigo, pais" : "select nextval('reclamos_id_seq'), codigo, now(), null, tipo, nombre, documento, celular, correo, proyecto, detalle, pedido, 'abierto', null, null"));
       return r.ok ? send(res, 201) : send(res, 400, {message: r.err});
     }
+    if (req.method === "POST" && t === "no_contactar") { const b = JSON.parse(body || "{}");
+      const r = sql(uid, `insert into public.no_contactar (celular, motivo) values (${lit(String(b.celular || ""))}, ${lit(String(b.motivo || ""))})`);
+      return r.ok ? send(res, 201) : send(res, 409, {message: r.err}); }
+    if (req.method === "PATCH" && t === "mensajes") { const id = (p.get("id") || "").replace(/^eq\./, ""), b = JSON.parse(body || "{}");
+      const r = sql(uid, `with i as (update public.mensajes set estado = ${lit(String(b.estado || ""))} where id = ${+id} returning *) select coalesce(json_agg(i), '[]') from i`);
+      return r.ok ? send(res, 200, JSON.parse(r.out)) : send(res, 403, {message: r.err}); }
     if (req.method === "PATCH" && (t === "solicitudes" || t === "reclamos")) {
       const id = (p.get("id") || "").replace(/^eq\./, ""), b = JSON.parse(body || "{}");
       const sets = Object.entries(b).filter(([k]) => /^\w+$/.test(k)).map(([k, v]) => `${k} = ${v === null ? "null" : lit(String(v))}`).join(", ");

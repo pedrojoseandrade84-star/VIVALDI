@@ -59,9 +59,9 @@
   async function login(mail, pass) {
     const j = await api("/auth/v1/token?grant_type=password", {method: "POST", body: JSON.stringify({email: mail, password: pass})}, false);
     ses = {access_token: j.access_token, refresh_token: j.refresh_token, user: {id: j.user.id, email: j.user.email}};
-    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=nombre,rol,activo`, {method: "GET"});
+    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=*`, {method: "GET"});
     if (!p || !p.length || p[0].activo === false) { ses = null; throw new Error("Tu usuario no está habilitado. Pide acceso a la jefatura."); }
-    ses.nombre = p[0].nombre; ses.rol = p[0].rol;
+    ses.nombre = p[0].nombre; ses.rol = p[0].rol; ses.codigo = p[0].codigo || ""; ses.celular = p[0].celular || "";   // enlace personal del asesor
     if (ST.user && ST.user !== ses.user.id) {
       // equipo compartido: los datos del usuario anterior ya están en la base; se quitan de este equipo para no mezclarlos
       if (!confirm(`Este equipo tiene los datos de ${ST.nombre || "otro usuario"}. Para entrar como ${ses.nombre} se quitarán de este equipo (siguen guardados en la base de datos). ¿Continuar?`)) { ses = null; throw new Error("Ingreso cancelado."); }
@@ -195,7 +195,7 @@
   });
   $q("#nubeSync").addEventListener("click", () => sync());
   $q("#nubeOut").addEventListener("click", async () => { if (!confirm("¿Cerrar sesión en este equipo? Antes se suben los cambios pendientes.")) return; await sync(); ses = null; L.del("nube-sesion"); view(); status("", "Sin conectar"); msg("Sesión cerrada."); });
-  window.vivaldiNube = {sync, get sesion() { return ses; }, get estado() { return ST; }};
+  window.vivaldiNube = {sync, api: (p, o) => api(p, o), get sesion() { return ses; }, get estado() { return ST; }};
   if (ses) setTimeout(sync, 800); else status("", "Sin conectar");
 })();
 </script>

@@ -1,0 +1,70 @@
+<!--crm-hist-start-->
+<style>
+.hx-bk{position:fixed;inset:0;z-index:96;background:rgba(6,25,40,.55);display:none;align-items:center;justify-content:center;padding:16px}.hx-bk.on{display:flex}
+.hx{background:#fff;border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:22px;box-shadow:0 30px 70px rgba(0,0,0,.3);color:#0B2236}
+.hx h3{margin:0;font-size:1.25rem}.hx .hx-sub{color:#4E6478;font-size:.86rem;margin:4px 0 14px}
+.hx ol{list-style:none;margin:0;padding:0 0 0 22px;border-left:3px solid #DCE5EC}
+.hx li{position:relative;padding:0 0 14px 14px}.hx li::before{content:"";position:absolute;left:-30px;top:3px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--c,#1F6FAE)}
+.hx li b{display:block;font-size:.92rem}.hx li span{font-size:.8rem;color:#4E6478}
+.hx .hx-k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.hx .hx-k div{background:#F3F7FA;border-radius:12px;padding:10px}.hx .hx-k b{display:block;font-size:1.05rem}.hx .hx-k span{font-size:.74rem;color:#4E6478}
+.hx .hx-x{float:right;min-width:44px;min-height:44px;border-radius:50%;border:1px solid #DCE5EC;background:#fff;font-size:1.2rem;cursor:pointer}
+.hx .hx-add{display:flex;gap:8px;margin-top:6px}.hx .hx-add input{flex:1;font:inherit;font-size:15px;min-height:44px;padding:6px 12px;border:1px solid #DCE5EC;border-radius:10px}
+.hx .hx-add button{min-height:44px;padding:0 16px;border-radius:999px;border:0;background:#0A3856;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+</style>
+<script id="crm-hist">
+/* CRM: historial completo de cada cliente (llegada, etapas, contactos, proformas, separación, visitas, pagos y notas).
+   Desde ahora cada cambio de etapa y cada WhatsApp enviado desde su ficha queda registrado en el cliente (campo hist). */
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("crmList")) return;
+  const KEY = "vivaldi-clientes-v1", hoy = () => new Date().toISOString(), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  let snap = {}; const tomar = arr => { snap = {}; (arr || []).forEach(c => { if (c && c.id) snap[c.id] = c.stage; }); }; tomar(CLIENTS);
+  const add = (c, t) => { c.hist = (c.hist || []).concat([{d: hoy(), t}]).slice(-200); };
+  // cada vez que la herramienta guarda los clientes, se anotan los cambios de etapa
+  const _set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    if (this === window.localStorage && k === KEY) { try { const arr = JSON.parse(v); let cambio = false;
+        arr.forEach(c => { if (!c || !c.id || c.demo) return; const antes = snap[c.id];
+          if (antes === undefined && !(c.hist || []).length && c.created === hoy().slice(0, 10)) { add(c, "Registrado en la herramienta" + (c.src ? " · origen: " + c.src : "")); cambio = true; }
+          else if (antes !== undefined && antes !== c.stage) { add(c, `Etapa: ${antes} → ${c.stage}`); cambio = true; }
+          const vivo = CLIENTS.find(x => x.id === c.id); if (vivo && c.hist) vivo.hist = c.hist; });
+        tomar(arr); if (cambio) v = JSON.stringify(arr); } catch (e) {} }
+    return _set.call(this, k, v);
+  };
+  // WhatsApp desde la ficha del cliente
+  document.getElementById("crmList").addEventListener("click", e => { const b = e.target.closest('button[data-a="wa"]'); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (c) { add(c, "WhatsApp enviado desde la herramienta"); try { crmSave(); } catch (x) {} } }, true);
+
+  const bk = document.createElement("div"); bk.className = "hx-bk"; bk.innerHTML = '<div class="hx" role="dialog" aria-modal="true" aria-labelledby="hxT"></div>'; document.body.appendChild(bk);
+  const box = bk.firstChild; let actual = null, volver = null;
+  const norm = t => String(t || "").replace(/\D/g, "").slice(-9), mismo = (a, b) => a && b && norm(a) === norm(b) && norm(a).length === 9;
+  const nom = s => String(s || "").trim().toLowerCase();
+  function eventos(c) { const ev = [], P = (typeof PFLOG !== "undefined" ? PFLOG : []), S = (typeof SEPS !== "undefined" ? SEPS : []), K = (typeof COB !== "undefined" ? COB : []), V = (typeof VISITS !== "undefined" ? VISITS : []);
+    const push = (d, t, s, col) => { if (d) ev.push({d: String(d), t, s, col}); };
+    push(c.created, "Llegó como cliente", [c.src && "Origen: " + c.src, c.proj, c.plazo && "Plazo: " + c.plazo, c.pago && "Pago: " + c.pago].filter(Boolean).join(" · "), "#1F6FAE");
+    if (c.ts && c.firstTs) { const m = Math.round((c.firstTs - c.ts) / 6e4); push(new Date(c.firstTs).toISOString(), "Primer contacto", m < 60 ? `Respondido en ${m} min` : `Respondido en ${(m / 60).toFixed(1)} h`, m <= 60 ? "#1F8A4C" : "#C9820F"); }
+    (c.hist || []).forEach(h => push(h.d, h.t, "", /Etapa/.test(h.t) ? "#0A3856" : /Nota/.test(h.t) ? "#5B4FC4" : "#17733F"));
+    P.filter(r => mismo(r.phone, c.phone) || (nom(r.name) && nom(r.name) === nom(c.name))).forEach(r => push(r.at, "Proforma " + r.no, `${r.projName}${r.mz || r.lt ? " · Mz " + r.mz + " Lt " + r.lt : ""} · S/ ${Math.round(r.net || 0).toLocaleString("es-PE")}${r.term ? ` · ${r.term} cuotas` : " al contado"}`, "#1F6FAE"));
+    S.filter(x => nom(x.name) === nom(c.name)).forEach(x => push(x.at, "Separación " + x.no, `S/ ${Math.round(x.amt || 0).toLocaleString("es-PE")} · ${x.pay || ""} · firma hasta ${x.lim || "—"}`, "#C9820F"));
+    V.filter(v => mismo(v.phone, c.phone) || nom(v.name) === nom(c.name)).forEach(v => push(v.date, "Visita " + ({prog: "programada", ok: "realizada", no: "no asistió"}[v.st] || v.st || ""), `${v.proj} · ${v.time || ""} · ${v.meet || ""}`, v.st === "ok" ? "#1F8A4C" : v.st === "no" ? "#C0392B" : "#5B4FC4"));
+    K.filter(k => mismo(k.phone, c.phone) || nom(k.name) === nom(c.name)).forEach(k => { push(k.at, "Venta registrada", `${k.projName} · ${k.lot || ""} · ${k.sched.length} cuotas`, "#0A3856");
+      Object.entries(k.paid || {}).forEach(([i, d]) => { const q = k.sched.find(s => s.i === +i); push(d, `Pago de cuota ${i}`, q ? "S/ " + Math.round(q.amt).toLocaleString("es-PE") : "", "#1F8A4C"); }); });
+    if (c.notes) push(c.stageAt || c.created, "Notas del asesor", c.notes, "#5B4FC4");
+    return ev.sort((a, b) => b.d.localeCompare(a.d)); }
+  const fecha = d => { const x = new Date(d.length === 10 ? d + "T12:00" : d); return isNaN(x) ? d : x.toLocaleString("es-PE", {day: "2-digit", month: "short", year: "numeric", ...(d.length > 10 ? {hour: "2-digit", minute: "2-digit"} : {})}); };
+  function abrir(c) { actual = c; const ev = eventos(c), pf = ev.filter(e => /^Proforma/.test(e.t)).length, pagos = ev.filter(e => /^Pago/.test(e.t)).length;
+    const dias = c.created ? Math.max(0, Math.round((Date.now() - new Date(c.created + "T12:00")) / 864e5)) : "—";
+    box.innerHTML = `<button type="button" class="hx-x" aria-label="Cerrar">×</button><h3 id="hxT">${esc(c.name)}</h3><p class="hx-sub">${esc(c.stage)} · ${esc(c.proj || "")}${c.phone ? " · " + esc(c.phone) : ""}</p>
+      <div class="hx-k"><div><b>${dias}</b><span>días como cliente</span></div><div><b>${pf}</b><span>proformas</span></div><div><b>${pagos}</b><span>cuotas pagadas</span></div></div>
+      <div class="hx-add"><input id="hxNota" maxlength="300" placeholder="Agregar una nota (llamada, acuerdo, objeción…)" aria-label="Nueva nota"><button type="button" id="hxAdd">Agregar</button></div>
+      <h4 style="margin:16px 0 10px">Historial</h4><ol>${ev.map(e => `<li style="--c:${e.col}"><b>${esc(e.t)}</b><span>${esc(fecha(e.d))}${e.s ? " · " + esc(e.s) : ""}</span></li>`).join("") || "<li><b>Sin actividad registrada</b></li>"}</ol>`;
+    bk.classList.add("on"); box.querySelector("#hxNota").focus(); }
+  const cerrar = () => { bk.classList.remove("on"); actual = null; if (volver) volver.focus(); };
+  bk.addEventListener("click", e => { if (e.target === bk || e.target.closest(".hx-x")) cerrar();
+    if (e.target.id === "hxAdd") { const t = box.querySelector("#hxNota").value.trim(); if (!t || !actual) return; add(actual, "Nota: " + t); try { crmSave(); } catch (x) {} abrir(actual); toast("Nota guardada"); } });
+  addEventListener("keydown", e => { if (!bk.classList.contains("on")) return; if (e.key === "Escape") cerrar(); if (e.key === "Enter" && e.target.id === "hxNota") box.querySelector("#hxAdd").click(); });
+  // botón Historial en cada ficha
+  const poner = () => document.querySelectorAll("#crmList .crm-item[data-id] .crm-acts").forEach(a => { if (a.querySelector("[data-hx]")) return; const b = document.createElement("button"); b.type = "button"; b.dataset.hx = "1"; b.textContent = "Historial"; a.insertBefore(b, a.querySelector('[data-a="edit"]') || null); });
+  new MutationObserver(poner).observe(document.getElementById("crmList"), {childList: true}); poner();
+  document.getElementById("crmList").addEventListener("click", e => { const b = e.target.closest("[data-hx]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (c) { volver = b; abrir(c); } });
+})();
+</script>
+<!--crm-hist-end-->

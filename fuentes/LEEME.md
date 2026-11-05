@@ -36,3 +36,12 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 `direccion.html` es el Tablero de dirección de la herramienta (indicadores del mes, cotizado y vendido por mes, inventario, embudo, cartera por antigüedad, origen de clientes, equipo y alertas); se inserta con `inject_direccion.py` después de `navmenu.html`.
 
 `borrar.html` agrega el borrado de clientes: botón Eliminar de un toque con Deshacer, botón Borrar cliente en el formulario y Borrar varios; se inserta con `inject_borrar.py`. Pruebas: `auditoria/borrar_clientes.js` y `base-de-datos/tborrar.js` (el borrado llega al servidor y Deshacer lo recupera).
+
+## Ventas desde la web, proyectos y automatización
+
+- `asesor.html` (web y landings): enlace personal del asesor (`?asesor=código`) y precios y estados en vivo desde la tabla `proyectos`. Se inserta con `inject_asesor.py`.
+- `gestion.html` (herramienta): Mis enlaces de venta, editor de Proyectos (jefatura) y Mensajes automáticos (jefatura). Se inserta con `inject_gestion.py`, que incluye `landings/proyectos.json`.
+- `crm.html` (herramienta): historial de cada cliente. Se inserta con `inject_crm.py`.
+- `landings/`: `proyectos.json` (datos de cada proyecto), `build.py` y `extranjeros.py` generan las 8 landings en `entregables/landings/`.
+- `costeo/build_costeo.py`: genera el Excel de costeo del mantenimiento.
+- Pruebas: `pruebas/base-de-datos/test7.sql` (reglas nuevas en PostgreSQL), `tasesor.js` (enlace del asesor en la web), `tgestion.js` (herramienta), `tcrm.js` (historial), `twhatsapp.mjs` (función de envío contra una API de Meta simulada) y `pruebas/landings/` (formularios, datos en vivo y visibilidad).

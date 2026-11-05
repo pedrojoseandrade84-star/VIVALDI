@@ -5676,112 +5676,6 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--borrar-end-->
-<!--growth-demo-start-->
-<style id="demo-css">
-#demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
-#demoBtn:hover{background:#1F6EAB;color:#fff}
-#demoBar{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:61;display:flex;align-items:center;gap:10px;background:#E8A93A;color:#1F1604;border-radius:999px;padding:6px 6px 6px 14px;font:700 12px Manrope,Arial,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-#demoBar button{font:inherit;border:0;border-radius:999px;background:#1F1604;color:#fff;padding:7px 12px;cursor:pointer;min-height:32px}
-</style>
-<script id="growth-demo">
-/* Datos de ejemplo para mostrar la herramienta funcionando en una reunión. Son ficticios, llevan la marca demo
-   y nunca se suben a la base de datos. Se quitan con un botón y los datos reales no se tocan. */
-(() => {
-  const KEYS = {clientes: "vivaldi-clientes-v1", proformas: "vivaldi-proformas-v1", separaciones: "vivaldi-separaciones-v1", cobranza: "vivaldi-cobranza-v1", visitas: "vivaldi-visitas-v1", lotes: "vivaldi-lotes-v1"};
-  const get = k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } };
-  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const day = n => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
-  const mon = (n, base) => { const x = new Date(base + "T12:00"); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
-  const active = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
-  const ADV = "Rosa Quispe", P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = "Lirios del Mar de Asia", PO = "La Portada del Sol";
-  function data() {
-    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, adv: ADV}, extra);
-    const clientes = [
-      c("c1", "Lucía Torres Ramírez", "987111222", P, "Nuevo", 0, "Facebook", 0, {plazo: "Este mes", pago: "Financiado con Vivaldi"}),
-      c("c2", "Jorge Ramos Quispe", "987333444", P, "Visita agendada", 1, "Referido", -5, {budget: 30000}),
-      c("c3", "Ana Díaz Huamán", "987555666", T, "Contactado", -2, "TikTok", -12),
-      c("c4", "Carlos Mendoza Vega", "986222333", L, "Contactado", 3, "Web", -8),
-      c("c5", "María Fernández Soto", "985444555", P, "Separado", null, "Facebook", -15, {stageAt: day(0)}),
-      c("c6", "Pedro Salas Rojas", "984666777", P, "Vendido", null, "Referido", -40, {budget: 29000}),
-      c("c7", "Elena Castillo Paredes", "983888999", PO, "Vendido", null, "Instagram", -60),
-      c("c8", "Luis Gutiérrez Flores", "982111000", T, "Nuevo", -1, "Google", -1),
-    ];
-    const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
-    clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
-    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at, adv = ADV) => {
-      const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
-      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv};
-    };
-    const proformas = [
-      pf("PF-EJ-0001", "Jorge Ramos Quispe", "987333444", 0, P, "B", "5", 200, 29000, 0, 20, 24, 0),
-      pf("PF-EJ-0002", "María Fernández Soto", "985444555", 0, P, "B", "7", 200, 29000, 1000, 20, 36, 0),
-      pf("PF-EJ-0003", "Pedro Salas Rojas", "984666777", 0, P, "A", "3", 200, 29000, 0, 30, 24, -42),
-      pf("PF-EJ-0004", "Elena Castillo Paredes", "983888999", 2, PO, "C", "12", 90, 37900, 0, 20, 36, -62),
-      pf("PF-EJ-0005", "Miguel Paredes Ruiz", "981222333", 0, P, "B", "2", 200, 31500, 0, 20, 24, 0, "Carlos Medina"),
-      pf("PF-EJ-0006", "Sofía Chávez León", "981444555", 0, P, "B", "4", 200, 29000, 0, 20, 36, 0, "Carlos Medina"),
-      pf("PF-EJ-0007", "Raúl Torres Vega", "981666777", 2, PO, "D", "3", 90, 37900, 0, 20, 36, 0, "Diana Ríos"),
-    ];
-    const separaciones = [
-      {no: "SEP-EJ-0001", demo: true, pf: "PF-EJ-0002", at: day(0), amt: 1000, pay: "Transferencia bancaria", op: "", lim: day(2), name: "María Fernández Soto", adv: ADV},
-      {no: "SEP-EJ-0002", demo: true, pf: "PF-EJ-0003", at: day(-45), amt: 1000, pay: "Yape", op: "", lim: day(-38), name: "Pedro Salas Rojas", adv: ADV},
-    ];
-    const sched = (net, ini, term, first) => { const down = Math.round(net * ini / 100), fin = net - down, q = Math.round(fin / term), last = fin - q * (term - 1); return Array.from({length: term}, (_, i) => ({i: i + 1, d: mon(i, first), amt: i === term - 1 ? last : q})); };
-    const s1 = sched(29000, 30, 24, day(-35)), s2 = sched(37900, 20, 36, day(-58));
-    const cobranza = [
-      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d, 2: day(0)}},
-      {id: "demo-k2", demo: true, at: day(-60), pf: "PF-EJ-0004", sep: "", adv: ADV, name: "Elena Castillo Paredes", phone: "983888999", projName: PO, lot: "Mz C Lt 12", sched: s2, paid: {}},
-      {id: "demo-k3", demo: true, at: day(0), pf: "PF-EJ-0007", sep: "", adv: "Diana Ríos", name: "Raúl Torres Vega", phone: "981666777", projName: PO, lot: "Mz D Lt 3", sched: sched(37900, 20, 36, mon(1, day(0))), paid: {}},
-    ];
-    const v = (id, name, phone, proj, date, time, st, adv = ADV) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv, at: day(Math.min(date, 0) - 2)});
-    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog"),
-      v("v4", "Carlos Mendoza Vega", "986222333", L, 0, "09:30", "ok"), v("v5", "Miguel Paredes Ruiz", "981222333", P, 0, "10:00", "ok", "Carlos Medina"),
-      v("v6", "Sofía Chávez León", "981444555", P, 0, "11:30", "ok", "Carlos Medina"), v("v7", "Raúl Torres Vega", "981666777", PO, 0, "09:00", "ok", "Diana Ríos")];
-    const lotes = [];
-    [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
-      lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
-    // historia de 5 meses (proformas, ventas pagando al día, clientes vendidos y lotes de Las Terrazas) para los gráficos de dirección
-    const md = (m, d) => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(1); x.setMonth(x.getMonth() - m); x.setDate(Math.min(d, 28)); return x.toISOString().slice(0, 10); };
-    const NOMBRES = ["Rocío Huamán Ccori", "Javier Quispe Llanos", "Patricia Rojas Villa", "Andrés Navarro Ruiz", "Gabriela Chávez Soto", "Ricardo León Paredes", "Milagros Vargas Tello", "Hugo Espinoza Mora", "Carmen Ríos Arce", "Fernando Salazar Peña", "Diana Campos Lazo", "Óscar Medina Cruz", "Liliana Torres Rivas", "Manuel Aguilar Ponce", "Verónica Flores Gil", "Raúl Castro Zegarra", "Silvia Ramírez Ortiz", "Eduardo Bravo Núñez", "Karina Palacios Ruiz", "Alberto Cárdenas Vega", "Natalia Ríos Benites", "Jorge Luna Herrera"];
-    const PRO = [[0, P, 200, 29000], [1, T, 200, 25000], [3, L, 90, 60000], [2, PO, 90, 37900]], ASES = [ADV, "Carlos Medina", "Diana Ríos"], SRC = ["Facebook", "Referido", "TikTok", "Web", "Google", "Instagram"];
-    let ni = 0, pn = 8;
-    [[5, 3, 1], [4, 4, 1], [3, 4, 2], [2, 5, 2], [1, 6, 3]].forEach(([m, nPf, nSale]) => {
-      for (let k = 0; k < nPf; k++) {
-        const [pi, pname, area, price] = PRO[(m + k) % PRO.length], who = NOMBRES[ni++ % NOMBRES.length], adv = ASES[(m + k) % ASES.length], at = md(m, 1 + k * 4), no = "PF-EJ-" + String(pn++).padStart(4, "0");
-        const r = pf(no, who, "9" + String(10000000 + ni * 7919).slice(0, 8), pi, pname, "", "", area, price, 0, 20, k % 2 ? 36 : 24, 0, adv); r.at = at; r.start = mon(1, at); proformas.push(r);
-        if (k < nSale) {
-          const sale = md(m, k ? 8 + k * 6 : 2), sc = sched(r.net, 20, r.term, mon(1, sale)), paid = {}; sc.forEach(q => { if (q.d < day(0)) paid[q.i] = q.d; });
-          cobranza.push({id: "demo-kh" + no.slice(-4), demo: true, at: sale, pf: no, sep: "", adv, name: who, phone: r.phone, projName: pname, lot: "Mz " + "CDEF"[k] + " Lt " + (m * 3 + k), sched: sc, paid});
-          clientes.push(c("h" + no.slice(-4), who, r.phone, pname, "Vendido", null, SRC[(m + k) % SRC.length], -(m * 30 + 6), {stageAt: sale, adv}));
-        }
-      }
-    });
-    for (let i = 1; i <= 12; i++) lotes.push({id: "demo-lTA" + i, demo: true, proj: T, mz: "A", lt: String(i), area: 200, price: 25000, loc: i <= 3 ? "Frente al parque" : "Interior", st: i <= 4 ? "Vendido" : i <= 6 ? "Separado" : "Disponible", client: ""});
-    return {clientes, proformas, separaciones, cobranza, visitas, lotes};
-  }
-  function load() {
-    if (window.vivaldiNube && window.vivaldiNube.sesion) { alert("Cierra sesión en la base de datos antes de cargar datos de ejemplo."); return; }
-    const D = data(); Object.entries(KEYS).forEach(([k, key]) => put(key, [...get(key).filter(r => !r.demo), ...D[k]]));
-    try { localStorage.setItem("vivaldi-demo", "1"); if (!localStorage.getItem("vivaldi-asesor")) localStorage.setItem("vivaldi-asesor", ADV); } catch (e) {}
-    location.reload();
-  }
-  function clear() {
-    if (!confirm("¿Quitar los datos de ejemplo? Tus datos reales no se tocan.")) return;
-    Object.values(KEYS).forEach(key => put(key, get(key).filter(r => !r.demo)));
-    try { localStorage.removeItem("vivaldi-demo"); if (localStorage.getItem("vivaldi-asesor") === ADV) localStorage.removeItem("vivaldi-asesor"); } catch (e) {}
-    location.reload();
-  }
-  const note = document.querySelector(".mode[role=note]");
-  if (active()) {
-    const bar = document.createElement("div"); bar.id = "demoBar"; bar.setAttribute("role", "status");
-    bar.innerHTML = '<span>Mostrando datos de ejemplo</span><button type="button">Quitar</button>'; bar.querySelector("button").onclick = clear; document.body.appendChild(bar);
-  } else if (note) {
-    const real = Object.values(KEYS).some(key => get(key).some(r => !r.demo));
-    if (!real) { const b = document.createElement("button"); b.type = "button"; b.id = "demoBtn"; b.textContent = "Ver con datos de ejemplo"; b.onclick = load; note.appendChild(b); }
-  }
-  window.vivaldiDemo = {load, clear, data};
-})();
-</script>
-<!--growth-demo-end-->
 <!--growth-sync-start-->
 <style id="nube-css">
 #nubeBtn{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:60;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink,#13242E);border-radius:999px;padding:7px 12px;font:600 12px Manrope,Arial,sans-serif;min-height:36px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.08)}
@@ -5843,9 +5737,9 @@ section[id]{scroll-margin-top:76px}
   async function login(mail, pass) {
     const j = await api("/auth/v1/token?grant_type=password", {method: "POST", body: JSON.stringify({email: mail, password: pass})}, false);
     ses = {access_token: j.access_token, refresh_token: j.refresh_token, user: {id: j.user.id, email: j.user.email}};
-    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=nombre,rol,activo`, {method: "GET"});
+    const p = await api(`/rest/v1/perfiles?id=eq.${ses.user.id}&select=*`, {method: "GET"});
     if (!p || !p.length || p[0].activo === false) { ses = null; throw new Error("Tu usuario no está habilitado. Pide acceso a la jefatura."); }
-    ses.nombre = p[0].nombre; ses.rol = p[0].rol;
+    ses.nombre = p[0].nombre; ses.rol = p[0].rol; ses.codigo = p[0].codigo || ""; ses.celular = p[0].celular || "";   // enlace personal del asesor
     if (ST.user && ST.user !== ses.user.id) {
       // equipo compartido: los datos del usuario anterior ya están en la base; se quitan de este equipo para no mezclarlos
       if (!confirm(`Este equipo tiene los datos de ${ST.nombre || "otro usuario"}. Para entrar como ${ses.nombre} se quitarán de este equipo (siguen guardados en la base de datos). ¿Continuar?`)) { ses = null; throw new Error("Ingreso cancelado."); }
@@ -5979,10 +5873,314 @@ section[id]{scroll-margin-top:76px}
   });
   $q("#nubeSync").addEventListener("click", () => sync());
   $q("#nubeOut").addEventListener("click", async () => { if (!confirm("¿Cerrar sesión en este equipo? Antes se suben los cambios pendientes.")) return; await sync(); ses = null; L.del("nube-sesion"); view(); status("", "Sin conectar"); msg("Sesión cerrada."); });
-  window.vivaldiNube = {sync, get sesion() { return ses; }, get estado() { return ST; }};
+  window.vivaldiNube = {sync, api: (p, o) => api(p, o), get sesion() { return ses; }, get estado() { return ST; }};
   if (ses) setTimeout(sync, 800); else status("", "Sin conectar");
 })();
 </script>
 <!--growth-sync-end-->
+<!--crm-hist-start-->
+<style>
+.hx-bk{position:fixed;inset:0;z-index:96;background:rgba(6,25,40,.55);display:none;align-items:center;justify-content:center;padding:16px}.hx-bk.on{display:flex}
+.hx{background:#fff;border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:22px;box-shadow:0 30px 70px rgba(0,0,0,.3);color:#0B2236}
+.hx h3{margin:0;font-size:1.25rem}.hx .hx-sub{color:#4E6478;font-size:.86rem;margin:4px 0 14px}
+.hx ol{list-style:none;margin:0;padding:0 0 0 22px;border-left:3px solid #DCE5EC}
+.hx li{position:relative;padding:0 0 14px 14px}.hx li::before{content:"";position:absolute;left:-30px;top:3px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--c,#1F6FAE)}
+.hx li b{display:block;font-size:.92rem}.hx li span{font-size:.8rem;color:#4E6478}
+.hx .hx-k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.hx .hx-k div{background:#F3F7FA;border-radius:12px;padding:10px}.hx .hx-k b{display:block;font-size:1.05rem}.hx .hx-k span{font-size:.74rem;color:#4E6478}
+.hx .hx-x{float:right;min-width:44px;min-height:44px;border-radius:50%;border:1px solid #DCE5EC;background:#fff;font-size:1.2rem;cursor:pointer}
+.hx .hx-add{display:flex;gap:8px;margin-top:6px}.hx .hx-add input{flex:1;font:inherit;font-size:15px;min-height:44px;padding:6px 12px;border:1px solid #DCE5EC;border-radius:10px}
+.hx .hx-add button{min-height:44px;padding:0 16px;border-radius:999px;border:0;background:#0A3856;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+</style>
+<script id="crm-hist">
+/* CRM: historial completo de cada cliente (llegada, etapas, contactos, proformas, separación, visitas, pagos y notas).
+   Desde ahora cada cambio de etapa y cada WhatsApp enviado desde su ficha queda registrado en el cliente (campo hist). */
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("crmList")) return;
+  const KEY = "vivaldi-clientes-v1", hoy = () => new Date().toISOString(), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  let snap = {}; const tomar = arr => { snap = {}; (arr || []).forEach(c => { if (c && c.id) snap[c.id] = c.stage; }); }; tomar(CLIENTS);
+  const add = (c, t) => { c.hist = (c.hist || []).concat([{d: hoy(), t}]).slice(-200); };
+  // cada vez que la herramienta guarda los clientes, se anotan los cambios de etapa
+  const _set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    if (this === window.localStorage && k === KEY) { try { const arr = JSON.parse(v); let cambio = false;
+        arr.forEach(c => { if (!c || !c.id || c.demo) return; const antes = snap[c.id];
+          if (antes === undefined && !(c.hist || []).length && c.created === hoy().slice(0, 10)) { add(c, "Registrado en la herramienta" + (c.src ? " · origen: " + c.src : "")); cambio = true; }
+          else if (antes !== undefined && antes !== c.stage) { add(c, `Etapa: ${antes} → ${c.stage}`); cambio = true; }
+          const vivo = CLIENTS.find(x => x.id === c.id); if (vivo && c.hist) vivo.hist = c.hist; });
+        tomar(arr); if (cambio) v = JSON.stringify(arr); } catch (e) {} }
+    return _set.call(this, k, v);
+  };
+  // WhatsApp desde la ficha del cliente
+  document.getElementById("crmList").addEventListener("click", e => { const b = e.target.closest('button[data-a="wa"]'); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (c) { add(c, "WhatsApp enviado desde la herramienta"); try { crmSave(); } catch (x) {} } }, true);
+
+  const bk = document.createElement("div"); bk.className = "hx-bk"; bk.innerHTML = '<div class="hx" role="dialog" aria-modal="true" aria-labelledby="hxT"></div>'; document.body.appendChild(bk);
+  const box = bk.firstChild; let actual = null, volver = null;
+  const norm = t => String(t || "").replace(/\D/g, "").slice(-9), mismo = (a, b) => a && b && norm(a) === norm(b) && norm(a).length === 9;
+  const nom = s => String(s || "").trim().toLowerCase();
+  function eventos(c) { const ev = [], P = (typeof PFLOG !== "undefined" ? PFLOG : []), S = (typeof SEPS !== "undefined" ? SEPS : []), K = (typeof COB !== "undefined" ? COB : []), V = (typeof VISITS !== "undefined" ? VISITS : []);
+    const push = (d, t, s, col) => { if (d) ev.push({d: String(d), t, s, col}); };
+    push(c.created, "Llegó como cliente", [c.src && "Origen: " + c.src, c.proj, c.plazo && "Plazo: " + c.plazo, c.pago && "Pago: " + c.pago].filter(Boolean).join(" · "), "#1F6FAE");
+    if (c.ts && c.firstTs) { const m = Math.round((c.firstTs - c.ts) / 6e4); push(new Date(c.firstTs).toISOString(), "Primer contacto", m < 60 ? `Respondido en ${m} min` : `Respondido en ${(m / 60).toFixed(1)} h`, m <= 60 ? "#1F8A4C" : "#C9820F"); }
+    (c.hist || []).forEach(h => push(h.d, h.t, "", /Etapa/.test(h.t) ? "#0A3856" : /Nota/.test(h.t) ? "#5B4FC4" : "#17733F"));
+    P.filter(r => mismo(r.phone, c.phone) || (nom(r.name) && nom(r.name) === nom(c.name))).forEach(r => push(r.at, "Proforma " + r.no, `${r.projName}${r.mz || r.lt ? " · Mz " + r.mz + " Lt " + r.lt : ""} · S/ ${Math.round(r.net || 0).toLocaleString("es-PE")}${r.term ? ` · ${r.term} cuotas` : " al contado"}`, "#1F6FAE"));
+    S.filter(x => nom(x.name) === nom(c.name)).forEach(x => push(x.at, "Separación " + x.no, `S/ ${Math.round(x.amt || 0).toLocaleString("es-PE")} · ${x.pay || ""} · firma hasta ${x.lim || "—"}`, "#C9820F"));
+    V.filter(v => mismo(v.phone, c.phone) || nom(v.name) === nom(c.name)).forEach(v => push(v.date, "Visita " + ({prog: "programada", ok: "realizada", no: "no asistió"}[v.st] || v.st || ""), `${v.proj} · ${v.time || ""} · ${v.meet || ""}`, v.st === "ok" ? "#1F8A4C" : v.st === "no" ? "#C0392B" : "#5B4FC4"));
+    K.filter(k => mismo(k.phone, c.phone) || nom(k.name) === nom(c.name)).forEach(k => { push(k.at, "Venta registrada", `${k.projName} · ${k.lot || ""} · ${k.sched.length} cuotas`, "#0A3856");
+      Object.entries(k.paid || {}).forEach(([i, d]) => { const q = k.sched.find(s => s.i === +i); push(d, `Pago de cuota ${i}`, q ? "S/ " + Math.round(q.amt).toLocaleString("es-PE") : "", "#1F8A4C"); }); });
+    if (c.notes) push(c.stageAt || c.created, "Notas del asesor", c.notes, "#5B4FC4");
+    return ev.sort((a, b) => b.d.localeCompare(a.d)); }
+  const fecha = d => { const x = new Date(d.length === 10 ? d + "T12:00" : d); return isNaN(x) ? d : x.toLocaleString("es-PE", {day: "2-digit", month: "short", year: "numeric", ...(d.length > 10 ? {hour: "2-digit", minute: "2-digit"} : {})}); };
+  function abrir(c) { actual = c; const ev = eventos(c), pf = ev.filter(e => /^Proforma/.test(e.t)).length, pagos = ev.filter(e => /^Pago/.test(e.t)).length;
+    const dias = c.created ? Math.max(0, Math.round((Date.now() - new Date(c.created + "T12:00")) / 864e5)) : "—";
+    box.innerHTML = `<button type="button" class="hx-x" aria-label="Cerrar">×</button><h3 id="hxT">${esc(c.name)}</h3><p class="hx-sub">${esc(c.stage)} · ${esc(c.proj || "")}${c.phone ? " · " + esc(c.phone) : ""}</p>
+      <div class="hx-k"><div><b>${dias}</b><span>días como cliente</span></div><div><b>${pf}</b><span>proformas</span></div><div><b>${pagos}</b><span>cuotas pagadas</span></div></div>
+      <div class="hx-add"><input id="hxNota" maxlength="300" placeholder="Agregar una nota (llamada, acuerdo, objeción…)" aria-label="Nueva nota"><button type="button" id="hxAdd">Agregar</button></div>
+      <h4 style="margin:16px 0 10px">Historial</h4><ol>${ev.map(e => `<li style="--c:${e.col}"><b>${esc(e.t)}</b><span>${esc(fecha(e.d))}${e.s ? " · " + esc(e.s) : ""}</span></li>`).join("") || "<li><b>Sin actividad registrada</b></li>"}</ol>`;
+    bk.classList.add("on"); box.querySelector("#hxNota").focus(); }
+  const cerrar = () => { bk.classList.remove("on"); actual = null; if (volver) volver.focus(); };
+  bk.addEventListener("click", e => { if (e.target === bk || e.target.closest(".hx-x")) cerrar();
+    if (e.target.id === "hxAdd") { const t = box.querySelector("#hxNota").value.trim(); if (!t || !actual) return; add(actual, "Nota: " + t); try { crmSave(); } catch (x) {} abrir(actual); toast("Nota guardada"); } });
+  addEventListener("keydown", e => { if (!bk.classList.contains("on")) return; if (e.key === "Escape") cerrar(); if (e.key === "Enter" && e.target.id === "hxNota") box.querySelector("#hxAdd").click(); });
+  // botón Historial en cada ficha
+  const poner = () => document.querySelectorAll("#crmList .crm-item[data-id] .crm-acts").forEach(a => { if (a.querySelector("[data-hx]")) return; const b = document.createElement("button"); b.type = "button"; b.dataset.hx = "1"; b.textContent = "Historial"; a.insertBefore(b, a.querySelector('[data-a="edit"]') || null); });
+  new MutationObserver(poner).observe(document.getElementById("crmList"), {childList: true}); poner();
+  document.getElementById("crmList").addEventListener("click", e => { const b = e.target.closest("[data-hx]"); if (!b) return; const c = CLIENTS.find(x => x.id === b.closest("[data-id]").dataset.id); if (c) { volver = b; abrir(c); } });
+})();
+</script>
+<!--crm-hist-end-->
+<!--gestion-start-->
+<style>
+#gestion .gs-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+#gestion .gs-tabs button{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#D4E2EC);background:#fff;font:inherit;font-weight:700;cursor:pointer;color:var(--ink,#0B2236)}
+#gestion .gs-tabs button[aria-selected="true"]{background:#0A3856;border-color:#0A3856;color:#fff}
+#gestion .gs-card{background:#fff;border:1px solid var(--line,#D4E2EC);border-radius:16px;padding:20px;margin-bottom:16px}
+#gestion .gs-card h3{margin:0 0 6px;font-size:1.05rem}#gestion .gs-note{font-size:.84rem;color:var(--muted,#4E6478);margin:4px 0 0}
+#gestion .gs-links{display:grid;gap:8px;margin-top:12px}
+#gestion .gs-link{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:#F3F7FA;border-radius:12px;padding:10px 12px}
+#gestion .gs-link b{display:block;font-size:.92rem}#gestion .gs-link code{display:block;font-size:.74rem;color:var(--muted,#4E6478);word-break:break-all}
+#gestion button.gs-b{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line,#D4E2EC);background:#fff;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--ink,#0B2236)}
+#gestion button.gs-b.pri{background:#0A3856;border-color:#0A3856;color:#fff}#gestion button.gs-b.wa{background:#17733F;border-color:#17733F;color:#fff}
+#gestion .gs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#gestion label.gs-f{display:grid;gap:5px;font-size:.82rem;font-weight:700;color:var(--muted,#4E6478)}
+#gestion label.gs-f input,#gestion label.gs-f select,#gestion label.gs-f textarea{font:inherit;font-size:15px;color:var(--ink,#0B2236);min-height:44px;padding:8px 12px;border:1px solid var(--line,#D4E2EC);border-radius:10px;background:#fff}
+#gestion .gs-span3{grid-column:1/-1}
+#gestion .gs-st{display:grid;grid-template-columns:1fr 160px 120px 44px;gap:8px;align-items:center;margin-top:8px}
+#gestion .gs-st input,#gestion .gs-st select{font:inherit;font-size:15px;min-height:42px;padding:6px 10px;border:1px solid var(--line,#D4E2EC);border-radius:10px}
+#gestion .gs-st label{font-size:.8rem;display:flex;gap:6px;align-items:center}
+#gestion .gs-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#gestion .gs-kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+#gestion .gs-kp div{background:#F3F7FA;border-radius:12px;padding:12px}#gestion .gs-kp b{display:block;font-size:1.5rem}#gestion .gs-kp span{font-size:.78rem;color:var(--muted,#4E6478)}
+#gestion table.gs-t{width:100%;min-width:0;border-collapse:collapse;font-size:.84rem}
+#gestion .gs-t th,#gestion .gs-t td{text-align:left;padding:8px;border-bottom:1px solid var(--line,#D4E2EC);vertical-align:top}
+#gestion .gs-t th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted,#4E6478)}
+#gestion .gs-pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.74rem;font-weight:800}
+#gestion .p-pendiente{background:#FBEFD3;color:#7A4E00}#gestion .p-enviado{background:#DDF3E7;color:#14532D}#gestion .p-error{background:#FBE3DF;color:#9B1C1C}#gestion .p-cancelado,#gestion .p-enviando{background:#EEF2F5;color:#3E5366}
+#gestion .gs-scroll{overflow-x:auto}
+@media (max-width:760px){#gestion .gs-grid{grid-template-columns:1fr}#gestion .gs-st{grid-template-columns:1fr 1fr}#gestion .gs-kp{grid-template-columns:1fr 1fr}#gestion .gs-link{grid-template-columns:1fr}}
+</style>
+<script id="gestion-js">
+/* Proyectos y automatización: enlaces de venta del asesor, editor de proyectos (jefatura) y mensajes automáticos (jefatura). */
+(() => {
+  const DATA = {"empresa": {"nombre": "Inmobiliaria & Constructora Vivaldi S.A.C.", "ruc": "20604145458", "whatsapp": "51922549723", "telefono": "+51 922 549 723", "correo": "info@vivaldiinmobiliaria.com", "oficina": "Av. El Derby 121, Santiago de Surco, Lima", "horario": "Lun-Vie 8:30-18:00 · Sáb 8:30-13:00", "tipo_cambio": 3.36}, "proyectos": [{"id": "planicie", "nombre": "La Planicie de Asia", "lema": "El lote más accesible del corredor Asia", "color": "#1F6FAE", "zona": "Asia", "km": 111.5, "m2": 200, "precio": 29000, "estado": "Preventa", "resumen": "Lotes de 200 m² frente al parque, con título independizado y obras iniciadas. A 5 minutos del Boulevard de Asia.", "beneficios": ["Lotes frente al parque", "Título independizado", "Obras iniciadas", "Zonas comerciales cerca"], "etapas": [{"nombre": "Trazado de lotes", "estado": "hecho"}, {"nombre": "Preparación del terreno", "estado": "hecho"}, {"nombre": "Movimiento de tierras", "estado": "en curso"}, {"nombre": "Vías, cerco y pórtico", "estado": "próxima"}], "fotos": ["2025/09/kmz-laplanicie.png", "2025/09/maquinaria-foto.png", "2025/09/escavadora-avance-de-obras.png", "2025/09/maquinaria-foto-2.png", "2025/09/tizando-1.png", "2025/09/hombre-con-pala-1.png"], "fotos_referenciales": [0]}, {"id": "terrazas", "nombre": "Las Terrazas de Cerro Azul", "lema": "Vista al mar y club privado en Cerro Azul", "color": "#14808A", "zona": "Cerro Azul", "km": 117.5, "m2": 200, "precio": 25000, "estado": "Preventa", "resumen": "Lotes de 200 m² con vista al mar, club privado y minimarket, en preventa desde S/ 25,000.", "beneficios": ["Vista al mar", "Club privado", "Minimarket", "Lotes frente al parque", "Título independizado"], "etapas": [{"nombre": "Preventa", "estado": "en curso"}, {"nombre": "Obras de habilitación", "estado": "próxima", "confirmar": true}, {"nombre": "Entrega de lotes", "estado": "próxima", "confirmar": true}], "fotos": ["2026/01/dron-terrazas.png", "2026/01/casas-lotes-render-terrazas.png", "2026/01/CASA-LOTE-TERRAZA.png", "2026/01/MINIMARKET-TERRAZAS.png"], "fotos_referenciales": [0, 1, 2, 3]}, {"id": "portada", "nombre": "La Portada del Sol", "lema": "Club completo en el km 111.5", "color": "#C9820F", "zona": "Asia", "km": 111.5, "m2": 90, "precio": 37900, "estado": "En construcción", "resumen": "Lotes de 90 m² con piscina, gimnasio, losa multiusos y cancha de fútbol, en plena construcción.", "beneficios": ["Piscina", "Gimnasio", "Cancha de fútbol", "Losa multiusos", "Juegos para niños", "Parrillas"], "etapas": [{"nombre": "Venta de lotes", "estado": "en curso"}, {"nombre": "Construcción de áreas comunes", "estado": "en curso"}, {"nombre": "Entrega", "estado": "próxima", "confirmar": true}], "fotos": ["2025/05/portico-4.webp", "2025/09/PISCINA.png", "2025/09/cancha-de-futbol.png", "2025/05/gimnasio-1.webp", "2025/05/multiusos-BVE-XDz7-1.webp", "2025/05/juegos-1.webp", "2025/05/parrilla-hgxjNDTo-1.webp", "2025/09/kmz-portada-actualizado.png"], "fotos_referenciales": [0]}, {"id": "lirios", "nombre": "Lirios del Mar de Asia", "lema": "Últimos lotes, listos para disfrutar", "color": "#2A85C5", "zona": "Asia", "km": 100.05, "m2": 90, "precio": 60000, "estado": "Entrega inmediata", "resumen": "Últimos lotes de 90 m² con piscina, losa, parrillas y zona de camping, con entrega inmediata.", "beneficios": ["Entrega inmediata", "Piscina", "Losa deportiva", "Juegos para niños", "Parrillas", "Zona de camping"], "etapas": [{"nombre": "Habilitación", "estado": "hecho"}, {"nombre": "Áreas comunes", "estado": "hecho"}, {"nombre": "Últimos lotes en venta", "estado": "en curso"}], "fotos": ["2025/05/lirios-2.webp", "2025/05/portico-5.webp", "2025/05/piscina2-1.webp", "2025/05/cancha2-2.webp", "2025/05/juego-ninos-3.webp", "2025/05/Parrillas-2.webp", "2025/05/camping-1.webp", "2025/05/mapa-lirios-1.webp"], "fotos_referenciales": []}, {"id": "esmeralda", "nombre": "La Esmeralda de Cerro Azul", "lema": "Club privado con tenis y bicicross", "color": "#178A5C", "zona": "Cerro Azul", "km": null, "m2": 250, "precio": 38000, "estado": "Entrega inmediata", "resumen": "Lotes de 250 m² con entrega inmediata y club privado: piscina, cancha de tenis, bicicross y juegos para niños.", "beneficios": ["Entrega inmediata", "Piscina", "Cancha de tenis", "Bicicross", "Juegos para niños"], "etapas": [{"nombre": "Habilitación", "estado": "hecho"}, {"nombre": "Club privado", "estado": "hecho"}, {"nombre": "Lotes en venta", "estado": "en curso"}], "fotos": ["2025/09/portico-esmeralda-1810x808-1.png", "2025/09/piscina-1810x808-1.png", "2025/09/cancha-de-tennis-1810x808-1.png", "2025/09/bicicross-1810x808-1.png", "2025/09/juego-de-ninos-1810x808-1.png"], "fotos_referenciales": [0]}, {"id": "diamante", "nombre": "Diamante de Asia", "lema": "Piscina y club para la familia", "color": "#5B4FC4", "zona": "Asia", "km": null, "m2": null, "precio": null, "estado": "Consultar", "resumen": "Condominio con piscina, losa deportiva, parrillas y juegos para niños. Consulta disponibilidad con un asesor.", "beneficios": ["Piscina", "Losa deportiva", "Juegos para niños", "Parrillas"], "etapas": [{"nombre": "Disponibilidad", "estado": "en curso", "confirmar": true}], "fotos": ["2025/05/portico-6.webp", "2025/05/piscina-8.webp", "2025/05/cancha2-3.webp", "2025/05/juego-ninos2-1.webp", "2025/05/parrillas2-1.webp", "2025/05/parrillas-3.webp"], "fotos_referenciales": []}, {"id": "zafiro", "nombre": "Zafiro de Asia", "lema": "Proyecto vendido y entregado", "color": "#0B3A5C", "zona": "Asia", "km": 104, "m2": null, "precio": null, "estado": "Vendido 100%", "resumen": "Entregado con piscina, losa de grass sintético, parrillas, gimnasio y juegos, cerca a la playa El Rosario. Prueba de que Vivaldi entrega.", "beneficios": ["Entregado", "Piscina", "Losa de grass", "Gimnasio", "Parrillas", "Parque"], "etapas": [{"nombre": "Venta", "estado": "hecho"}, {"nombre": "Construcción", "estado": "hecho"}, {"nombre": "Entrega a propietarios", "estado": "hecho"}], "fotos": ["2025/05/portico-7.webp", "2025/05/piscina-9.webp", "2025/05/cancha-7.webp", "2025/05/juego-ninos-5.webp", "2025/05/gym-3.webp", "2025/05/grill-1.webp", "2025/05/parque-1.webp"], "fotos_referenciales": []}]};
+  if (!DATA || !document.querySelector("main")) return;
+  const SITIO = "https://vivaldiinmobiliaria.com/", LANDINGS = SITIO + "proyectos/";   // ajustar si las landings se publican en otra ruta
+  const KEY = "vivaldi-proyectos-local-v1", esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const slug = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+  const N = () => window.vivaldiNube, ses = () => N() && N().sesion, jefe = () => ses() && ses().rol === "jefatura";
+  const ESTADOS = ["Preventa", "En construcción", "Entrega inmediata", "Últimos lotes", "Vendido 100%", "Consultar"], ETAPA = ["hecho", "en curso", "próxima"];
+  const NOMBRE = {bienvenida_cliente: "Bienvenida al cliente", aviso_asesor: "Aviso al asesor", confirmacion_visita: "Confirmación de visita", recordatorio_visita: "Recordatorio de visita", recordatorio_cuota: "Recordatorio de cuota", cuota_vencida: "Cuota vencida", alerta_jefatura: "Alerta a la jefatura", resumen_asesor: "Resumen del asesor"};
+  let local = {}; try { local = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+  let remoto = {}; const proj = id => Object.assign({}, DATA.proyectos.find(p => p.id === id), remoto[id] || {}, local[id] || {});
+
+  const sec = document.createElement("section"); sec.id = "gestion";
+  sec.innerHTML = `<div class="sec-head"><div class="eyebrow">Ventas desde la web y automatización</div><h2>Proyectos y automatización</h2>
+    <p>Tus enlaces de venta, los datos que publica cada proyecto y los mensajes automáticos de WhatsApp.</p></div>
+    <div class="gs-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="enl">Mis enlaces de venta</button><button type="button" role="tab" aria-selected="false" data-t="pro">Proyectos</button><button type="button" role="tab" aria-selected="false" data-t="msg">Mensajes automáticos</button></div>
+    <div data-p="enl"></div><div data-p="pro" hidden></div><div data-p="msg" hidden></div>`;
+  const before = document.getElementById("datos") || document.getElementById("web"); (before ? before.parentNode : document.querySelector("main")).insertBefore(sec, before || null);
+  const P = t => sec.querySelector(`[data-p="${t}"]`);
+  sec.querySelector(".gs-tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (!b) return;
+    sec.querySelectorAll(".gs-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b))); ["enl", "pro", "msg"].forEach(t => P(t).hidden = t !== b.dataset.t); render(b.dataset.t); });
+
+  // ---------- 1) enlaces de venta del asesor ----------
+  function asesor() { const s = ses(); const nom = (s && s.nombre) || (document.getElementById("pfAdv") || {}).value || localStorage.getItem("vivaldi-asesor") || "";
+    const tel = String((s && s.celular) || (document.getElementById("pfAdvPh") || {}).value || "").replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, "");
+    return {nombre: nom.trim(), codigo: (s && s.codigo) || slug(nom), celular: /^9\d{8}$/.test(tel) ? tel : ""}; }
+  const link = (base, a) => base + (base.includes("?") ? "&" : "?") + new URLSearchParams(Object.assign({asesor: a.codigo}, a.nombre ? {n: a.nombre} : {}, a.celular ? {t: a.celular} : {}, {utm_source: "asesor", utm_medium: "whatsapp", utm_campaign: a.codigo})).toString();
+  function renderEnl() { const a = asesor(), box = P("enl");
+    if (!a.codigo) { box.innerHTML = `<div class="gs-card"><h3>Escribe tu nombre de asesor</h3><p class="gs-note">Tus enlaces llevan tu nombre y tu celular. Llénalos en la Proforma (sección Asesor) o entra con tu usuario.</p></div>`; return; }
+    const items = [["Web de Vivaldi (todos los proyectos)", SITIO], ...DATA.proyectos.filter(p => !/^Vendido/.test(proj(p.id).estado || "")).map(p => [proj(p.id).nombre || p.nombre, LANDINGS + p.id + ".html"]), ["Clientes del extranjero (inglés y español)", LANDINGS + "extranjeros.html"]];
+    box.innerHTML = `<div class="gs-card"><h3>Tus enlaces, ${esc(a.nombre || a.codigo)}</h3><p class="gs-note">El cliente que entra por tu enlace te ve en la página, su WhatsApp llega a tu celular${a.celular ? " (" + esc(a.celular) + ")" : " (escribe tu celular en la Proforma para que le llegue a ti)"} y su solicitud se te asigna en la base de datos. Tu código: <b>${esc(a.codigo)}</b>${ses() ? "" : " · la jefatura debe registrar este mismo código en tu perfil"}.</p>
+      <div class="gs-links">${items.map(([t, u]) => { const l = link(u, a); return `<div class="gs-link"><div><b>${esc(t)}</b><code>${esc(l)}</code></div><button type="button" class="gs-b" data-copy="${esc(l)}">Copiar</button><button type="button" class="gs-b wa" data-send="${esc(l)}" data-t="${esc(t)}">Enviar por WhatsApp</button></div>`; }).join("")}</div></div>`; }
+  sec.addEventListener("click", async e => { const c = e.target.closest("[data-copy]"), s = e.target.closest("[data-send]");
+    if (c) { try { await navigator.clipboard.writeText(c.dataset.copy); toast("Enlace copiado"); } catch (x) { prompt("Copia el enlace:", c.dataset.copy); } }
+    if (s) sendWa(`Hola, te comparto ${s.dataset.t === "Web de Vivaldi (todos los proyectos)" ? "la web de Vivaldi" : s.dataset.t} con fotos, precios y cuotas: ${s.dataset.send}\nCualquier consulta, escríbeme por aquí.`, ""); });
+
+  // ---------- 2) proyectos ----------
+  let cur = DATA.proyectos[0].id;
+  function renderPro() { const p = proj(cur), box = P("pro"), puede = jefe();
+    box.innerHTML = `<div class="gs-card"><h3>Datos que publica cada proyecto</h3><p class="gs-note">${puede ? "Al guardar, la web y la página del proyecto muestran estos datos de inmediato." : ses() ? "Solo la jefatura puede publicar cambios. Puedes revisar los datos." : "Sin conexión a la base de datos los cambios se guardan en este equipo; para publicarlos, entra como jefatura."}</p>
+      <div class="gs-grid" style="margin-top:12px"><label class="gs-f">Proyecto<select id="gsSel">${DATA.proyectos.map(x => `<option value="${x.id}" ${x.id === cur ? "selected" : ""}>${esc(proj(x.id).nombre)}</option>`).join("")}</select></label>
+      <label class="gs-f">Nombre comercial<input id="gsNom" value="${esc(p.nombre)}" maxlength="60"></label><label class="gs-f">Lema<input id="gsLema" value="${esc(p.lema)}" maxlength="80"></label>
+      <label class="gs-f">Estado<select id="gsEst">${[...new Set([p.estado, ...ESTADOS])].map(x => `<option ${x === p.estado ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>
+      <label class="gs-f">Precio desde (S/)<input id="gsPre" type="number" min="0" step="100" value="${p.precio ?? ""}"></label><label class="gs-f">Lote (m²)<input id="gsM2" type="number" min="0" step="1" value="${p.m2 ?? ""}"></label>
+      <label class="gs-f gs-span3">Resumen<textarea id="gsRes" rows="2" maxlength="300">${esc(p.resumen)}</textarea></label>
+      <label class="gs-f gs-span3">Documentos para el cliente (un enlace por línea: memoria descriptiva, plano, reglamento)<textarea id="gsDoc" rows="2" placeholder="https://...">${esc((p.documentos || []).join("\n"))}</textarea></label></div>
+      <h3 style="margin-top:18px">Etapas</h3><div id="gsEtapas">${(p.etapas || []).map((e, i) => etRow(e, i)).join("")}</div>
+      <div class="gs-acts"><button type="button" class="gs-b" id="gsAddEt">Agregar etapa</button><button type="button" class="gs-b pri" id="gsSave">${puede ? "Publicar cambios" : "Guardar en este equipo"}</button><button type="button" class="gs-b" id="gsJson">Descargar datos (JSON)</button></div><p class="gs-note" id="gsMsg" role="status"></p></div>`; }
+  const etRow = (e, i) => `<div class="gs-st" data-i="${i}"><input aria-label="Nombre de la etapa" value="${esc(e.nombre)}" maxlength="60"><select aria-label="Estado de la etapa">${ETAPA.map(x => `<option ${x === e.estado ? "selected" : ""}>${x}</option>`).join("")}</select><label><input type="checkbox" ${e.confirmar ? "checked" : ""}> por confirmar</label><button type="button" class="gs-b" aria-label="Quitar etapa" data-del-et>✕</button></div>`;
+  const leer = () => { const num = id => { const v = document.getElementById(id).value; return v === "" ? null : Math.max(0, +v); };
+    return {nombre: gsNom.value.trim(), lema: gsLema.value.trim(), estado: gsEst.value, precio: num("gsPre"), m2: num("gsM2"), resumen: gsRes.value.trim(),
+      documentos: gsDoc.value.split(/\n+/).map(x => x.trim()).filter(x => /^https:\/\/\S+$/.test(x)).slice(0, 10),
+      etapas: [...sec.querySelectorAll("#gsEtapas .gs-st")].map(r => ({nombre: r.querySelector("input").value.trim(), estado: r.querySelector("select").value, confirmar: r.querySelector("input[type=checkbox]").checked || undefined})).filter(x => x.nombre)}; };
+  sec.addEventListener("change", e => { if (e.target.id === "gsSel") { cur = e.target.value; renderPro(); } });
+  sec.addEventListener("click", async e => {
+    if (e.target.id === "gsAddEt") { const box = document.getElementById("gsEtapas"); box.insertAdjacentHTML("beforeend", etRow({nombre: "", estado: "próxima"}, box.children.length)); box.lastElementChild.querySelector("input").focus(); }
+    if (e.target.closest("[data-del-et]")) e.target.closest(".gs-st").remove();
+    if (e.target.id === "gsJson") { const all = {empresa: DATA.empresa, proyectos: DATA.proyectos.map(p => Object.assign(proj(p.id), p.id === cur ? leer() : {}))}; download("proyectos-vivaldi.json", JSON.stringify(all, null, 2), "application/json"); }
+    if (e.target.id === "gsSave") { const v = leer(), msg = document.getElementById("gsMsg");
+      if (!v.nombre) { msg.textContent = "El nombre no puede quedar vacío."; return; }
+      if (jefe()) { try { await N().api("/rest/v1/proyectos?on_conflict=id", {method: "POST", headers: {Prefer: "resolution=merge-duplicates,return=representation"}, body: JSON.stringify([{id: cur, contenido: v}])});
+          remoto[cur] = v; delete local[cur]; msg.textContent = "Publicado. La web y la página del proyecto ya muestran estos datos."; toast("Proyecto publicado"); }
+        catch (x) { msg.textContent = "No se pudo publicar: " + x.message; return; } }
+      else { local[cur] = v; msg.textContent = "Guardado en este equipo. Para publicarlo, entra como jefatura."; toast("Guardado en este equipo"); }
+      const aviso = msg.textContent; try { localStorage.setItem(KEY, JSON.stringify(local)); } catch (x) {} renderPro(); document.getElementById("gsMsg").textContent = aviso; } });
+
+  // ---------- 3) mensajes automáticos ----------
+  async function renderMsg() { const box = P("msg");
+    if (!jefe()) { box.innerHTML = `<div class="gs-card"><h3>Mensajes automáticos de WhatsApp</h3><p class="gs-note">Los ve la jefatura al entrar con su usuario. El sistema envía solo: bienvenida al cliente de la web, aviso al asesor, confirmación y recordatorio de visita, recordatorio 3 días antes de cada cuota, aviso de cuota vencida, alerta a la jefatura si un cliente no es atendido en una hora y un resumen diario a cada asesor.</p></div>`; return; }
+    box.innerHTML = `<div class="gs-card"><p class="gs-note">Cargando…</p></div>`;
+    let rows = []; try { rows = await N().api("/rest/v1/mensajes?select=id,creado,enviar_desde,para,plantilla,motivo,estado,intentos,error,enviado&order=id.desc&limit=200", {method: "GET"}) || []; } catch (x) { box.innerHTML = `<div class="gs-card"><p class="gs-note">No se pudo leer la cola: ${esc(x.message)}</p></div>`; return; }
+    const c = k => rows.filter(r => r.estado === k).length, f = d => d ? new Date(d).toLocaleString("es-PE", {day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"}) : "—";
+    box.innerHTML = `<div class="gs-card"><h3>Mensajes automáticos</h3><div class="gs-kp"><div><b>${c("pendiente")}</b><span>Programados</span></div><div><b>${c("enviado")}</b><span>Enviados</span></div><div><b>${c("error")}</b><span>Con error</span></div><div><b>${c("cancelado")}</b><span>Cancelados</span></div></div>
+      <div class="gs-scroll" tabindex="0" role="region" aria-label="Cola de mensajes"><table class="gs-t"><thead><tr><th>Sale</th><th>Para</th><th>Mensaje</th><th>Motivo</th><th>Estado</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td>${f(r.estado === "enviado" ? r.enviado : r.enviar_desde)}</td><td>${esc(r.para)}</td><td>${esc(NOMBRE[r.plantilla] || r.plantilla)}</td><td>${esc(r.motivo)}${r.error ? `<br><small style="color:#9B1C1C">${esc(r.error)}</small>` : ""}</td><td><span class="gs-pill p-${esc(r.estado)}">${esc(r.estado)}</span></td><td>${r.estado === "pendiente" ? `<button type="button" class="gs-b" data-cancel="${r.id}">Cancelar</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="6">Aún no hay mensajes.</td></tr>`}</tbody></table></div>
+      <h3 style="margin-top:16px">No contactar</h3><p class="gs-note">Si un cliente pide no recibir mensajes, regístralo aquí y el sistema no le enviará nada más.</p>
+      <div class="gs-acts"><input id="gsNo" inputmode="tel" placeholder="9XX XXX XXX" aria-label="Celular que no desea mensajes" style="font:inherit;font-size:15px;min-height:42px;padding:6px 12px;border:1px solid #D4E2EC;border-radius:10px"><button type="button" class="gs-b pri" id="gsNoBtn">Registrar</button><button type="button" class="gs-b" id="gsRef">Actualizar</button></div><p class="gs-note" id="gsNoMsg" role="status"></p></div>`; }
+  sec.addEventListener("click", async e => { const k = e.target.closest("[data-cancel]");
+    if (k) { try { await N().api("/rest/v1/mensajes?id=eq." + k.dataset.cancel, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "cancelado"})}); toast("Mensaje cancelado"); renderMsg(); } catch (x) { toast("No se pudo cancelar"); } }
+    if (e.target.id === "gsRef") renderMsg();
+    if (e.target.id === "gsNoBtn") { const t = document.getElementById("gsNo").value.replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, ""), m = document.getElementById("gsNoMsg");
+      if (!/^9\d{8}$/.test(t)) { m.textContent = "Escribe un celular de 9 dígitos."; return; }
+      try { await N().api("/rest/v1/no_contactar", {method: "POST", headers: {Prefer: "return=minimal"}, body: JSON.stringify({celular: t, motivo: "Pedido del cliente"})}); m.textContent = "Registrado: " + t + " no recibirá mensajes automáticos."; }
+      catch (x) { m.textContent = /duplicate|unique/i.test(x.message) ? "Ese número ya estaba registrado." : "No se pudo registrar: " + x.message; } } });
+
+  function render(t) { if (t === "enl") renderEnl(); if (t === "pro") renderPro(); if (t === "msg") renderMsg(); }
+  // datos publicados (si hay conexión)
+  const cargar = async () => { if (!ses()) return; try { const r = await N().api("/rest/v1/proyectos?select=id,contenido", {method: "GET"}); (r || []).forEach(x => remoto[x.id] = x.contenido || {}); } catch (e) {} };
+  cargar().then(() => renderEnl()); renderEnl();
+  // en el menú Análisis, junto a Datos
+  const wrapNav = () => { const menu = document.getElementById("navMenu"), d = menu && menu.querySelector('a[href="#datos"]');
+    if (menu && !menu.querySelector('a[href="#gestion"]')) { const a = document.createElement("a"); a.href = "#gestion"; a.innerHTML = 'Proyectos y automatización<small>enlaces, proyectos, WhatsApp</small>'; d ? d.before(a) : menu.appendChild(a); } };
+  document.readyState === "loading" ? addEventListener("DOMContentLoaded", wrapNav) : wrapNav();
+  addEventListener("focus", () => { if (!P("enl").hidden) renderEnl(); });
+})();
+</script>
+<!--gestion-end-->
+<!--growth-demo-start-->
+<style id="demo-css">
+#demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
+#demoBtn:hover{background:#1F6EAB;color:#fff}
+#demoBar{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:61;display:flex;align-items:center;gap:10px;background:#E8A93A;color:#1F1604;border-radius:999px;padding:6px 6px 6px 14px;font:700 12px Manrope,Arial,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+#demoBar button{font:inherit;border:0;border-radius:999px;background:#1F1604;color:#fff;padding:7px 12px;cursor:pointer;min-height:32px}
+</style>
+<script id="growth-demo">
+/* Datos de ejemplo para mostrar la herramienta funcionando en una reunión. Son ficticios, llevan la marca demo
+   y nunca se suben a la base de datos. Se quitan con un botón y los datos reales no se tocan. */
+(() => {
+  const KEYS = {clientes: "vivaldi-clientes-v1", proformas: "vivaldi-proformas-v1", separaciones: "vivaldi-separaciones-v1", cobranza: "vivaldi-cobranza-v1", visitas: "vivaldi-visitas-v1", lotes: "vivaldi-lotes-v1"};
+  const get = k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const day = n => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+  const mon = (n, base) => { const x = new Date(base + "T12:00"); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
+  const active = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
+  const ADV = "Rosa Quispe", P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = "Lirios del Mar de Asia", PO = "La Portada del Sol";
+  function data() {
+    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, adv: ADV}, extra);
+    const clientes = [
+      c("c1", "Lucía Torres Ramírez", "987111222", P, "Nuevo", 0, "Facebook", 0, {plazo: "Este mes", pago: "Financiado con Vivaldi"}),
+      c("c2", "Jorge Ramos Quispe", "987333444", P, "Visita agendada", 1, "Referido", -5, {budget: 30000}),
+      c("c3", "Ana Díaz Huamán", "987555666", T, "Contactado", -2, "TikTok", -12),
+      c("c4", "Carlos Mendoza Vega", "986222333", L, "Contactado", 3, "Web", -8),
+      c("c5", "María Fernández Soto", "985444555", P, "Separado", null, "Facebook", -15, {stageAt: day(0)}),
+      c("c6", "Pedro Salas Rojas", "984666777", P, "Vendido", null, "Referido", -40, {budget: 29000}),
+      c("c7", "Elena Castillo Paredes", "983888999", PO, "Vendido", null, "Instagram", -60),
+      c("c8", "Luis Gutiérrez Flores", "982111000", T, "Nuevo", -1, "Google", -1),
+    ];
+    const R = {c1: 12, c2: 25, c3: 48, c4: 95, c5: 18, c8: 140, c6: 30, c7: 55};
+    clientes.forEach(x => { const m = R[x.id.slice(5)]; if (m == null) return; if (x.ts + m * 6e4 > Date.now()) x.ts = Date.now() - (m + 90) * 6e4; x.firstTs = x.ts + m * 6e4; });
+    const pf = (no, name, phone, proj, projName, mz, lt, area, price, disc, ini, term, at, adv = ADV) => {
+      const net = price - disc, down = Math.round(net * ini / 100), fin = net - down, q = term ? Math.round(fin / term) : 0;
+      return {no, demo: true, at: day(at), name, dni: "", phone, proj, projName, mz, lt, area, price, disc, ini, term, start: mon(1, day(at)), net, q, adv};
+    };
+    const proformas = [
+      pf("PF-EJ-0001", "Jorge Ramos Quispe", "987333444", 0, P, "B", "5", 200, 29000, 0, 20, 24, 0),
+      pf("PF-EJ-0002", "María Fernández Soto", "985444555", 0, P, "B", "7", 200, 29000, 1000, 20, 36, 0),
+      pf("PF-EJ-0003", "Pedro Salas Rojas", "984666777", 0, P, "A", "3", 200, 29000, 0, 30, 24, -42),
+      pf("PF-EJ-0004", "Elena Castillo Paredes", "983888999", 2, PO, "C", "12", 90, 37900, 0, 20, 36, -62),
+      pf("PF-EJ-0005", "Miguel Paredes Ruiz", "981222333", 0, P, "B", "2", 200, 31500, 0, 20, 24, 0, "Carlos Medina"),
+      pf("PF-EJ-0006", "Sofía Chávez León", "981444555", 0, P, "B", "4", 200, 29000, 0, 20, 36, 0, "Carlos Medina"),
+      pf("PF-EJ-0007", "Raúl Torres Vega", "981666777", 2, PO, "D", "3", 90, 37900, 0, 20, 36, 0, "Diana Ríos"),
+    ];
+    const separaciones = [
+      {no: "SEP-EJ-0001", demo: true, pf: "PF-EJ-0002", at: day(0), amt: 1000, pay: "Transferencia bancaria", op: "", lim: day(2), name: "María Fernández Soto", adv: ADV},
+      {no: "SEP-EJ-0002", demo: true, pf: "PF-EJ-0003", at: day(-45), amt: 1000, pay: "Yape", op: "", lim: day(-38), name: "Pedro Salas Rojas", adv: ADV},
+    ];
+    const sched = (net, ini, term, first) => { const down = Math.round(net * ini / 100), fin = net - down, q = Math.round(fin / term), last = fin - q * (term - 1); return Array.from({length: term}, (_, i) => ({i: i + 1, d: mon(i, first), amt: i === term - 1 ? last : q})); };
+    const s1 = sched(29000, 30, 24, day(-35)), s2 = sched(37900, 20, 36, day(-58));
+    const cobranza = [
+      {id: "demo-k1", demo: true, at: day(-40), pf: "PF-EJ-0003", sep: "SEP-EJ-0002", adv: ADV, name: "Pedro Salas Rojas", phone: "984666777", projName: P, lot: "Mz A Lt 3", sched: s1, paid: {1: s1[0].d, 2: day(0)}},
+      {id: "demo-k2", demo: true, at: day(-60), pf: "PF-EJ-0004", sep: "", adv: ADV, name: "Elena Castillo Paredes", phone: "983888999", projName: PO, lot: "Mz C Lt 12", sched: s2, paid: {}},
+      {id: "demo-k3", demo: true, at: day(0), pf: "PF-EJ-0007", sep: "", adv: "Diana Ríos", name: "Raúl Torres Vega", phone: "981666777", projName: PO, lot: "Mz D Lt 3", sched: sched(37900, 20, 36, mon(1, day(0))), paid: {}},
+    ];
+    const v = (id, name, phone, proj, date, time, st, adv = ADV) => ({id: "demo-" + id, demo: true, name, phone, proj, date: day(date), time, meet: "En el proyecto", people: 2, notes: "Dato de ejemplo", st, adv, at: day(Math.min(date, 0) - 2)});
+    const visitas = [v("v1", "Jorge Ramos Quispe", "987333444", P, 1, "10:00", "prog"), v("v2", "Luis Gutiérrez Flores", "982111000", T, 0, "16:00", "prog"), v("v3", "Ana Díaz Huamán", "987555666", T, -2, "11:00", "prog"),
+      v("v4", "Carlos Mendoza Vega", "986222333", L, 0, "09:30", "ok"), v("v5", "Miguel Paredes Ruiz", "981222333", P, 0, "10:00", "ok", "Carlos Medina"),
+      v("v6", "Sofía Chávez León", "981444555", P, 0, "11:30", "ok", "Carlos Medina"), v("v7", "Raúl Torres Vega", "981666777", PO, 0, "09:00", "ok", "Diana Ríos")];
+    const lotes = [];
+    [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) { const lt = String(i), sold = mz === "A" && lt === "3", sep = mz === "B" && lt === "7";
+      lotes.push({id: "demo-l" + mz + lt, demo: true, proj: P, mz, lt, area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior", st: sold ? "Vendido" : sep ? "Separado" : (mz === "B" && lt === "8") ? "Bloqueado" : "Disponible", client: sold ? "Pedro Salas Rojas" : sep ? "María Fernández Soto" : ""}); } });
+    // historia de 5 meses (proformas, ventas pagando al día, clientes vendidos y lotes de Las Terrazas) para los gráficos de dirección
+    const md = (m, d) => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(1); x.setMonth(x.getMonth() - m); x.setDate(Math.min(d, 28)); return x.toISOString().slice(0, 10); };
+    const NOMBRES = ["Rocío Huamán Ccori", "Javier Quispe Llanos", "Patricia Rojas Villa", "Andrés Navarro Ruiz", "Gabriela Chávez Soto", "Ricardo León Paredes", "Milagros Vargas Tello", "Hugo Espinoza Mora", "Carmen Ríos Arce", "Fernando Salazar Peña", "Diana Campos Lazo", "Óscar Medina Cruz", "Liliana Torres Rivas", "Manuel Aguilar Ponce", "Verónica Flores Gil", "Raúl Castro Zegarra", "Silvia Ramírez Ortiz", "Eduardo Bravo Núñez", "Karina Palacios Ruiz", "Alberto Cárdenas Vega", "Natalia Ríos Benites", "Jorge Luna Herrera"];
+    const PRO = [[0, P, 200, 29000], [1, T, 200, 25000], [3, L, 90, 60000], [2, PO, 90, 37900]], ASES = [ADV, "Carlos Medina", "Diana Ríos"], SRC = ["Facebook", "Referido", "TikTok", "Web", "Google", "Instagram"];
+    let ni = 0, pn = 8;
+    [[5, 3, 1], [4, 4, 1], [3, 4, 2], [2, 5, 2], [1, 6, 3]].forEach(([m, nPf, nSale]) => {
+      for (let k = 0; k < nPf; k++) {
+        const [pi, pname, area, price] = PRO[(m + k) % PRO.length], who = NOMBRES[ni++ % NOMBRES.length], adv = ASES[(m + k) % ASES.length], at = md(m, 1 + k * 4), no = "PF-EJ-" + String(pn++).padStart(4, "0");
+        const r = pf(no, who, "9" + String(10000000 + ni * 7919).slice(0, 8), pi, pname, "", "", area, price, 0, 20, k % 2 ? 36 : 24, 0, adv); r.at = at; r.start = mon(1, at); proformas.push(r);
+        if (k < nSale) {
+          const sale = md(m, k ? 8 + k * 6 : 2), sc = sched(r.net, 20, r.term, mon(1, sale)), paid = {}; sc.forEach(q => { if (q.d < day(0)) paid[q.i] = q.d; });
+          cobranza.push({id: "demo-kh" + no.slice(-4), demo: true, at: sale, pf: no, sep: "", adv, name: who, phone: r.phone, projName: pname, lot: "Mz " + "CDEF"[k] + " Lt " + (m * 3 + k), sched: sc, paid});
+          clientes.push(c("h" + no.slice(-4), who, r.phone, pname, "Vendido", null, SRC[(m + k) % SRC.length], -(m * 30 + 6), {stageAt: sale, adv}));
+        }
+      }
+    });
+    for (let i = 1; i <= 12; i++) lotes.push({id: "demo-lTA" + i, demo: true, proj: T, mz: "A", lt: String(i), area: 200, price: 25000, loc: i <= 3 ? "Frente al parque" : "Interior", st: i <= 4 ? "Vendido" : i <= 6 ? "Separado" : "Disponible", client: ""});
+    return {clientes, proformas, separaciones, cobranza, visitas, lotes};
+  }
+  function load() {
+    if (window.vivaldiNube && window.vivaldiNube.sesion) { alert("Cierra sesión en la base de datos antes de cargar datos de ejemplo."); return; }
+    const D = data(); Object.entries(KEYS).forEach(([k, key]) => put(key, [...get(key).filter(r => !r.demo), ...D[k]]));
+    try { localStorage.setItem("vivaldi-demo", "1"); if (!localStorage.getItem("vivaldi-asesor")) localStorage.setItem("vivaldi-asesor", ADV); } catch (e) {}
+    location.reload();
+  }
+  function clear() {
+    if (!confirm("¿Quitar los datos de ejemplo? Tus datos reales no se tocan.")) return;
+    Object.values(KEYS).forEach(key => put(key, get(key).filter(r => !r.demo)));
+    try { localStorage.removeItem("vivaldi-demo"); if (localStorage.getItem("vivaldi-asesor") === ADV) localStorage.removeItem("vivaldi-asesor"); } catch (e) {}
+    location.reload();
+  }
+  const note = document.querySelector(".mode[role=note]");
+  if (active()) {
+    const bar = document.createElement("div"); bar.id = "demoBar"; bar.setAttribute("role", "status");
+    bar.innerHTML = '<span>Mostrando datos de ejemplo</span><button type="button">Quitar</button>'; bar.querySelector("button").onclick = clear; document.body.appendChild(bar);
+  } else if (note) {
+    const real = Object.values(KEYS).some(key => get(key).some(r => !r.demo));
+    if (!real) { const b = document.createElement("button"); b.type = "button"; b.id = "demoBtn"; b.textContent = "Ver con datos de ejemplo"; b.onclick = load; note.appendChild(b); }
+  }
+  window.vivaldiDemo = {load, clear, data};
+})();
+</script>
+<!--growth-demo-end-->
 </body>
 </html>

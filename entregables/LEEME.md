@@ -1,6 +1,6 @@
 # Entregables · Vivaldi Inmobiliaria
 
-Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
+Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 
 | Carpeta | Archivo | Uso |
 |---|---|---|
@@ -8,7 +8,10 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | web/ | Vivaldi-web-final.html (≈22 MB) | Máxima calidad, para publicar o presentar en computadora |
 | software/ | planicie-herramienta-whatsapp.html (≈1.7 MB) | Herramienta comercial para los asesores, versión liviana |
 | software/ | planicie-herramienta-final.html (≈2.8 MB) | Herramienta comercial, máxima calidad |
-| base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios y seguridad |
+| base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios, seguridad, enlaces de asesor, proyectos y mensajes automáticos |
+| base-de-datos/ | funciones/enviar-whatsapp, activar-envios.sql, plantillas-whatsapp.md | Envío automático por WhatsApp (API oficial de Meta): función, activación y las 8 plantillas para aprobar |
+| landings/ | 7 landings por proyecto y extranjeros.html | Una página por proyecto con sus etapas, galería, cuota y visita; página bilingüe para clientes del extranjero. Ver LEEME |
+| mantenimiento/ | Costeo-Mantenimiento-Vivaldi.xlsx y LEEME.md | Costo mensual del sistema (servicios de terceros y soporte) y hoja de ruta del CRM |
 | software/ejemplos-excel/ | Archivos .xlsx | Muestra de cada Excel que genera la herramienta (datos de ejemplo) |
 | simulador/ | Simulador-3D-Lotes-Vivaldi.html (≈1.6 MB) | Simulación 3D de construcción en el lote, para asesores |
 | crecimiento/ | Plan-Crecimiento-Comercial-Vivaldi.pdf | Plan de crecimiento comercial para la Gerencia |
@@ -17,7 +20,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, octubre 2026.
 | automatizacion/ | Plan-Automatizacion-Vivaldi.pdf | Plan de automatización de procesos comerciales y de cobranza, por fases |
 | propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
-| presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (20 diapositivas). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
+| presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (24 diapositivas, con 4 videos reales del funcionamiento). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
 | presentacion/ | Presentacion-Propuesta-Integral-Vivaldi.pdf | La misma presentación en PDF, para enviar o imprimir |
 | presentacion/ | Presentacion-Vivaldi-video.mp4 e imagenes-para-tv/ | Para reproducir directo en el televisor, sin computadora |
 | presentacion/ | Guion-Reunion-Vivaldi.pdf | Guion para quien presenta: qué decir, tiempos, cómo hablar de dinero y cerrar (no se entrega) |

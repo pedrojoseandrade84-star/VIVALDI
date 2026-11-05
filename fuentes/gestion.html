@@ -1,0 +1,128 @@
+<!--gestion-start-->
+<style>
+#gestion .gs-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+#gestion .gs-tabs button{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line,#D4E2EC);background:#fff;font:inherit;font-weight:700;cursor:pointer;color:var(--ink,#0B2236)}
+#gestion .gs-tabs button[aria-selected="true"]{background:#0A3856;border-color:#0A3856;color:#fff}
+#gestion .gs-card{background:#fff;border:1px solid var(--line,#D4E2EC);border-radius:16px;padding:20px;margin-bottom:16px}
+#gestion .gs-card h3{margin:0 0 6px;font-size:1.05rem}#gestion .gs-note{font-size:.84rem;color:var(--muted,#4E6478);margin:4px 0 0}
+#gestion .gs-links{display:grid;gap:8px;margin-top:12px}
+#gestion .gs-link{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:#F3F7FA;border-radius:12px;padding:10px 12px}
+#gestion .gs-link b{display:block;font-size:.92rem}#gestion .gs-link code{display:block;font-size:.74rem;color:var(--muted,#4E6478);word-break:break-all}
+#gestion button.gs-b{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line,#D4E2EC);background:#fff;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--ink,#0B2236)}
+#gestion button.gs-b.pri{background:#0A3856;border-color:#0A3856;color:#fff}#gestion button.gs-b.wa{background:#17733F;border-color:#17733F;color:#fff}
+#gestion .gs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#gestion label.gs-f{display:grid;gap:5px;font-size:.82rem;font-weight:700;color:var(--muted,#4E6478)}
+#gestion label.gs-f input,#gestion label.gs-f select,#gestion label.gs-f textarea{font:inherit;font-size:15px;color:var(--ink,#0B2236);min-height:44px;padding:8px 12px;border:1px solid var(--line,#D4E2EC);border-radius:10px;background:#fff}
+#gestion .gs-span3{grid-column:1/-1}
+#gestion .gs-st{display:grid;grid-template-columns:1fr 160px 120px 44px;gap:8px;align-items:center;margin-top:8px}
+#gestion .gs-st input,#gestion .gs-st select{font:inherit;font-size:15px;min-height:42px;padding:6px 10px;border:1px solid var(--line,#D4E2EC);border-radius:10px}
+#gestion .gs-st label{font-size:.8rem;display:flex;gap:6px;align-items:center}
+#gestion .gs-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#gestion .gs-kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+#gestion .gs-kp div{background:#F3F7FA;border-radius:12px;padding:12px}#gestion .gs-kp b{display:block;font-size:1.5rem}#gestion .gs-kp span{font-size:.78rem;color:var(--muted,#4E6478)}
+#gestion table.gs-t{width:100%;min-width:0;border-collapse:collapse;font-size:.84rem}
+#gestion .gs-t th,#gestion .gs-t td{text-align:left;padding:8px;border-bottom:1px solid var(--line,#D4E2EC);vertical-align:top}
+#gestion .gs-t th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted,#4E6478)}
+#gestion .gs-pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.74rem;font-weight:800}
+#gestion .p-pendiente{background:#FBEFD3;color:#7A4E00}#gestion .p-enviado{background:#DDF3E7;color:#14532D}#gestion .p-error{background:#FBE3DF;color:#9B1C1C}#gestion .p-cancelado,#gestion .p-enviando{background:#EEF2F5;color:#3E5366}
+#gestion .gs-scroll{overflow-x:auto}
+@media (max-width:760px){#gestion .gs-grid{grid-template-columns:1fr}#gestion .gs-st{grid-template-columns:1fr 1fr}#gestion .gs-kp{grid-template-columns:1fr 1fr}#gestion .gs-link{grid-template-columns:1fr}}
+</style>
+<script id="gestion-js">
+/* Proyectos y automatización: enlaces de venta del asesor, editor de proyectos (jefatura) y mensajes automáticos (jefatura). */
+(() => {
+  const DATA = /*PROYECTOS*/null;
+  if (!DATA || !document.querySelector("main")) return;
+  const SITIO = "https://vivaldiinmobiliaria.com/", LANDINGS = SITIO + "proyectos/";   // ajustar si las landings se publican en otra ruta
+  const KEY = "vivaldi-proyectos-local-v1", esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const slug = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+  const N = () => window.vivaldiNube, ses = () => N() && N().sesion, jefe = () => ses() && ses().rol === "jefatura";
+  const ESTADOS = ["Preventa", "En construcción", "Entrega inmediata", "Últimos lotes", "Vendido 100%", "Consultar"], ETAPA = ["hecho", "en curso", "próxima"];
+  const NOMBRE = {bienvenida_cliente: "Bienvenida al cliente", aviso_asesor: "Aviso al asesor", confirmacion_visita: "Confirmación de visita", recordatorio_visita: "Recordatorio de visita", recordatorio_cuota: "Recordatorio de cuota", cuota_vencida: "Cuota vencida", alerta_jefatura: "Alerta a la jefatura", resumen_asesor: "Resumen del asesor"};
+  let local = {}; try { local = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+  let remoto = {}; const proj = id => Object.assign({}, DATA.proyectos.find(p => p.id === id), remoto[id] || {}, local[id] || {});
+
+  const sec = document.createElement("section"); sec.id = "gestion";
+  sec.innerHTML = `<div class="sec-head"><div class="eyebrow">Ventas desde la web y automatización</div><h2>Proyectos y automatización</h2>
+    <p>Tus enlaces de venta, los datos que publica cada proyecto y los mensajes automáticos de WhatsApp.</p></div>
+    <div class="gs-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="enl">Mis enlaces de venta</button><button type="button" role="tab" aria-selected="false" data-t="pro">Proyectos</button><button type="button" role="tab" aria-selected="false" data-t="msg">Mensajes automáticos</button></div>
+    <div data-p="enl"></div><div data-p="pro" hidden></div><div data-p="msg" hidden></div>`;
+  const before = document.getElementById("datos") || document.getElementById("web"); (before ? before.parentNode : document.querySelector("main")).insertBefore(sec, before || null);
+  const P = t => sec.querySelector(`[data-p="${t}"]`);
+  sec.querySelector(".gs-tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (!b) return;
+    sec.querySelectorAll(".gs-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b))); ["enl", "pro", "msg"].forEach(t => P(t).hidden = t !== b.dataset.t); render(b.dataset.t); });
+
+  // ---------- 1) enlaces de venta del asesor ----------
+  function asesor() { const s = ses(); const nom = (s && s.nombre) || (document.getElementById("pfAdv") || {}).value || localStorage.getItem("vivaldi-asesor") || "";
+    const tel = String((s && s.celular) || (document.getElementById("pfAdvPh") || {}).value || "").replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, "");
+    return {nombre: nom.trim(), codigo: (s && s.codigo) || slug(nom), celular: /^9\d{8}$/.test(tel) ? tel : ""}; }
+  const link = (base, a) => base + (base.includes("?") ? "&" : "?") + new URLSearchParams(Object.assign({asesor: a.codigo}, a.nombre ? {n: a.nombre} : {}, a.celular ? {t: a.celular} : {}, {utm_source: "asesor", utm_medium: "whatsapp", utm_campaign: a.codigo})).toString();
+  function renderEnl() { const a = asesor(), box = P("enl");
+    if (!a.codigo) { box.innerHTML = `<div class="gs-card"><h3>Escribe tu nombre de asesor</h3><p class="gs-note">Tus enlaces llevan tu nombre y tu celular. Llénalos en la Proforma (sección Asesor) o entra con tu usuario.</p></div>`; return; }
+    const items = [["Web de Vivaldi (todos los proyectos)", SITIO], ...DATA.proyectos.filter(p => !/^Vendido/.test(proj(p.id).estado || "")).map(p => [proj(p.id).nombre || p.nombre, LANDINGS + p.id + ".html"]), ["Clientes del extranjero (inglés y español)", LANDINGS + "extranjeros.html"]];
+    box.innerHTML = `<div class="gs-card"><h3>Tus enlaces, ${esc(a.nombre || a.codigo)}</h3><p class="gs-note">El cliente que entra por tu enlace te ve en la página, su WhatsApp llega a tu celular${a.celular ? " (" + esc(a.celular) + ")" : " (escribe tu celular en la Proforma para que le llegue a ti)"} y su solicitud se te asigna en la base de datos. Tu código: <b>${esc(a.codigo)}</b>${ses() ? "" : " · la jefatura debe registrar este mismo código en tu perfil"}.</p>
+      <div class="gs-links">${items.map(([t, u]) => { const l = link(u, a); return `<div class="gs-link"><div><b>${esc(t)}</b><code>${esc(l)}</code></div><button type="button" class="gs-b" data-copy="${esc(l)}">Copiar</button><button type="button" class="gs-b wa" data-send="${esc(l)}" data-t="${esc(t)}">Enviar por WhatsApp</button></div>`; }).join("")}</div></div>`; }
+  sec.addEventListener("click", async e => { const c = e.target.closest("[data-copy]"), s = e.target.closest("[data-send]");
+    if (c) { try { await navigator.clipboard.writeText(c.dataset.copy); toast("Enlace copiado"); } catch (x) { prompt("Copia el enlace:", c.dataset.copy); } }
+    if (s) sendWa(`Hola, te comparto ${s.dataset.t === "Web de Vivaldi (todos los proyectos)" ? "la web de Vivaldi" : s.dataset.t} con fotos, precios y cuotas: ${s.dataset.send}\nCualquier consulta, escríbeme por aquí.`, ""); });
+
+  // ---------- 2) proyectos ----------
+  let cur = DATA.proyectos[0].id;
+  function renderPro() { const p = proj(cur), box = P("pro"), puede = jefe();
+    box.innerHTML = `<div class="gs-card"><h3>Datos que publica cada proyecto</h3><p class="gs-note">${puede ? "Al guardar, la web y la página del proyecto muestran estos datos de inmediato." : ses() ? "Solo la jefatura puede publicar cambios. Puedes revisar los datos." : "Sin conexión a la base de datos los cambios se guardan en este equipo; para publicarlos, entra como jefatura."}</p>
+      <div class="gs-grid" style="margin-top:12px"><label class="gs-f">Proyecto<select id="gsSel">${DATA.proyectos.map(x => `<option value="${x.id}" ${x.id === cur ? "selected" : ""}>${esc(proj(x.id).nombre)}</option>`).join("")}</select></label>
+      <label class="gs-f">Nombre comercial<input id="gsNom" value="${esc(p.nombre)}" maxlength="60"></label><label class="gs-f">Lema<input id="gsLema" value="${esc(p.lema)}" maxlength="80"></label>
+      <label class="gs-f">Estado<select id="gsEst">${[...new Set([p.estado, ...ESTADOS])].map(x => `<option ${x === p.estado ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>
+      <label class="gs-f">Precio desde (S/)<input id="gsPre" type="number" min="0" step="100" value="${p.precio ?? ""}"></label><label class="gs-f">Lote (m²)<input id="gsM2" type="number" min="0" step="1" value="${p.m2 ?? ""}"></label>
+      <label class="gs-f gs-span3">Resumen<textarea id="gsRes" rows="2" maxlength="300">${esc(p.resumen)}</textarea></label>
+      <label class="gs-f gs-span3">Documentos para el cliente (un enlace por línea: memoria descriptiva, plano, reglamento)<textarea id="gsDoc" rows="2" placeholder="https://...">${esc((p.documentos || []).join("\n"))}</textarea></label></div>
+      <h3 style="margin-top:18px">Etapas</h3><div id="gsEtapas">${(p.etapas || []).map((e, i) => etRow(e, i)).join("")}</div>
+      <div class="gs-acts"><button type="button" class="gs-b" id="gsAddEt">Agregar etapa</button><button type="button" class="gs-b pri" id="gsSave">${puede ? "Publicar cambios" : "Guardar en este equipo"}</button><button type="button" class="gs-b" id="gsJson">Descargar datos (JSON)</button></div><p class="gs-note" id="gsMsg" role="status"></p></div>`; }
+  const etRow = (e, i) => `<div class="gs-st" data-i="${i}"><input aria-label="Nombre de la etapa" value="${esc(e.nombre)}" maxlength="60"><select aria-label="Estado de la etapa">${ETAPA.map(x => `<option ${x === e.estado ? "selected" : ""}>${x}</option>`).join("")}</select><label><input type="checkbox" ${e.confirmar ? "checked" : ""}> por confirmar</label><button type="button" class="gs-b" aria-label="Quitar etapa" data-del-et>✕</button></div>`;
+  const leer = () => { const num = id => { const v = document.getElementById(id).value; return v === "" ? null : Math.max(0, +v); };
+    return {nombre: gsNom.value.trim(), lema: gsLema.value.trim(), estado: gsEst.value, precio: num("gsPre"), m2: num("gsM2"), resumen: gsRes.value.trim(),
+      documentos: gsDoc.value.split(/\n+/).map(x => x.trim()).filter(x => /^https:\/\/\S+$/.test(x)).slice(0, 10),
+      etapas: [...sec.querySelectorAll("#gsEtapas .gs-st")].map(r => ({nombre: r.querySelector("input").value.trim(), estado: r.querySelector("select").value, confirmar: r.querySelector("input[type=checkbox]").checked || undefined})).filter(x => x.nombre)}; };
+  sec.addEventListener("change", e => { if (e.target.id === "gsSel") { cur = e.target.value; renderPro(); } });
+  sec.addEventListener("click", async e => {
+    if (e.target.id === "gsAddEt") { const box = document.getElementById("gsEtapas"); box.insertAdjacentHTML("beforeend", etRow({nombre: "", estado: "próxima"}, box.children.length)); box.lastElementChild.querySelector("input").focus(); }
+    if (e.target.closest("[data-del-et]")) e.target.closest(".gs-st").remove();
+    if (e.target.id === "gsJson") { const all = {empresa: DATA.empresa, proyectos: DATA.proyectos.map(p => Object.assign(proj(p.id), p.id === cur ? leer() : {}))}; download("proyectos-vivaldi.json", JSON.stringify(all, null, 2), "application/json"); }
+    if (e.target.id === "gsSave") { const v = leer(), msg = document.getElementById("gsMsg");
+      if (!v.nombre) { msg.textContent = "El nombre no puede quedar vacío."; return; }
+      if (jefe()) { try { await N().api("/rest/v1/proyectos?on_conflict=id", {method: "POST", headers: {Prefer: "resolution=merge-duplicates,return=representation"}, body: JSON.stringify([{id: cur, contenido: v}])});
+          remoto[cur] = v; delete local[cur]; msg.textContent = "Publicado. La web y la página del proyecto ya muestran estos datos."; toast("Proyecto publicado"); }
+        catch (x) { msg.textContent = "No se pudo publicar: " + x.message; return; } }
+      else { local[cur] = v; msg.textContent = "Guardado en este equipo. Para publicarlo, entra como jefatura."; toast("Guardado en este equipo"); }
+      const aviso = msg.textContent; try { localStorage.setItem(KEY, JSON.stringify(local)); } catch (x) {} renderPro(); document.getElementById("gsMsg").textContent = aviso; } });
+
+  // ---------- 3) mensajes automáticos ----------
+  async function renderMsg() { const box = P("msg");
+    if (!jefe()) { box.innerHTML = `<div class="gs-card"><h3>Mensajes automáticos de WhatsApp</h3><p class="gs-note">Los ve la jefatura al entrar con su usuario. El sistema envía solo: bienvenida al cliente de la web, aviso al asesor, confirmación y recordatorio de visita, recordatorio 3 días antes de cada cuota, aviso de cuota vencida, alerta a la jefatura si un cliente no es atendido en una hora y un resumen diario a cada asesor.</p></div>`; return; }
+    box.innerHTML = `<div class="gs-card"><p class="gs-note">Cargando…</p></div>`;
+    let rows = []; try { rows = await N().api("/rest/v1/mensajes?select=id,creado,enviar_desde,para,plantilla,motivo,estado,intentos,error,enviado&order=id.desc&limit=200", {method: "GET"}) || []; } catch (x) { box.innerHTML = `<div class="gs-card"><p class="gs-note">No se pudo leer la cola: ${esc(x.message)}</p></div>`; return; }
+    const c = k => rows.filter(r => r.estado === k).length, f = d => d ? new Date(d).toLocaleString("es-PE", {day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"}) : "—";
+    box.innerHTML = `<div class="gs-card"><h3>Mensajes automáticos</h3><div class="gs-kp"><div><b>${c("pendiente")}</b><span>Programados</span></div><div><b>${c("enviado")}</b><span>Enviados</span></div><div><b>${c("error")}</b><span>Con error</span></div><div><b>${c("cancelado")}</b><span>Cancelados</span></div></div>
+      <div class="gs-scroll" tabindex="0" role="region" aria-label="Cola de mensajes"><table class="gs-t"><thead><tr><th>Sale</th><th>Para</th><th>Mensaje</th><th>Motivo</th><th>Estado</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td>${f(r.estado === "enviado" ? r.enviado : r.enviar_desde)}</td><td>${esc(r.para)}</td><td>${esc(NOMBRE[r.plantilla] || r.plantilla)}</td><td>${esc(r.motivo)}${r.error ? `<br><small style="color:#9B1C1C">${esc(r.error)}</small>` : ""}</td><td><span class="gs-pill p-${esc(r.estado)}">${esc(r.estado)}</span></td><td>${r.estado === "pendiente" ? `<button type="button" class="gs-b" data-cancel="${r.id}">Cancelar</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="6">Aún no hay mensajes.</td></tr>`}</tbody></table></div>
+      <h3 style="margin-top:16px">No contactar</h3><p class="gs-note">Si un cliente pide no recibir mensajes, regístralo aquí y el sistema no le enviará nada más.</p>
+      <div class="gs-acts"><input id="gsNo" inputmode="tel" placeholder="9XX XXX XXX" aria-label="Celular que no desea mensajes" style="font:inherit;font-size:15px;min-height:42px;padding:6px 12px;border:1px solid #D4E2EC;border-radius:10px"><button type="button" class="gs-b pri" id="gsNoBtn">Registrar</button><button type="button" class="gs-b" id="gsRef">Actualizar</button></div><p class="gs-note" id="gsNoMsg" role="status"></p></div>`; }
+  sec.addEventListener("click", async e => { const k = e.target.closest("[data-cancel]");
+    if (k) { try { await N().api("/rest/v1/mensajes?id=eq." + k.dataset.cancel, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "cancelado"})}); toast("Mensaje cancelado"); renderMsg(); } catch (x) { toast("No se pudo cancelar"); } }
+    if (e.target.id === "gsRef") renderMsg();
+    if (e.target.id === "gsNoBtn") { const t = document.getElementById("gsNo").value.replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, ""), m = document.getElementById("gsNoMsg");
+      if (!/^9\d{8}$/.test(t)) { m.textContent = "Escribe un celular de 9 dígitos."; return; }
+      try { await N().api("/rest/v1/no_contactar", {method: "POST", headers: {Prefer: "return=minimal"}, body: JSON.stringify({celular: t, motivo: "Pedido del cliente"})}); m.textContent = "Registrado: " + t + " no recibirá mensajes automáticos."; }
+      catch (x) { m.textContent = /duplicate|unique/i.test(x.message) ? "Ese número ya estaba registrado." : "No se pudo registrar: " + x.message; } } });
+
+  function render(t) { if (t === "enl") renderEnl(); if (t === "pro") renderPro(); if (t === "msg") renderMsg(); }
+  // datos publicados (si hay conexión)
+  const cargar = async () => { if (!ses()) return; try { const r = await N().api("/rest/v1/proyectos?select=id,contenido", {method: "GET"}); (r || []).forEach(x => remoto[x.id] = x.contenido || {}); } catch (e) {} };
+  cargar().then(() => renderEnl()); renderEnl();
+  // en el menú Análisis, junto a Datos
+  const wrapNav = () => { const menu = document.getElementById("navMenu"), d = menu && menu.querySelector('a[href="#datos"]');
+    if (menu && !menu.querySelector('a[href="#gestion"]')) { const a = document.createElement("a"); a.href = "#gestion"; a.innerHTML = 'Proyectos y automatización<small>enlaces, proyectos, WhatsApp</small>'; d ? d.before(a) : menu.appendChild(a); } };
+  document.readyState === "loading" ? addEventListener("DOMContentLoaded", wrapNav) : wrapNav();
+  addEventListener("focus", () => { if (!P("enl").hidden) renderEnl(); });
+})();
+</script>
+<!--gestion-end-->

@@ -116,6 +116,51 @@ where id = (select id from auth.users where email = 'rosa@vivaldi.pe');
 - Cada asesor ve solo las solicitudes que le tocaron; la jefatura ve todas y es la única que ve los reclamos.
 - Hay un tope de envíos por hora para frenar ataques de envío masivo.
 
+## Ventas desde la web: enlace personal de cada asesor
+
+Cada asesor tiene un enlace propio a la web y a cada landing. El cliente que entra por ese enlace ve "Te atiende (asesor)", sus WhatsApp van al celular del asesor y su solicitud **le llega asignada a él** (no entra al turno).
+
+1. Registrar el código y el celular de cada asesor (una vez):
+
+```sql
+update public.perfiles set codigo = 'rosa-quispe', celular = '987654321'
+where id = (select id from auth.users where email = 'rosa@vivaldi.pe');
+```
+
+   El código va en minúsculas, sin tildes y con guiones (la herramienta lo propone a partir del nombre). Para la jefatura basta el celular (recibe las alertas).
+2. El asesor abre la herramienta → **Análisis → Proyectos y automatización → Mis enlaces de venta** y copia o envía por WhatsApp el enlace de la web, de cada landing o de la página para clientes del extranjero.
+
+## Proyectos: nombre, etapas, precios y documentos
+
+La tabla `proyectos` guarda lo que publica cada proyecto: nombre comercial, lema, estado, precio desde, área, resumen, etapas y enlaces a documentos. La jefatura lo edita en la herramienta (**Proyectos y automatización → Proyectos → Publicar cambios**) y la web y las landings lo muestran al abrirse. Cada cambio queda en el historial. Desde la web solo se puede leer.
+
+## Mensajes automáticos de WhatsApp
+
+La base de datos arma sola la cola de avisos (tabla `mensajes`): bienvenida al cliente nuevo, aviso al asesor, confirmación y recordatorio de visita, recordatorio y aviso de cuota, alerta a la jefatura y resumen diario del asesor. Mientras no se active el envío, los mensajes quedan en la cola y se pueden ver en la herramienta. Detalle y textos: `plantillas-whatsapp.md`.
+
+### Activar el envío (una vez)
+
+1. **Cuenta de WhatsApp Business Platform** a nombre de Vivaldi en Meta Business (business.facebook.com): verificar la empresa y registrar un número de WhatsApp dedicado (no puede estar en uso en la app de WhatsApp). Crear un usuario de sistema y un token permanente con permiso `whatsapp_business_messaging`. Anotar el identificador del número (Phone number ID).
+2. **Plantillas:** registrar las 8 de `plantillas-whatsapp.md` y esperar su aprobación.
+3. **Función de envío:** con la CLI de Supabase (`npm i -g supabase`), desde esta carpeta:
+
+```
+supabase login
+supabase link --project-ref <ID-DEL-PROYECTO>
+supabase functions deploy enviar-whatsapp --no-verify-jwt
+supabase secrets set WHATSAPP_TOKEN=<token> WHATSAPP_PHONE_ID=<id del número> ENVIOS_CLAVE=<clave larga inventada>
+```
+
+   Para una prueba sin enviar nada real, agregar `MODO_PRUEBA=si`; los mensajes quedan marcados como enviados en prueba.
+4. **Programar el envío cada 5 minutos:** en Supabase, **Database → Extensions**, activar `pg_cron` y `pg_net`; luego abrir `activar-envios.sql`, reemplazar los tres valores entre `< >` y ejecutarlo en el SQL Editor.
+5. **Revisar:** en la herramienta, como jefatura, **Mensajes automáticos** muestra lo programado, lo enviado y lo que tuvo error (con el motivo que da Meta). Un mensaje con error se reintenta hasta 3 veces.
+
+Costo: Meta cobra cada mensaje de plantilla entregado según su tabla de precios para Perú (ver `../mantenimiento/Costeo-Mantenimiento-Vivaldi.xlsx`). Para pausar todo: `select cron.unschedule('vivaldi-enviar-whatsapp');`.
+
+### Clientes del extranjero
+
+La landing para extranjeros acepta celulares internacionales con su código de país (`+1…`, `+34…`) y guarda el país. Esos clientes también reciben la bienvenida automática.
+
 ## Consultar y descargar la información
 
 - En Supabase, **Table Editor → registros** muestra todos los registros; se puede filtrar por `coleccion` (clientes, proformas, separaciones, cobranza, visitas, lotes) y exportar a CSV.
@@ -135,3 +180,4 @@ where id = (select id from auth.users where email = 'rosa@vivaldi.pe');
 - La sincronización se probó con varios navegadores a la vez (asesora, asesor, jefatura y usuario dado de baja) contra un servidor de prueba con la misma interfaz que Supabase: alta, edición, borrado, inventario compartido, trabajo sin señal, sesión vencida, recarga y cambio de usuario en un mismo equipo.
 - La automatización se probó de punta a punta: formularios llenados en la web desde un celular, reparto entre asesores, llegada a la herramienta de cada asesor, alerta a la jefatura y registro del reclamo con su plazo.
 - **Falta probarlo con el proyecto real de Supabase de Vivaldi**, que debe crear la empresa. Una vez creado, la primera prueba es entrar con un asesor y la jefatura y revisar que cada uno vea lo que le corresponde.
+- Lo nuevo (enlace del asesor, proyectos y mensajes) se probó en PostgreSQL 16 (`test7.sql`) y de punta a punta con la web, las landings y la herramienta contra el servidor de prueba: el cliente que entra por el enlace de un asesor le queda asignado; un código inexistente vuelve al turno normal; reprogramar una visita cancela los avisos anteriores; pagar una cuota cancela su recordatorio; la tarea periódica no duplica mensajes; un número en "no contactar" no recibe nada; un asesor no ve la cola ni publica proyectos. La función `enviar-whatsapp` se probó contra un servidor que imita la API de Meta: envío correcto, reintento ante error (máximo 3) y rechazo sin la clave. **El envío real debe probarse con la cuenta de Meta de Vivaldi** una vez aprobadas las plantillas.
