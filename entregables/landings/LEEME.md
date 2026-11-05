@@ -32,7 +32,7 @@ Para buscadores: cada página tiene su dirección canónica (https://vivaldiinmo
 ## Cambiar textos, fotos o etapas
 
 - **Precio, estado, resumen y etapas:** desde la herramienta (jefatura), sin tocar los archivos.
-- **Fotos, colores o textos fijos:** editar `fuentes/landings/proyectos.json` y volver a generar con `python3 fuentes/landings/build.py` (toma las fotos de la web final).
+- **Fotos, colores o textos fijos:** se cambian en `proyectos.json` de los archivos fuente (se entregan con el código del sistema) y se vuelven a generar las 8 páginas con `build.py`.
 
 ## A confirmar por Vivaldi antes de publicar
 

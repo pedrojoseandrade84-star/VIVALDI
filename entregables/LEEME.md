@@ -18,7 +18,8 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | crecimiento/ | Plan-Contenidos-Redes-Vivaldi.pdf | Plan de contenidos de 30 días para redes sociales |
 | auditoria/ | Informe-Auditoria-Tecnica-Vivaldi.pdf | Auditoría técnica de simulador, herramienta, web e integración: hallazgos, correcciones, pruebas y pendientes |
 | automatizacion/ | Plan-Automatizacion-Vivaldi.pdf | Plan de automatización de procesos comerciales y de cobranza, por fases |
-| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Propuesta de servicios (inversión a convenir) |
+| cotizacion/ | Cotizacion-Vivaldi-COT-2026-001.pdf | Cotización del sistema completo: detalle, total, forma de pago, mantenimiento y condiciones |
+| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Versión anterior, reemplazada por la cotización COT-2026-001. No se envía |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
 | presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (26 diapositivas, con 4 videos reales del funcionamiento). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
 | presentacion/ | Presentacion-Propuesta-Integral-Vivaldi.pdf | La misma presentación en PDF, para enviar o imprimir |
@@ -27,7 +28,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | presentacion/ | LEEME-PRESENTACION.txt | Cómo ponerla en el televisor: Mac con HDMI, AirPlay, Chromecast o USB |
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
 | manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
-| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato; revisar con un abogado antes de firmar |
+| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato con referencia a la cotización COT-2026-001; revisar con un abogado antes de firmar |
 | rotulado/ | PDF de diseños y archivos para imprenta | Rotulado de la flota: camionetas, van y sedanes |
 
 ## Web
