@@ -2620,6 +2620,13 @@ async function projectCard(p, g, photoEl){
     paint(); const put = () => document.body.prepend(bar); document.body ? put() : addEventListener("DOMContentLoaded", put);
     if (B.url && B.key && (!a.nombre || !a.celular)) api("/rest/v1/rpc/asesor_publico", {c: a.codigo}).then(r => { const x = r && r[0]; if (x) { a.nombre = a.nombre || safe(x.nombre); a.celular = a.celular || x.celular || ""; try { localStorage.setItem(KEY, JSON.stringify({a, exp: Date.now() + DIAS * 864e5})); } catch (e) {} paint(); } }).catch(() => {});
   }
+  // web: en la ficha de cada proyecto, botón a su página completa (landing). En el sitio publicado van en /proyectos/
+  const sb = document.getElementById("sheetBody");
+  if (sb) { let last = "", IDS = ["planicie", "terrazas", "portada", "lirios", "esmeralda", "diamante", "zafiro"];
+    document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-sheet]"); if (b) last = b.dataset.sheet; }, true);
+    const url = id => (location.protocol === "file:" ? "../landings/" : "/proyectos/") + id + ".html" + (a ? "?asesor=" + encodeURIComponent(a.codigo) + (a.nombre ? "&n=" + encodeURIComponent(a.nombre) : "") + (a.celular ? "&t=" + a.celular : "") : "");
+    new MutationObserver(() => { const acts = sb.querySelector(".sh-acts"); if (!acts || acts.querySelector(".vv-land") || !IDS.includes(last)) return;
+      const l = document.createElement("a"); l.className = "btn btn-deep vv-land"; l.href = url(last); l.textContent = "Página completa del proyecto"; acts.prepend(l); }).observe(sb, {childList: true, subtree: true}); }
   // precios, estados y textos de proyectos que actualiza la jefatura (si la base de datos está configurada)
   if (B.url && B.key) api("/rest/v1/proyectos?select=id,contenido").then(rows => {
     window.VV_PROYECTOS = rows;

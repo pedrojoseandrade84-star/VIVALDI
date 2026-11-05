@@ -5,7 +5,7 @@ Propuesta integral - Pedrojose Andrade Paredes - Noviembre 2026
 QUE HAY EN ESTA CARPETA
 
 1-Presentacion
-   Presentacion-Vivaldi.html -> LA PRINCIPAL (24 diapositivas, con 4 videos
+   Presentacion-Vivaldi.html -> LA PRINCIPAL (26 diapositivas, con 4 videos
    reales de la web, la herramienta, la base de datos y el simulador).
    Doble clic para abrir. Funciona sin internet.
 2-Presentacion-PDF            -> la misma, en PDF.

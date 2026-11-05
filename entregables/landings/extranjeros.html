@@ -1,4 +1,4 @@
-<!doctype html><html lang="es-PE"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es-PE"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="canonical" href="https://vivaldiinmobiliaria.com/proyectos/extranjeros.html"><meta property="og:url" content="https://vivaldiinmobiliaria.com/proyectos/extranjeros.html"><meta name="robots" content="index, follow">
 <title>Beach lots in Peru for international buyers | Lotes en Perú para clientes del extranjero · Vivaldi</title><meta name="description" content="Titled beach lots south of Lima from S/ 25,000. Video call tours, reservation by transfer and interest-free installments. In English and Spanish."><meta name="theme-color" content="#0E4C72">
 <meta property="og:title" content="Beach lots in Peru for international buyers | Lotes en Perú para clientes del extranjero · Vivaldi"><meta property="og:description" content="Titled beach lots south of Lima from S/ 25,000. Video call tours, reservation by transfer and interest-free installments. In English and Spanish."><meta property="og:type" content="website">
 <style>@font-face {
@@ -121,13 +121,17 @@ form.card .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.days{display
 .days button small{display:block;font-weight:600;font-size:.72rem;color:var(--mu)}.days button[aria-pressed=true]{border-color:var(--ac);background:#EEF5FB}
 .chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:10px;font-weight:600!important;font-size:.85rem!important;color:var(--mu)}.chk input{min-height:0!important;width:20px;height:20px;margin-top:2px}
 .ok-msg{display:none;background:#E6F4EC;color:#14532D;border-radius:12px;padding:12px 14px;font-weight:700}.ok-msg.on{display:block}
+.tsts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.tsts figure{margin:0;background:#fff;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:18px;box-shadow:0 8px 24px rgba(6,43,68,.07)}
+.tsts blockquote{margin:0;font-family:"Instrument Serif",Georgia,serif;font-size:1.35rem;line-height:1.3;color:var(--nv)}.tsts blockquote::before{content:"“"}.tsts blockquote::after{content:"”"}
+.tsts figcaption{display:flex;align-items:center;gap:12px;font-size:.84rem;color:var(--mu)}.tsts figcaption img{width:52px;height:52px;border-radius:50%;object-fit:cover}.tsts figcaption b{display:block;color:var(--ink);font-size:.95rem}
+.fq{border-bottom:1px solid var(--ln);padding:16px 0}.fq summary{font-weight:800;cursor:pointer;min-height:28px;list-style:none;display:flex;justify-content:space-between;gap:16px}.fq summary::after{content:"+";color:var(--ac);font-size:1.3rem;line-height:1}.fq[open] summary::after{content:"−"}.fq summary::-webkit-details-marker{display:none}.fq p{margin:10px 0 0;color:var(--mu)}
 .others{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.others a{display:block;text-decoration:none;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(6,43,68,.1);transition:transform .2s}
 .others a:hover{transform:translateY(-3px)}.others img{width:100%;aspect-ratio:16/10;object-fit:cover}.others div{padding:14px 16px}.others b{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.45rem;color:var(--nv);display:block}.others span{color:var(--mu);font-size:.88rem}
 footer{background:#041F33;color:#9FB9CC;padding:40px 0 110px;font-size:.88rem}footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer a{color:#fff}
 .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:10px}.sticky .btn{flex:1;min-height:52px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}.reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hero>img{animation:none}}
-@media (max-width:900px){.g2,.calc{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.facts div{border-bottom:1px solid var(--ln)}
+@media (max-width:900px){.tsts{grid-template-columns:1fr}.g2,.calc{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.facts div{border-bottom:1px solid var(--ln)}
  .gal{grid-template-columns:1fr 1fr;grid-auto-rows:160px}.others{grid-template-columns:1fr}.stages{grid-template-columns:1fr;gap:18px}.stages::before{left:21px;right:auto;top:0;bottom:0;width:4px;height:auto}
  .st{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:center}.st b{margin:0}header.top nav{display:none}.sticky{display:flex}.sec{padding:64px 0}}
 @media (max-width:520px){.bens{grid-template-columns:1fr}form.card .two{grid-template-columns:1fr}.hero .cta .btn{flex:1}}
@@ -230,6 +234,13 @@ $("#lead").addEventListener("submit", e => { e.preventDefault(); const n = $("#f
     paint(); const put = () => document.body.prepend(bar); document.body ? put() : addEventListener("DOMContentLoaded", put);
     if (B.url && B.key && (!a.nombre || !a.celular)) api("/rest/v1/rpc/asesor_publico", {c: a.codigo}).then(r => { const x = r && r[0]; if (x) { a.nombre = a.nombre || safe(x.nombre); a.celular = a.celular || x.celular || ""; try { localStorage.setItem(KEY, JSON.stringify({a, exp: Date.now() + DIAS * 864e5})); } catch (e) {} paint(); } }).catch(() => {});
   }
+  // web: en la ficha de cada proyecto, botón a su página completa (landing). En el sitio publicado van en /proyectos/
+  const sb = document.getElementById("sheetBody");
+  if (sb) { let last = "", IDS = ["planicie", "terrazas", "portada", "lirios", "esmeralda", "diamante", "zafiro"];
+    document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-sheet]"); if (b) last = b.dataset.sheet; }, true);
+    const url = id => (location.protocol === "file:" ? "../landings/" : "/proyectos/") + id + ".html" + (a ? "?asesor=" + encodeURIComponent(a.codigo) + (a.nombre ? "&n=" + encodeURIComponent(a.nombre) : "") + (a.celular ? "&t=" + a.celular : "") : "");
+    new MutationObserver(() => { const acts = sb.querySelector(".sh-acts"); if (!acts || acts.querySelector(".vv-land") || !IDS.includes(last)) return;
+      const l = document.createElement("a"); l.className = "btn btn-deep vv-land"; l.href = url(last); l.textContent = "Página completa del proyecto"; acts.prepend(l); }).observe(sb, {childList: true, subtree: true}); }
   // precios, estados y textos de proyectos que actualiza la jefatura (si la base de datos está configurada)
   if (B.url && B.key) api("/rest/v1/proyectos?select=id,contenido").then(rows => {
     window.VV_PROYECTOS = rows;

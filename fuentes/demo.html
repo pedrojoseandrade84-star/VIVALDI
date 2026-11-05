@@ -100,6 +100,8 @@
     const real = Object.values(KEYS).some(key => get(key).some(r => !r.demo));
     if (!real) { const b = document.createElement("button"); b.type = "button"; b.id = "demoBtn"; b.textContent = "Ver con datos de ejemplo"; b.onclick = load; note.appendChild(b); }
   }
+  // enlace directo para mostrar: herramienta.html?demo=1 abre con los datos de ejemplo (solo si el equipo no tiene datos reales)
+  try { if (/[?&]demo=1\b/.test(location.search) && !active() && !Object.values(KEYS).some(key => get(key).some(r => !r.demo)) && !(window.vivaldiNube && window.vivaldiNube.sesion)) load(); } catch (e) {}
   window.vivaldiDemo = {load, clear, data};
 })();
 </script>

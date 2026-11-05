@@ -23,6 +23,10 @@ def img(key, w=1600, q=74):
 def soles(n): return 'S/ ' + f'{round(n):,}'
 TC = EMP['tipo_cambio']
 
+TST = [("Maria Paz", "2025/05/cliente3.webp", "Primera inversión", "La asesoría brindada resolvió todas mis excusas. Es mi primera inversión y siento que ha valido la pena."),
+       ("Eddy Cruz", "2025/05/propietario.jpg", "Propietario", "Estoy agradecido de pertenecer a la familia Vivaldi. Desde un inicio los asesores siempre me brindaron buena información y atención."),
+       ("Josselyn Fernández", "2025/05/clientes3.png", "Propietaria", "Estoy muy contenta con la atención de todo el personal. Me han apoyado bastante en la adquisición de mi lote y poco a poco me ayudan a cumplir mis metas.")]
+
 CSS = '''
 :root{--nv:#0A3856;--deep:#062B44;--ink:#0B2236;--mu:#4E6478;--ln:#DCE5EC;--bg:#F3F7FA;--sun:#E8A93A;--ok:#1F8A4C;--ac:%(color)s}
 *{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%%}body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.55}
@@ -72,13 +76,17 @@ form.card .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.days{display
 .days button small{display:block;font-weight:600;font-size:.72rem;color:var(--mu)}.days button[aria-pressed=true]{border-color:var(--ac);background:#EEF5FB}
 .chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:10px;font-weight:600!important;font-size:.85rem!important;color:var(--mu)}.chk input{min-height:0!important;width:20px;height:20px;margin-top:2px}
 .ok-msg{display:none;background:#E6F4EC;color:#14532D;border-radius:12px;padding:12px 14px;font-weight:700}.ok-msg.on{display:block}
+.tsts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.tsts figure{margin:0;background:#fff;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:18px;box-shadow:0 8px 24px rgba(6,43,68,.07)}
+.tsts blockquote{margin:0;font-family:"Instrument Serif",Georgia,serif;font-size:1.35rem;line-height:1.3;color:var(--nv)}.tsts blockquote::before{content:"“"}.tsts blockquote::after{content:"”"}
+.tsts figcaption{display:flex;align-items:center;gap:12px;font-size:.84rem;color:var(--mu)}.tsts figcaption img{width:52px;height:52px;border-radius:50%%;object-fit:cover}.tsts figcaption b{display:block;color:var(--ink);font-size:.95rem}
+.fq{border-bottom:1px solid var(--ln);padding:16px 0}.fq summary{font-weight:800;cursor:pointer;min-height:28px;list-style:none;display:flex;justify-content:space-between;gap:16px}.fq summary::after{content:"+";color:var(--ac);font-size:1.3rem;line-height:1}.fq[open] summary::after{content:"−"}.fq summary::-webkit-details-marker{display:none}.fq p{margin:10px 0 0;color:var(--mu)}
 .others{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.others a{display:block;text-decoration:none;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(6,43,68,.1);transition:transform .2s}
 .others a:hover{transform:translateY(-3px)}.others img{width:100%%;aspect-ratio:16/10;object-fit:cover}.others div{padding:14px 16px}.others b{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.45rem;color:var(--nv);display:block}.others span{color:var(--mu);font-size:.88rem}
 footer{background:#041F33;color:#9FB9CC;padding:40px 0 110px;font-size:.88rem}footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer a{color:#fff}
 .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:10px}.sticky .btn{flex:1;min-height:52px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}.reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hero>img{animation:none}}
-@media (max-width:900px){.g2,.calc{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.facts div{border-bottom:1px solid var(--ln)}
+@media (max-width:900px){.tsts{grid-template-columns:1fr}.g2,.calc{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.facts div{border-bottom:1px solid var(--ln)}
  .gal{grid-template-columns:1fr 1fr;grid-auto-rows:160px}.others{grid-template-columns:1fr}.stages{grid-template-columns:1fr;gap:18px}.stages::before{left:21px;right:auto;top:0;bottom:0;width:4px;height:auto}
  .st{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:center}.st b{margin:0}header.top nav{display:none}.sticky{display:flex}.sec{padding:64px 0}}
 @media (max-width:520px){.bens{grid-template-columns:1fr}form.card .two{grid-template-columns:1fr}.hero .cta .btn{flex:1}}
@@ -105,8 +113,10 @@ if (days) { const D = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"], M = [
   days.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const on = b.getAttribute("aria-pressed") !== "true"; $$(".days button").forEach(x => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", String(on)); VIS.day = on ? b.dataset.d : ""; }); }
 '''
 
-def head(title, desc, color, lang='es-PE'):
-    return f'''<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+SITIO = 'https://vivaldiinmobiliaria.com/proyectos/'
+def head(title, desc, color, lang='es-PE', slug=None, ld=None):
+    extra = (f'<link rel="canonical" href="{SITIO}{slug}.html"><meta property="og:url" content="{SITIO}{slug}.html"><meta name="robots" content="index, follow">' if slug else '') + (f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' if ld else '')
+    return f'''<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">{extra}
 <title>{E(title)}</title><meta name="description" content="{E(desc)}"><meta name="theme-color" content="{color}">
 <meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="website">
 <style>{FONTS}{CSS % {'color': color}}</style></head><body>'''
@@ -131,6 +141,24 @@ def landing(p):
     gal = ''.join(f'''<button type="button" aria-label="Ampliar foto {k + 1}"><img src="{img(f, 1200, 72)}" alt="{E(p['nombre'])}, foto {k + 1}" loading="lazy">{'<span class="ref">Referencial</span>' if k in refs else ''}</button>''' for k, f in enumerate(fotos[:8]))
     bens = ''.join(f'<div><i></i>{E(b)}</div>' for b in p['beneficios'])
     oth = ''.join(f'''<a href="{x['id']}.html"><img src="{img(x['fotos'][0], 700, 70)}" alt="{E(x['nombre'])}" loading="lazy"><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span></div></a>''' for x in others)
+    import urllib.parse as _u
+    mapa = 'https://www.google.com/maps/search/?api=1&query=' + _u.quote(f"{p['nombre']} {'Km ' + format(p['km'], 'g') + ' ' if p['km'] else ''}Panamericana Sur {p['zona']} Cañete")
+    ubic = f'''<section class="sec" id="ubicacion"><div class="wrap g2"><div class="reveal"><div class="eb">Ubicación</div><h2>Cómo <em>llegar</em></h2>
+<p class="lead">{E(p['nombre'])} está {('en el km ' + format(p['km'], 'g') + ' de la Panamericana Sur') if p['km'] else 'sobre la Panamericana Sur'}, en {E(p['zona'])}, provincia de Cañete. Tu asesor te envía la ubicación exacta y el punto de encuentro por WhatsApp.</p>
+<div class="bens" style="grid-template-columns:1fr"><div><i></i>Visitas guiadas los fines de semana, con punto de encuentro coordinado con tu asesor</div><div><i></i>{'Referencia: Km ' + format(p['km'], 'g') + ' de la Panamericana Sur' if p['km'] else 'Ubicación exacta por WhatsApp'}</div></div>
+<p style="margin-top:20px"><a class="btn b-deep" href="{mapa}" target="_blank" rel="noopener">Abrir en Google Maps</a></p></div>
+<div class="shot reveal"><img src="{img(fotos[-1] if len(fotos) > 2 else fotos[0], 1200, 72)}" alt="{E(p['nombre'])}, vista del proyecto" loading="lazy">{'<span class="ref">Referencial</span>' if (len(fotos) - 1 if len(fotos) > 2 else 0) in refs else ''}</div></div></section>'''
+    tsts = TST[:3]
+    tst = f'''<section class="sec" id="opiniones" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Propietarios Vivaldi</div><h2>Lo que dicen <em>quienes ya compraron</em></h2>
+<div class="tsts">{''.join(f'<figure><blockquote>{E(q)}</blockquote><figcaption><img src="{img(ph, 160, 70)}" alt="" width="52" height="52" loading="lazy"><span><b>{E(n)}</b>{E(r)} · Vivaldi Inmobiliaria</span></figcaption></figure>' for n, ph, r, q in tsts)}</div>
+<p style="font-size:.8rem;color:var(--mu);margin-top:12px">Testimonios publicados en vivaldiinmobiliaria.com.</p></div></section>'''
+    qs = []
+    if 'Título independizado' in p['beneficios']: qs.append(('¿El lote tiene título?', 'Sí. Cada lote cuenta con título independizado inscrito en SUNARP. Antes de firmar te entregamos la partida para que la verifiques.'))
+    if price and not sold: qs.append(('¿Cómo funciona el financiamiento?', 'Es directo con Vivaldi y sin intereses: pagas una inicial y el saldo en cuotas fijas en soles. El plazo y la inicial los defines con tu asesor.'))
+    qs.append(('¿En qué moneda pago?', 'En soles, así tu cuota no depende del tipo de cambio.'))
+    if not sold: qs.append(('¿Puedo visitar el proyecto antes de decidir?', 'Sí. Hay visitas guiadas los fines de semana. Elige el día en el formulario y tu asesor te confirma la hora y el punto de encuentro.'))
+    qs.append(('¿Cómo verifico a la empresa?', f"Inmobiliaria & Constructora Vivaldi S.A.C., RUC {EMP['ruc']}. Puedes consultar el RUC en SUNAT y visitarnos en {EMP['oficina']}."))
+    faq = '<section class="sec" id="preguntas"><div class="wrap reveal" style="max-width:860px"><div class="eb">Preguntas frecuentes</div><h2>Antes de <em>decidir</em></h2>' + ''.join(f'<details class="fq"><summary>{E(a)}</summary><p>{E(b)}</p></details>' for a, b in qs) + '</div></section>'
     title = f"{p['nombre']} · {p['lema']} | Vivaldi Inmobiliaria"
     desc = p['resumen']
     calc = '' if not price or sold else f'''<section class="sec" id="cuota" style="background:#fff"><div class="wrap reveal"><div class="eb">Financiamiento directo</div><h2>Calcula tu <em>cuota</em></h2>
@@ -172,18 +200,21 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
   openWa(`Hola${{A && A.nombre ? " " + A.nombre.split(" ")[0] : ""}}, soy ${{n}}. Me interesa ${{P.nombre}}.${{VIS.day ? " Quisiera visitar el " + VIS.day + "." : ""}}${{pl !== "Prefiero no indicar" ? " Pienso comprar: " + pl.toLowerCase() + "." : ""}}${{pg !== "Prefiero no indicar" ? " Forma de pago: " + pg.toLowerCase() + "." : ""}} ¿Me ayudan con la información?`);
   $("#okMsg").classList.add("on"); }});
 '''
-    body = f'''{head(title, desc, p['color'])}{base_js()}
-<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#porque">El proyecto</a><a href="#etapas">Etapas</a><a href="#galeria">Fotos</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
+    ld = {"@context": "https://schema.org", "@type": "Product", "name": p['nombre'], "description": p['resumen'], "brand": {"@type": "Organization", "name": "Vivaldi Inmobiliaria"},
+          "category": "Lotes de terreno", "url": SITIO + p['id'] + '.html'}
+    if price and not sold: ld["offers"] = {"@type": "Offer", "price": price, "priceCurrency": "PEN", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": EMP['nombre']}}
+    body = f'''{head(title, desc, p['color'], slug=p['id'], ld=ld)}{base_js()}
+<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#porque">El proyecto</a><a href="#etapas">Etapas</a><a href="#galeria">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
 <main><section class="hero"><img src="{hero}" alt="{E(p['nombre'])}">{'<span class="ref">Imagen referencial</span>' if 0 in refs else ''}<div class="wrap"><span class="badge"><i></i>{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + format(p['km'], 'g')) if p['km'] else ''}</span>
-<h1>{E(p['nombre'])}</h1><p class="sub">{E(p['lema'])}. {E(p['resumen'])}</p>
+<h1>{E(p['nombre'])}</h1><p class="sub">{E(p['lema'])}.</p>
 <div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-wa" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div></section>
 <div class="wrap"><div class="facts">{''.join(f'<div><span>{a}</span><b data-f="{a}">{E(b)}</b><small data-f="{a}-s">{E(c)}</small></div>' for a, b, c in facts)}</div></div>
-<section class="sec" id="porque" style="padding-top:30px"><div class="wrap g2"><div class="reveal"><div class="eb">Por qué {E(p['nombre'])}</div><h2>{E(p['lema'])}</h2><p class="lead">{E(p['resumen'])}</p><div class="bens">{bens}</div></div>
+<section class="sec" id="porque" style="padding-top:30px"><div class="wrap g2"><div class="reveal"><div class="eb">El proyecto</div><h2>Lo que encuentras en <em>{E(p['nombre'])}</em></h2><p class="lead">{E(p['resumen'])}</p><div class="bens">{bens}</div></div>
 <div class="shot reveal"><img src="{img(fotos[1] if len(fotos) > 1 else fotos[0], 1400, 72)}" alt="{E(p['nombre'])}" loading="lazy">{'<span class="ref">Referencial</span>' if (1 if len(fotos) > 1 else 0) in refs else ''}</div></div></section>
-<section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Etapas del proyecto</div><h2>Así <em>avanza</em></h2><p class="lead">Cada etapa de {E(p['nombre'])} con su estado actual.</p><div class="stages" style="--n:{n}">{stg}</div></div></section>
-<section class="sec" id="galeria"><div class="wrap reveal"><div class="eb">Galería</div><h2>Míralo con <em>tus propios ojos</em></h2><div class="gal">{gal}</div></div></section>
-{calc}{form}
-<section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Más proyectos Vivaldi</div><h2>Otras opciones <em>en la misma costa</em></h2><div class="others">{oth}</div></div></section></main>
+<section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Etapas</div><h2>Cómo avanza <em>el proyecto</em></h2><p class="lead">Estado actual de cada etapa. Tu asesor te confirma las fechas.</p><div class="stages" style="--n:{n}">{stg}</div></div></section>
+<section class="sec" id="galeria"><div class="wrap reveal"><div class="eb">Galería</div><h2>Fotos <em>del proyecto</em></h2><div class="gal">{gal}</div></div></section>
+{ubic}{tst}{calc}{faq}{form}
+<section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Más proyectos</div><h2>Otros proyectos <em>de Vivaldi</em></h2><div class="others">{oth}</div></div></section></main>
 <div class="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada"><button type="button" aria-label="Cerrar">×</button><img alt=""></div>
 {foot('<nav class="sticky" aria-label="Contacto rápido"><a class="btn b-wa" href="' + wa('Hola, me interesa ' + p['nombre']) + '" data-wa>WhatsApp</a><a class="btn b-deep" href="#contacto">' + ('Agendar visita' if not sold else 'Contacto') + '</a></nav>')}
 <script>const EMP = {json.dumps({'whatsapp': EMP['whatsapp']})};{js}</script>

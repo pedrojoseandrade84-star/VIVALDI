@@ -15,7 +15,9 @@ Una página por proyecto para enamorar al cliente de ese proyecto en particular,
 | `zafiro.html` | Zafiro de Asia | Proyecto entregado: prueba de que Vivaldi entrega; capta interesados para el próximo |
 | `extranjeros.html` | Todos los disponibles | Inglés y español, precios con referencia en dólares, compra a distancia en 5 pasos, videollamada, celular internacional |
 
-Cada landing tiene: portada con su foto y su color, datos clave (precio, lote, ubicación, estado), por qué elegirlo, **etapas del proyecto** (hecha, en curso, próxima), galería ampliable, calculadora de cuota sin intereses, agenda de visita de fin de semana, formulario que guarda al cliente y abre WhatsApp, y enlaces a los otros proyectos.
+Cada landing tiene: portada con su foto y su color, datos clave (precio, lote, ubicación, estado), lo que incluye el proyecto, **etapas del proyecto** (hecha, en curso, próxima), galería ampliable, cómo llegar (con Google Maps), testimonios de propietarios publicados por Vivaldi, calculadora de cuota sin intereses, preguntas frecuentes, agenda de visita de fin de semana, formulario que guarda al cliente y abre WhatsApp, y enlaces a los otros proyectos.
+
+Para buscadores: cada página tiene su dirección canónica (https://vivaldiinmobiliaria.com/proyectos/…) y datos estructurados (schema.org) con el nombre, la descripción y el precio, para que Google muestre el proyecto con su precio. En la web principal, la ficha de cada proyecto tiene el botón **Página completa del proyecto**.
 
 ## Publicarlas
 

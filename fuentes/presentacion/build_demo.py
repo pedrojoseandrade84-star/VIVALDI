@@ -51,6 +51,19 @@ def slide(name, k, h2, steps, pt, pts):
     return (f'<section class="s demo"><div class="k">{k}</div><div class="dg"><div><h2>{h2}</h2><ol>{li}</ol><div class="live"><i></i>Grabación real de la herramienta</div>'
             f'<p class="hint">Clic en el video o tecla Z para verlo en grande.</p></div><div><div class="vid"><video data-name="{name}" data-src="vid-{name}" muted loop playsinline preload="none" poster="{poster}"></video><img class="pst" src="{poster}" alt=""></div><div class="ph3">{ph}</div></div></div>'
             f'<div class="foot"><span>Vivaldi Inmobiliaria · Propuesta integral</span><span>0</span></div><div class="bar"></div></section>')
+def b64(f): return 'data:image/jpeg;base64,' + base64.b64encode(open(D + '/' + f, 'rb').read()).decode()
+FOOT = '<div class="foot"><span>Vivaldi Inmobiliaria · Propuesta integral</span><span>0</span></div><div class="bar"></div></section>'
+EXTRA = {  # diapositivas fijas que van después de la diapositiva n del original (luego del video, si lo hay)
+ 6: f'''<section class="s"><div class="k">4 · Página web · ventas por proyecto</div><div class="dg2"><div><h2 style="font-size:44px">Una página para <em>cada proyecto</em></h2>
+<ul class="ck" style="font-size:19px"><li>Siete páginas de proyecto, cada una con su identidad, etapas, fotos, cuota, visita y preguntas</li><li>Página en inglés y español para clientes del extranjero</li><li>Enlace personal de cada asesor: el cliente le escribe a él y la solicitud le llega asignada</li><li>Precio, estado y etapas los actualiza la gerencia y se publican solos</li></ul></div>
+<div class="mk"><div class="shot mk-d"><img src="{b64('x_land_desk.jpg')}" alt=""></div><div class="shot mk-m"><img src="{b64('x_land_mob.jpg')}" alt=""></div><div class="shot mk-e"><img src="{b64('x_land_ext.jpg')}" alt=""></div></div></div>{FOOT}''',
+ 9: f'''<section class="s"><div class="k">6 · Automatización · WhatsApp y CRM</div><div class="dg2"><div><h2 style="font-size:44px">WhatsApp que <em>trabaja solo</em></h2>
+<ul class="ck" style="font-size:18px"><li>Bienvenida al cliente y aviso a su asesor en el momento</li><li>Confirmación de visita y recordatorio el día anterior</li><li>Recordatorio tres días antes de cada cuota y aviso si vence</li><li>Alerta a la gerencia si un cliente pasa una hora sin atención</li><li>Historial completo de cada cliente: etapas, notas, proformas y pagos</li></ul></div>
+<div class="mk2"><div class="shot"><img src="{b64('x_msgs.jpg')}" alt=""></div><div class="shot mk-h"><img src="{b64('x_hist.jpg')}" alt=""></div></div></div>{FOOT}''',
+}
+EXTRA_CSS = '''<style id="extra-css">.dg2{display:grid;grid-template-columns:400px 1fr;gap:36px;align-items:center;margin-top:6px}
+.mk{position:relative;height:500px}.mk .shot{position:absolute}.mk-d{left:0;top:0;width:560px}.mk-m{right:0;top:0;width:200px;border-radius:24px;border:7px solid #0B2236}.mk-e{left:230px;top:290px;width:330px}
+.mk2{position:relative;height:500px}.mk2 .shot{position:absolute;left:0;top:30px;width:560px}.mk2 .mk-h{left:auto;right:0;top:110px;width:270px}</style>'''
 src = open(D + '/orig_tv.html', encoding='utf-8').read()
 parts = re.split(r'(?=<section class="s)', src); head, secs = parts[0], parts[1:]
 last = secs[-1]; tail_i = last.find('</section>') + len('</section>'); tail = last[tail_i:]; secs[-1] = last[:tail_i]
@@ -61,9 +74,10 @@ for i, s in enumerate(secs, 1):
         if d[0] == i:
             sl = slide(d[1], *d[2:])
             if sl: out.append(sl + '\n'); added.append(d[1])
+    if i in EXTRA: out.append(EXTRA[i] + '\n')
 # renumerar el pie de cada diapositiva
 for i in range(len(out)):
     out[i] = re.sub(r'(<div class="foot"><span>[^<]*</span><span>)\d+(</span></div>)', lambda m: f'{m.group(1)}{i + 1}{m.group(2)}', out[i], count=1)
-html = head.replace('</head>', CSS + '</head>', 1) + ''.join(out) + tail.replace('</body>', ''.join(VIDS) + JS + '</body>', 1)
+html = head.replace('</head>', CSS + EXTRA_CSS + '</head>', 1) + ''.join(out) + tail.replace('</body>', ''.join(VIDS) + JS + '</body>', 1)
 open(D + '/tv_demo.html', 'w', encoding='utf-8').write(html)
 print('diapositivas', len(out), 'videos', added, 'MB', round(len(html) / 1e6, 1))
