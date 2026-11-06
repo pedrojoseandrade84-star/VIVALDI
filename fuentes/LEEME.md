@@ -65,3 +65,7 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 
 ## Manual: Anexo 2
 - `manual/capturas_anexo2.js capturas` toma las capturas en modo demostración y `manual/anexo2_pdf.js <salida.pdf>` genera el PDF desde `manual/anexo2.html`.
+
+## Explorador 3D de lotes
+- `experiencia/capturas_explorador.js experiencia/capturas portada` toma del simulador 3D la fachada del condominio, el corte de la casa y sus ambientes, y calcula la posición de cada lote en pantalla (`lotes.json`).
+- `python3 experiencia/explorador.py` genera `entregables/experiencia/explorar-portada.html`.

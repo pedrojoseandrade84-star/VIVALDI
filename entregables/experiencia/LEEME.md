@@ -1,22 +1,23 @@
-# Recorrido guiado por scroll · La Portada del Sol
+# Explorador 3D · La Portada del Sol
 
 Diseño y desarrollo: Pedrojose Andrade Paredes
 
-`recorrido-portada.html` cuenta el proyecto mientras el cliente baja por la página, como un video que él controla:
+`explorar-portada.html` funciona como las webs inmobiliarias de "elige tu unidad", con lotes en lugar de pisos:
 
-1. **Ubicación:** el mapa oficial se acerca al km 115.2 de la Panamericana Sur y pasa al lote de 6 × 15 m dentro del condominio.
-2. **Ingreso:** el pórtico del proyecto.
-3. **El club:** piscina, gimnasio, cancha de fútbol, losa multiusos, juegos y parrillas, cada uno con su nombre.
-4. **Tu casa:** una casa de playa de dos pisos sobre el lote (exterior, atardecer, corte y planos de cada piso), tomada del simulador 3D de Vivaldi.
-5. **Números y acción:** precio, cuota sin intereses, ver lotes disponibles en Mi Vivaldi, agendar visita o escribir por WhatsApp.
+1. **Elige tu lote.** La fila de casas del condominio vista desde la calle. Al pasar el mouse (o tocar, en celular) por cada casa se ilumina su lote, un marcador dorado lo señala y aparece su tarjeta: número de lote, 90 m² (6 × 15 m), estado y precio desde. Sin tocar nada, el marcador recorre los lotes solo. Botones Día y Atardecer.
+2. **Explorar el lote.** La cámara se acerca a esa casa y pasa al corte en 3D de la casa, con su panel: estado, 90 m² de lote, 107 m² techados, 2 baños, ambientes de cada piso (Piso 1 / Piso 2), y los botones Entrar a la casa, Separar este lote (Mi Vivaldi) y WhatsApp.
+3. **Entrar a la casa.** Sala, comedor y cocina, dormitorio principal y terraza, cada uno con su nombre; pasan solos o con las flechas. Desde ahí se vuelve a la casa completa o al condominio.
 
-Funciona sin internet, en computadora y celular, sin librerías externas. Respeta el ajuste "reducir movimiento" del sistema (sin acercamientos). Lleva el módulo del asesor: con `?asesor=código&n=Nombre&t=celular` los WhatsApp van al asesor.
+Funciona sin internet, en computadora y en celular (en celular la cámara se centra en el lote elegido y se cambia de lote con flechas o deslizando). Se maneja con teclado (flechas, Enter y Escape). Lleva el módulo del asesor: con `?asesor=código&n=Nombre&t=celular` los WhatsApp van al asesor.
 
-## Publicarlo
-Subirlo como `/proyectos/recorrido-portada.html`, junto a las páginas por proyecto. La página de La Portada del Sol ya lo enlaza ("Recorrido" en el menú y "Recórrela de la Panamericana a tu lote"). Si se conecta a la base de datos (`const BASE = {url: "", key: ""};`), precio, cuota y estado se toman de lo que publica la jefatura.
+## Disponibilidad
+Sin conexión a la base de datos muestra **disponibilidad de ejemplo**, con un aviso visible arriba. Al escribir la URL y la clave pública en `const BASE = {url: "", key: ""};`, toma número, manzana, área, estado y precio de los lotes de La Portada del Sol del inventario (los mismos que ve Mi Vivaldi) y quita el aviso. La posición de cada lote en la vista es referencial: el plano oficial lo muestra el asesor.
 
 ## Transparencia
-Las imágenes del ingreso y del club son renders del proyecto y están marcadas. La casa es una propuesta referencial del simulador para un lote de 6 × 15 m (107 m² techados): el texto final lo aclara.
+Las vistas del condominio, de la casa y de sus ambientes son referenciales, generadas con el simulador 3D de Vivaldi para un lote de 6 × 15 m; cada pantalla lo indica. El diseño, el costo y los permisos de cada casa dependen de su propietario.
+
+## Publicarlo
+Subirlo como `/proyectos/explorar-portada.html`. La página de La Portada del Sol ya lo enlaza ("Explorar en 3D" en el menú y "Elige tu lote en 3D").
 
 ## Regenerarlo
-`node fuentes/experiencia/capturas_sim.js fuentes/experiencia/capturas portada` toma las vistas del simulador y `python3 fuentes/experiencia/build.py` genera la página.
+`node fuentes/experiencia/capturas_explorador.js fuentes/experiencia/capturas portada` toma las vistas del simulador (y calcula la posición de cada lote en pantalla) y `python3 fuentes/experiencia/explorador.py` genera la página.
