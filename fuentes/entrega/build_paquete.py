@@ -6,7 +6,7 @@ ENT = os.path.normpath(os.path.join(AQUI, '..', '..', 'entregables'))
 NOMBRE = 'Vivaldi-Sistema-Comercial'
 dest = os.path.abspath(sys.argv[1]); raiz = os.path.join(dest, NOMBRE)
 shutil.rmtree(raiz, ignore_errors=True); os.makedirs(raiz)
-CARPETAS = ['cotizacion', 'contrato', 'web', 'landings', 'software', 'base-de-datos', 'simulador', 'manual',
+CARPETAS = ['cotizacion', 'contrato', 'web', 'landings', 'experiencia', 'software', 'base-de-datos', 'simulador', 'manual',
             'crecimiento', 'automatizacion', 'mantenimiento', 'rotulado', 'auditoria']
 for c in CARPETAS:
     shutil.copytree(os.path.join(ENT, c), os.path.join(raiz, c))
