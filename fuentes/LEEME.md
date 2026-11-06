@@ -58,3 +58,10 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 ## Pruebas
 - `bash pruebas/base-de-datos/reiniciar.sh` deja la base de prueba limpia; `bash pruebas/base-de-datos/preparar.sh` arma los archivos que usan las pruebas.
 - Con el servidor de prueba encendido (`node pruebas/base-de-datos/mock.js`), `bash pruebas/todas.sh` corre todas las pruebas, cada una sobre una base nueva.
+
+## Regenerar todo
+- `python3 regenerar.py` actualiza, en orden: páginas por proyecto, portal, correcciones y capa de diseño de la web (`mejoras_web.py` + `estilo-web.html`) y los módulos de la herramienta que se reemplazan en su mismo lugar (`sync.html`, `gestion.html` con los datos de `landings/proyectos.json`).
+- `landings/proyectos.json` es la fuente única de los datos públicos de cada proyecto (nombre, km, precio, estado, etapas, textos y fotos).
+
+## Manual: Anexo 2
+- `manual/capturas_anexo2.js capturas` toma las capturas en modo demostración y `manual/anexo2_pdf.js <salida.pdf>` genera el PDF desde `manual/anexo2.html`.

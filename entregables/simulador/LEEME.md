@@ -37,7 +37,7 @@ Archivo único: `Simulador-3D-Lotes-Vivaldi.html` (≈1.8 MB). Funciona sin inte
 - Lo que se escribe se envía a estos servicios: no incluir DNI, teléfonos ni datos bancarios del cliente.
 
 ## Por confirmar
-- Kilómetro de La Portada del Sol: el simulador usa Km 115.2 (maqueta); la web y la herramienta dicen 111.5. Confirmar con Vivaldi.
+- Kilómetro de La Portada del Sol: Km 115.2, como indican su maqueta y su mapa oficial. La web, las páginas por proyecto, la herramienta y el portal ya usan ese dato.
 - La Bahía de Paracas: las medidas del lote (8 × 20 m) y las áreas del club son referenciales; ajustarlas con el plano oficial.
 
 ## Cómo abrirlo en el celular

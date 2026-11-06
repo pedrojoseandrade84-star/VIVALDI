@@ -7,14 +7,14 @@
   "telefono": "+51 922 549 723",
   "correo": "info@vivaldiinmobiliaria.com",
   "oficina": "Av. El Derby 121, Santiago de Surco, Lima",
-  "horario": "Lun-Vie 8:30-18:00 · Sáb 8:30-13:00",
+  "horario": "Lun–Vie 8:30–18:00 · Sáb 8:30–13:00",
   "tipo_cambio": 3.36
  },
  "proyectos": [
   {
    "id": "planicie",
    "nombre": "La Planicie de Asia",
-   "lema": "El lote más accesible del corredor Asia",
+   "lema": "Lotes de 200 m² a S/ 145 el metro cuadrado",
    "color": "#1F6FAE",
    "zona": "Asia",
    "km": 111.5,
@@ -122,10 +122,10 @@
   {
    "id": "portada",
    "nombre": "La Portada del Sol",
-   "lema": "Club completo en el km 111.5",
+   "lema": "Club completo en el km 115.2",
    "color": "#C9820F",
    "zona": "Asia",
-   "km": 111.5,
+   "km": 115.2,
    "m2": 90,
    "precio": 37900,
    "estado": "En construcción",
@@ -176,7 +176,7 @@
    "hero": "2025/09/PISCINA.png",
    "frase": "Piscina, gimnasio y cancha para toda la familia, en tu propio condominio.",
    "intro": [
-    "La Portada del Sol tiene lotes de 90 m² en el km 111.5 de Asia, con un club completo: piscina, gimnasio, losa multiusos, cancha de fútbol, juegos para niños y parrillas.",
+    "La Portada del Sol tiene lotes de 90 m² en el km 115.2 de la Panamericana Sur, en Asia, con un club completo: piscina, gimnasio, losa multiusos, cancha de fútbol, juegos para niños y parrillas.",
     "Está en plena construcción. Comprar ahora significa elegir entre más lotes y pagar el precio de obra."
    ],
    "vida": "Así será el club"
@@ -224,9 +224,7 @@
     "2025/05/camping-1.webp",
     "2025/05/mapa-lirios-1.webp"
    ],
-   "fotos_referenciales": [
-    0
-   ],
+   "fotos_referenciales": [],
    "hero": "2025/05/piscina2-1.webp",
    "frase": "Terminado y listo para disfrutar este verano.",
    "intro": [

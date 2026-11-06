@@ -1,0 +1,29 @@
+<!--vv-estilo-start-->
+<style id="vv-estilo">
+/* Dirección visual común a la web, las páginas por proyecto y Mi Vivaldi:
+   papel cálido, tinta oscura, títulos en serif sin acentos de color, etiquetas discretas, esquinas sobrias.
+   Diseño y desarrollo: Pedrojose Andrade Paredes */
+:root{--mist:#F6F1E9;--paper:#FFFDF9;--line:#E3DBCD;--muted:#56666A}
+body{background:var(--mist)}
+/* etiquetas sobre los títulos: texto normal, no mayúsculas espaciadas */
+.eyebrow{font-family:var(--f-body);font-size:.9rem;font-weight:600;letter-spacing:.01em;text-transform:none;color:var(--muted)}
+.on-dark .eyebrow{color:#A7C4C7}
+/* títulos: sin palabra resaltada en color; la cursiva queda solo en las portadas fotográficas */
+.band-row.r1 em,.fit-title em,.collage-title .h-lg em,.tst-dark .h-lg em,.h-lg em,.h-md em{font-style:normal!important;color:inherit!important}
+.hero-copy .h-xl em,.expand-copy .h-xl em,.enter-title em{color:inherit!important}
+/* botones y tarjetas: esquinas sobrias, sin sombras flotantes */
+.btn,.nav .btn{border-radius:8px}
+.rl-card,.lot-card,.proj,.why-big,.why-card,.fit,.fit-card,.sim,.sim-out,form.lead-form,.sh-specs div,dialog.sheet,.cookie,.plan-canvas{border-radius:12px}
+.gal-img,.collage img,.prog .ph{border-radius:6px}
+.faq details{border-radius:10px}
+.proj,.why-card,.fit-card,.lot-card{box-shadow:none}
+.collage img{box-shadow:0 10px 30px rgba(10,30,36,.18)}
+/* cifras de cuotas con la tipografía del texto (la monoespaciada queda solo para etiquetas pequeñas) */
+.fit-card .plan b,.field output{font-family:var(--f-body);font-weight:700;letter-spacing:0;font-variant-numeric:tabular-nums}
+/* aviso de cookies: no tapa la portada; aparece al empezar a recorrer la página o a los 6 segundos */
+.cookie:not(.vv-ver){visibility:hidden!important}
+@media (max-width:760px){.cookie{padding:10px 12px!important;gap:6px!important;font-size:.76rem!important}.cookie p{line-height:1.35}.cookie .btn{padding:8px 10px!important;min-height:38px}}
+</style>
+<script>(() => { const ver = () => document.querySelectorAll(".cookie").forEach(c => c.classList.add("vv-ver"));
+  addEventListener("scroll", function f() { if (scrollY > 120) { ver(); removeEventListener("scroll", f); } }, {passive: true}); setTimeout(ver, 6000); })();</script>
+<!--vv-estilo-end-->
