@@ -28,68 +28,83 @@ TST = [("Maria Paz", "2025/05/cliente3.webp", "Primera inversión", "La asesorí
        ("Josselyn Fernández", "2025/05/clientes3.png", "Propietaria", "Estoy muy contenta con la atención de todo el personal. Me han apoyado bastante en la adquisición de mi lote y poco a poco me ayudan a cumplir mis metas.")]
 
 CSS = '''
-:root{--nv:#0A3856;--deep:#062B44;--ink:#0B2236;--mu:#4E6478;--ln:#DCE5EC;--bg:#F3F7FA;--sun:#E8A93A;--ok:#1F8A4C;--ac:%(color)s}
-*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%%}body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.55}
-img{max-width:100%%;display:block}a{color:inherit}h1,h2,h3{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.01em;line-height:1.05;margin:0}
-.wrap{max-width:1180px;margin:0 auto;padding:0 22px}.sec{padding:84px 0}.eb{font-size:.74rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
-h2{font-size:clamp(2.1rem,4.4vw,3.4rem);margin-bottom:18px}h2 em{color:var(--ac);font-style:italic}.lead{font-size:1.12rem;color:var(--mu);max-width:640px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:999px;font:inherit;font-weight:800;font-size:1rem;text-decoration:none;border:0;cursor:pointer;transition:transform .15s,filter .15s}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.05)}.btn:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
-.b-wa{background:#17733F;color:#fff}.b-sun{background:var(--sun);color:#1F1604}.b-line{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}.b-deep{background:var(--nv);color:#fff}
-header.top{position:absolute;top:0;left:0;right:0;z-index:5}header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:78px}
-header.top img{height:30px}header.top nav{display:flex;gap:6px}header.top nav a{color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;padding:10px 12px;border-radius:999px}
-header.top nav a:hover{background:rgba(255,255,255,.14)}
-.hero{position:relative;min-height:min(92vh,860px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--deep)}
-.hero>img{position:absolute;inset:0;width:100%%;height:100%%;object-fit:cover;transform:scale(1.04);animation:kb 18s ease-out both}
-@keyframes kb{to{transform:scale(1)}}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,43,68,.55) 0%%,rgba(6,43,68,.15) 35%%,rgba(6,43,68,.88) 100%%)}
-.hero .wrap{position:relative;z-index:2;padding-bottom:64px;width:100%%}.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:7px 14px;font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
-.badge i{width:9px;height:9px;border-radius:50%%;background:var(--sun)}.hero h1{font-size:clamp(3rem,8vw,6.4rem);margin:16px 0 10px;max-width:900px}.hero h1 em{color:var(--sun)}
-.hero .sub{font-size:clamp(1.05rem,2vw,1.35rem);max-width:640px;color:#E3EEF6}.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.ref{position:absolute;right:16px;bottom:16px;z-index:3;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.45);color:#fff;padding:5px 10px;border-radius:999px}
-.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border-radius:22px;box-shadow:0 18px 50px rgba(6,43,68,.14);transform:translateY(-44px);position:relative;z-index:3;overflow:hidden}
-.facts div{padding:22px 24px;border-right:1px solid var(--ln)}.facts div:last-child{border:0}.facts span{display:block;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
-.facts b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:2rem;color:var(--nv);line-height:1.1;margin-top:4px}.facts small{color:var(--mu);font-size:.85rem}
-.g2{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
-.bens{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}.bens div{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:14px;padding:14px 16px;font-weight:700}
-.bens i{flex:none;width:30px;height:30px;border-radius:9px;background:var(--ac);display:grid;place-items:center}.bens i::after{content:"";width:12px;height:7px;border:solid #fff;border-width:0 0 3px 3px;transform:rotate(-45deg) translate(1px,-1px)}
-.shot{border-radius:22px;overflow:hidden;box-shadow:0 26px 60px rgba(6,43,68,.22);position:relative}.shot img{width:100%%;aspect-ratio:4/3;object-fit:cover}
-.stages{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:0;margin-top:34px;position:relative}
-.stages::before{content:"";position:absolute;left:0;right:0;top:21px;height:4px;background:var(--ln);border-radius:4px}
-.st{position:relative;padding-right:16px}.st .dot{width:46px;height:46px;border-radius:50%%;display:grid;place-items:center;background:#fff;border:4px solid var(--ln);position:relative;z-index:1;font-weight:800;color:var(--mu)}
-.st.hecho .dot{background:var(--ok);border-color:var(--ok);color:#fff}.st.curso .dot{background:var(--sun);border-color:var(--sun);color:#1F1604;box-shadow:0 0 0 8px rgba(232,169,58,.2)}
-.st b{display:block;margin-top:14px;font-size:1.05rem}.st span{font-size:.85rem;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.08em}.st small{display:block;color:var(--mu);font-size:.78rem;margin-top:2px}
-.gal{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:220px;gap:12px;margin-top:30px}.gal button{padding:0;border:0;border-radius:16px;overflow:hidden;cursor:zoom-in;position:relative;background:var(--bg)}
-.gal button:first-child{grid-column:span 2;grid-row:span 2}.gal img{width:100%%;height:100%%;object-fit:cover;transition:transform .5s}.gal button:hover img{transform:scale(1.05)}
+:root{--nv:#0A3856;--deep:#0B2A3F;--ink:#16232D;--mu:#5A6872;--ln:#E4DED3;--bg:#F6F1E9;--sand:#EFE6D8;--sun:#E5A53C;--ok:#2E7D4F;--ac:%(color)s}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%%}body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:#FFFDF9;line-height:1.6}
+img{max-width:100%%;display:block}a{color:inherit}h1,h2,h3{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.005em;line-height:1.06;margin:0}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}.sec{padding:96px 0}
+.eb{font-size:.9rem;font-weight:600;color:var(--mu);margin-bottom:10px}
+h2{font-size:clamp(2.2rem,4.6vw,3.6rem);margin-bottom:20px}h2 em{font-style:normal;color:inherit}.lead{font-size:1.12rem;color:var(--mu);max-width:620px;margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 26px;border-radius:6px;font:inherit;font-weight:700;font-size:1rem;text-decoration:none;border:0;cursor:pointer;transition:background-color .2s,color .2s}
+.btn:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.b-wa{background:#17733F;color:#fff}.b-wa:hover{background:#125C32}.b-sun{background:#FFFDF9;color:var(--ink)}.b-sun:hover{background:var(--sand)}
+.b-line{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}.b-deep{background:var(--ink);color:#fff}.b-deep:hover{background:#000}
+header.top{position:absolute;top:0;left:0;right:0;z-index:5}header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:84px}
+header.top img{height:30px}header.top nav{display:flex;gap:26px}header.top nav a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem;padding:8px 0;border-bottom:1px solid transparent}
+header.top nav a:hover{border-color:#fff}
+.hero{position:relative;min-height:min(90vh,860px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--deep)}
+.hero>img{position:absolute;inset:0;width:100%%;height:100%%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,20,30,.42) 0%%,rgba(8,20,30,0) 62%%),linear-gradient(180deg,rgba(8,20,30,.45) 0%%,rgba(8,20,30,0) 28%%,rgba(8,20,30,.08) 55%%,rgba(8,20,30,.72) 100%%)}
+.hero .wrap{position:relative;z-index:2;padding-bottom:72px;width:100%%}
+.badge{display:block;font-size:.95rem;font-weight:600;letter-spacing:.02em;color:rgba(255,255,255,.92)}.badge i{display:none}
+.hero h1{font-size:clamp(3.2rem,8.4vw,7rem);margin:10px 0 14px;max-width:960px}.hero h1 em{font-style:normal}
+.hero .sub{font-size:clamp(1.15rem,2.1vw,1.5rem);max-width:600px;color:#fff;margin:0;line-height:1.4}.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.ref{position:absolute;right:14px;bottom:14px;z-index:3;font-size:.72rem;font-weight:600;background:rgba(0,0,0,.5);color:#fff;padding:4px 9px;border-radius:4px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--ln)}
+.facts div{padding:30px 26px 28px 0;margin-right:26px;border-right:1px solid var(--ln)}.facts div:last-child{border:0;margin:0}
+.facts span{display:block;font-size:.88rem;font-weight:600;color:var(--mu)}
+.facts b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:2.3rem;color:var(--ink);line-height:1.1;margin-top:6px}.facts small{color:var(--mu);font-size:.9rem}
+.g2{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center}
+.intro{display:grid;grid-template-columns:1.55fr 1fr;gap:80px;align-items:start}
+.intro .big{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(1.6rem,2.8vw,2.25rem);line-height:1.28;margin:0 0 22px;color:var(--ink)}
+.intro p{font-size:1.1rem;color:var(--mu);margin:0}
+.inc .lbl{font-weight:600;font-size:.9rem;color:var(--mu);margin:8px 0 10px}
+.inc ul{list-style:none;margin:0;padding:0}.inc li{border-top:1px solid var(--ln);padding:13px 0;font-weight:600;font-size:1.05rem;display:flex;justify-content:space-between;gap:12px}
+.inc li:last-child{border-bottom:1px solid var(--ln)}.inc li span{color:var(--mu);font-weight:500;font-size:.9rem}
+.gal{display:grid;grid-template-columns:repeat(6,1fr);gap:18px 16px;margin-top:34px}
+.gal figure{margin:0;grid-column:span var(--s,3)}
+.gal button{display:block;width:100%%;padding:0;border:0;border-radius:4px;overflow:hidden;cursor:zoom-in;position:relative;background:var(--bg);height:var(--h,360px)}
+.gal img{width:100%%;height:100%%;object-fit:cover;transition:transform .8s ease}.gal button:hover img{transform:scale(1.03)}
+.gal figcaption{font-size:.92rem;color:var(--mu);margin-top:9px}.gal figcaption b{color:var(--ink);font-weight:600}
 .gal .ref{right:10px;bottom:10px}
-.lb{position:fixed;inset:0;z-index:90;background:rgba(4,20,32,.94);display:none;align-items:center;justify-content:center;padding:20px}.lb.on{display:flex}.lb img{max-height:88vh;border-radius:12px}
+.lb{position:fixed;inset:0;z-index:90;background:rgba(10,16,22,.95);display:none;align-items:center;justify-content:center;padding:20px}.lb.on{display:flex}.lb img{max-height:88vh;border-radius:4px}
 .lb button{position:absolute;top:16px;right:16px;width:48px;height:48px;border-radius:50%%;border:0;background:#fff;font-size:1.4rem;cursor:pointer}
-.calc{display:grid;grid-template-columns:1fr 1fr;gap:28px;background:var(--bg);border-radius:24px;padding:30px;margin-top:28px}
-.calc label{display:block;font-weight:800;margin:0 0 8px}.calc input[type=range]{width:100%%;accent-color:var(--ac)}.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{min-height:44px;padding:0 18px;border-radius:999px;border:2px solid var(--ln);background:#fff;font:inherit;font-weight:800;cursor:pointer}.seg button[aria-pressed=true]{background:var(--nv);border-color:var(--nv);color:#fff}
-.res{background:linear-gradient(135deg,var(--deep),var(--nv));color:#fff;border-radius:20px;padding:26px}.res b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:3.6rem;line-height:1;color:var(--sun)}
-.res p{margin:6px 0 0;color:#CFE3F4}.res .row{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;margin-top:10px;font-size:.92rem}
-.contact{background:linear-gradient(135deg,var(--deep),#0E4C72);color:#fff}.contact h2{color:#fff}.contact h2 em{color:var(--sun)}.contact .lead{color:#CFE3F4}
-form.card{background:#fff;color:var(--ink);border-radius:22px;padding:28px;display:grid;gap:14px;box-shadow:0 30px 70px rgba(0,0,0,.25)}
-form.card label{display:grid;gap:6px;font-weight:800;font-size:.9rem}form.card input,form.card select{font:inherit;font-size:16px;min-height:48px;padding:0 14px;border:1px solid var(--ln);border-radius:12px;background:var(--bg)}
-form.card .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.days{display:flex;gap:8px;flex-wrap:wrap}.days button{min-height:52px;min-width:66px;border-radius:12px;border:2px solid var(--ln);background:#fff;font:inherit;font-weight:800;cursor:pointer;line-height:1.1}
-.days button small{display:block;font-weight:600;font-size:.72rem;color:var(--mu)}.days button[aria-pressed=true]{border-color:var(--ac);background:#EEF5FB}
-.chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:10px;font-weight:600!important;font-size:.85rem!important;color:var(--mu)}.chk input{min-height:0!important;width:20px;height:20px;margin-top:2px}
-.ok-msg{display:none;background:#E6F4EC;color:#14532D;border-radius:12px;padding:12px 14px;font-weight:700}.ok-msg.on{display:block}
-.tsts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.tsts figure{margin:0;background:#fff;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:18px;box-shadow:0 8px 24px rgba(6,43,68,.07)}
-.tsts blockquote{margin:0;font-family:"Instrument Serif",Georgia,serif;font-size:1.35rem;line-height:1.3;color:var(--nv)}.tsts blockquote::before{content:"“"}.tsts blockquote::after{content:"”"}
-.tsts figcaption{display:flex;align-items:center;gap:12px;font-size:.84rem;color:var(--mu)}.tsts figcaption img{width:52px;height:52px;border-radius:50%%;object-fit:cover}.tsts figcaption b{display:block;color:var(--ink);font-size:.95rem}
-.fq{border-bottom:1px solid var(--ln);padding:16px 0}.fq summary{font-weight:800;cursor:pointer;min-height:28px;list-style:none;display:flex;justify-content:space-between;gap:16px}.fq summary::after{content:"+";color:var(--ac);font-size:1.3rem;line-height:1}.fq[open] summary::after{content:"−"}.fq summary::-webkit-details-marker{display:none}.fq p{margin:10px 0 0;color:var(--mu)}
-.others{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}.others a{display:block;text-decoration:none;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(6,43,68,.1);transition:transform .2s}
-.others a:hover{transform:translateY(-3px)}.others img{width:100%%;aspect-ratio:16/10;object-fit:cover}.others div{padding:14px 16px}.others b{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.45rem;color:var(--nv);display:block}.others span{color:var(--mu);font-size:.88rem}
-footer{background:#041F33;color:#9FB9CC;padding:40px 0 110px;font-size:.88rem}footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer a{color:#fff}
-.sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:10px}.sticky .btn{flex:1;min-height:52px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}.reveal.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.hero>img{animation:none}}
-@media (max-width:900px){.tsts{grid-template-columns:1fr}.g2,.calc{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.facts div{border-bottom:1px solid var(--ln)}
- .gal{grid-template-columns:1fr 1fr;grid-auto-rows:160px}.others{grid-template-columns:1fr}.stages{grid-template-columns:1fr;gap:18px}.stages::before{left:21px;right:auto;top:0;bottom:0;width:4px;height:auto}
- .st{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:center}.st b{margin:0}header.top nav{display:none}.sticky{display:flex}.sec{padding:64px 0}}
-@media (max-width:520px){.bens{grid-template-columns:1fr}form.card .two{grid-template-columns:1fr}.hero .cta .btn{flex:1}}
+.ets{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:22px}
+.ets li{border-top:3px solid var(--ln);padding-top:16px}.ets li.hecho{border-color:var(--ink)}.ets li.curso{border-color:var(--ac)}
+.ets small{display:block;font-size:.85rem;font-weight:700;color:var(--mu)}.ets li.curso small{color:var(--ac)}
+.ets b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.65rem;line-height:1.15;margin-top:6px}.ets em{display:block;font-style:normal;color:var(--mu);font-size:.88rem;margin-top:6px}
+.shot{border-radius:4px;overflow:hidden;position:relative}.shot img{width:100%%;aspect-ratio:4/3;object-fit:cover}.shot+p{font-size:.9rem;color:var(--mu);margin:9px 0 0}
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:40px;border-top:1px solid var(--ln);padding-top:34px;margin-top:30px}
+.calc label{display:block;font-weight:700;margin:0 0 10px}.calc input[type=range]{width:100%%;accent-color:var(--ink)}.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{min-height:46px;padding:0 18px;border-radius:6px;border:1px solid var(--ln);background:#fff;font:inherit;font-weight:700;cursor:pointer}.seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.res{background:var(--bg);border-radius:6px;padding:30px}.res p{margin:0;color:var(--mu);font-weight:600}
+.res b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:4.4rem;line-height:1;color:var(--ink);margin:6px 0 14px}
+.res .row{display:flex;justify-content:space-between;border-top:1px solid var(--ln);padding:10px 0 0;margin-top:10px;font-size:.95rem}
+.voz{background:var(--bg)}.voz figure{margin:0}.voz .q1 blockquote{margin:0;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.2;max-width:960px}
+.voz figcaption{display:flex;align-items:center;gap:14px;margin-top:24px;font-size:.92rem;color:var(--mu)}.voz figcaption img{width:58px;height:58px;border-radius:50%%;object-fit:cover}.voz figcaption b{display:block;color:var(--ink)}
+.voz .q2{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:56px;padding-top:36px;border-top:1px solid var(--ln)}.voz .q2 blockquote{margin:0;font-size:1.08rem;line-height:1.6}
+.voz .q2 figcaption{margin-top:14px}.voz .q2 figcaption img{width:44px;height:44px}
+.fq{border-bottom:1px solid var(--ln);padding:20px 0}.fq summary{font-weight:700;font-size:1.08rem;cursor:pointer;min-height:28px;list-style:none;display:flex;justify-content:space-between;gap:16px}.fq summary::after{content:"+";font-size:1.4rem;line-height:1;color:var(--mu)}.fq[open] summary::after{content:"−"}.fq summary::-webkit-details-marker{display:none}.fq p{margin:12px 0 0;color:var(--mu);max-width:720px}
+.contact{background:var(--sand);color:var(--ink)}.contact h2{color:var(--ink)}.contact .lead{color:var(--mu)}.contact .tel{margin-top:26px;font-weight:700}.contact .tel span{display:block;font-weight:500;color:var(--mu)}
+form.card{background:#fff;color:var(--ink);border-radius:8px;padding:30px;display:grid;gap:15px;border:1px solid var(--ln)}
+form.card label{display:grid;gap:6px;font-weight:700;font-size:.92rem}form.card input,form.card select{font:inherit;font-size:16px;min-height:50px;padding:0 14px;border:1px solid #D6CFC2;border-radius:6px;background:#FFFDF9;color:var(--ink)}
+form.card input:focus,form.card select:focus{outline:2px solid var(--ink);outline-offset:1px}
+form.card .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.days{display:flex;gap:8px;flex-wrap:wrap}.days button{min-height:54px;min-width:70px;border-radius:6px;border:1px solid #D6CFC2;background:#fff;font:inherit;font-weight:700;cursor:pointer;line-height:1.1}
+.days button small{display:block;font-weight:500;font-size:.75rem;color:var(--mu)}.days button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:#fff}.days button[aria-pressed=true] small{color:#DDE3E7}
+.chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:10px;font-weight:500!important;font-size:.88rem!important;color:var(--mu)}.chk input{min-height:0!important;width:20px;height:20px;margin-top:2px}
+.ok-msg{display:none;background:#E7F2EA;color:#14532D;border-radius:6px;padding:12px 14px;font-weight:600}.ok-msg.on{display:block}
+.others{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:30px}.others a{display:block;text-decoration:none}
+.others img{width:100%%;aspect-ratio:4/3;object-fit:cover;border-radius:4px;transition:opacity .2s}.others a:hover img{opacity:.88}.others div{padding:14px 0 0}
+.others b{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.6rem;color:var(--ink);display:block;line-height:1.15}.others span{color:var(--mu);font-size:.92rem}
+.st .dot{width:40px;height:40px;border-radius:50%%;display:grid;place-items:center;border:1px solid var(--ink);font-weight:700;color:var(--ink);background:#fff}
+footer{background:#0F1A22;color:#A9B4BC;padding:44px 0 110px;font-size:.88rem}footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer a{color:#fff}
+.sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:10px}.sticky .btn{flex:1;min-height:52px;box-shadow:0 8px 24px rgba(0,0,0,.22)}.sticky .b-deep{background:var(--ink)}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease}.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+@media (max-width:900px){.g2,.calc,.intro{grid-template-columns:1fr;gap:36px}.facts{grid-template-columns:1fr 1fr}.facts div{margin:0;padding:22px 16px 20px 0}.facts div:nth-child(2n){border-right:0;padding-left:16px}.facts div:nth-child(2n+1){padding-right:16px}.facts div:nth-child(-n+2){border-bottom:1px solid var(--ln)}
+ .facts b{font-size:1.85rem}.gal{grid-template-columns:1fr 1fr;gap:14px 10px}.gal figure{grid-column:span 1}.gal figure.w{grid-column:span 2}.gal button{height:210px}.gal figure.w button{height:250px}
+ .others{grid-template-columns:1fr}.ets{grid-template-columns:1fr;gap:0}.ets li{padding:16px 0 18px}.voz .q2{grid-template-columns:1fr;gap:32px}
+ header.top nav{display:none}.sticky{display:flex}.sec{padding:68px 0}.hero .wrap{padding-bottom:48px}}
+@media (max-width:520px){form.card .two{grid-template-columns:1fr}.hero .cta{flex-direction:column}.hero .cta .btn{width:100%%}.res b{font-size:3.4rem}.hero h1{font-size:3rem}}
 '''
 
 JS_COMMON = r'''
@@ -128,49 +143,71 @@ def foot(extra=''):
 def base_js():
     return '<script>const BASE = {url: "", key: ""};\nwindow.VV_BASE = BASE;</script>'
 
+LEYENDA = [('kmz', 'Ubicación en el corredor'), ('mapa', 'Ubicación en el corredor'), ('portico', 'El ingreso'), ('cancha-de-tennis', 'La cancha de tenis'),
+           ('cancha-de-futbol', 'La cancha de fútbol'), ('cancha', 'La losa deportiva'), ('piscina', 'La piscina'), ('gimnasio', 'El gimnasio al aire libre'), ('gym', 'El gimnasio al aire libre'),
+           ('multiusos', 'La losa multiusos'), ('juego', 'Los juegos para niños'), ('parrilla', 'La zona de parrillas'), ('grill', 'La zona de parrillas'), ('camping', 'La zona de camping'),
+           ('parque', 'El parque'), ('bicicross', 'La pista de bicicross'), ('minimarket', 'El minimarket'), ('casas-lotes', 'Las casas del proyecto'), ('casa-lote', 'Una casa de referencia en el lote'),
+           ('dron', 'Vista aérea del proyecto'), ('escavadora', 'Movimiento de tierras'), ('maquinaria', 'Maquinaria trabajando en el terreno'), ('tizando', 'Trazado de los lotes'),
+           ('hombre-con-pala', 'Trabajos en el terreno'), ('lirios-2', 'Vista aérea del club')]
+def leyenda(f):
+    n = f.split('/')[-1].lower()
+    return next((t for k, t in LEYENDA if k in n), 'Vista del proyecto')
+ESTADO_ETAPA = {'hecho': 'Terminado', 'en curso': 'En curso', 'próxima': 'Siguiente'}
+
 def landing(p):
     others = [x for x in PRJ if x['id'] != p['id'] and x['estado'] != 'Vendido 100%'][:3]
-    refs = set(p.get('fotos_referenciales', [])); fotos = p['fotos']
-    hero = img(fotos[0], 1920, 72); price = p['precio']; sold = p['estado'].startswith('Vendido')
+    refs = set(p.get('fotos_referenciales', [])); fotos = p['fotos']; idx = {f: k for k, f in enumerate(fotos)}
+    es_mapa = lambda f: any(k in f.lower() for k in ('kmz', 'mapa'))
+    hero_f = p.get('hero', fotos[0]); hero = img(hero_f, 1920, 74); price = p['precio']; sold = p['estado'].startswith('Vendido')
+    mapa_f = next((f for f in fotos if es_mapa(f)), None)
+    historia = [f for f in fotos if f != hero_f and not es_mapa(f)] or [hero_f]
     cuota36 = soles(price * .8 / 36) if price else None
     facts = [('Desde', soles(price) if price else 'Consultar', f'o {cuota36} al mes*' if cuota36 else 'precio con tu asesor'),
-             ('Lote', f"{p['m2']} m²" if p['m2'] else 'Consultar', 'título independizado' if 'Título independizado' in p['beneficios'] else 'área del lote'),
-             ('Ubicación', f"Km {p['km']:g}" if p['km'] else p['zona'], f"Panamericana Sur · {p['zona']}"),
-             ('Estado', p['estado'], 'en soles, sin intereses' if price else 'Vivaldi Inmobiliaria')]
-    n = len(p['etapas']); stg = ''.join(f'''<div class="st {'hecho' if e['estado'] == 'hecho' else 'curso' if e['estado'] == 'en curso' else ''}"><div class="dot">{'✓' if e['estado'] == 'hecho' else k + 1}</div><div><b>{E(e['nombre'])}</b><span>{E(e['estado'])}</span>{'<small>Fecha por confirmar con tu asesor</small>' if e.get('confirmar') else ''}</div></div>''' for k, e in enumerate(p['etapas']))
-    gal = ''.join(f'''<button type="button" aria-label="Ampliar foto {k + 1}"><img src="{img(f, 1200, 72)}" alt="{E(p['nombre'])}, foto {k + 1}" loading="lazy">{'<span class="ref">Referencial</span>' if k in refs else ''}</button>''' for k, f in enumerate(fotos[:8]))
-    bens = ''.join(f'<div><i></i>{E(b)}</div>' for b in p['beneficios'])
-    oth = ''.join(f'''<a href="{x['id']}.html"><img src="{img(x['fotos'][0], 700, 70)}" alt="{E(x['nombre'])}" loading="lazy"><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span></div></a>''' for x in others)
+             ('Lote', f"{p['m2']} m²" if p['m2'] else 'Consultar', 'con título independizado' if 'Título independizado' in p['beneficios'] else 'área del lote'),
+             ('Ubicación', f"Km {p['km']:g}" if p['km'] else p['zona'], f"Panamericana Sur, {p['zona']}"),
+             ('Estado', p['estado'], 'en soles, sin intereses' if price and not sold else 'Vivaldi Inmobiliaria')]
+    ref = lambda f: '<span class="ref">Render referencial</span>' if idx[f] in refs else ''
+    n = len(p['etapas'])
+    ets = ''.join(f'''<li class="{'hecho' if e['estado'] == 'hecho' else 'curso' if e['estado'] == 'en curso' else ''}"><small>{k + 1:02d} · {ESTADO_ETAPA.get(e['estado'], e['estado'])}</small><b>{E(e['nombre'])}</b>{'<em>Fecha por confirmar con tu asesor</em>' if e.get('confirmar') else ''}</li>''' for k, e in enumerate(p['etapas']))
+    FILAS = {1: [6], 2: [3, 3], 3: [6, 3, 3], 4: [6, 2, 2, 2], 5: [6, 4, 2, 2, 4], 6: [6, 3, 3, 2, 2, 2], 7: [6, 4, 2, 2, 4, 3, 3]}
+    lay = FILAS[min(len(historia), 7)]
+    alto = lambda s: 'min(60vw,560px)' if s == 6 else '300px' if s == 2 else '360px'
+    movil_ancha = lambda k: k == 0 or (len(historia[:7]) - k == 1 and k % 2 == 1)
+    gal = ''.join(f'''<figure{' class="w"' if movil_ancha(k) else ''} style="--s:{lay[k]};--h:{alto(lay[k])}"><button type="button" aria-label="Ampliar: {E(leyenda(f))}"><img src="{img(f, 1600 if k == 0 else 1100, 74)}" alt="{E(p['nombre'])}: {E(leyenda(f).lower())}" loading="lazy">{ref(f)}</button><figcaption><b>{E(leyenda(f))}</b></figcaption></figure>''' for k, f in enumerate(historia[:7]))
+    inc = ''.join(f'<li>{E(b)}</li>' for b in p['beneficios'])
+    oth = ''.join(f'''<a href="{x['id']}.html"><img src="{img(x.get('hero', x['fotos'][0]), 800, 72)}" alt="{E(x['nombre'])}" loading="lazy"><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])} · {E(x['zona'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span></div></a>''' for x in others)
     import urllib.parse as _u
     mapa = 'https://www.google.com/maps/search/?api=1&query=' + _u.quote(f"{p['nombre']} {'Km ' + format(p['km'], 'g') + ' ' if p['km'] else ''}Panamericana Sur {p['zona']} Cañete")
-    ubic = f'''<section class="sec" id="ubicacion"><div class="wrap g2"><div class="reveal"><div class="eb">Ubicación</div><h2>Cómo <em>llegar</em></h2>
-<p class="lead">{E(p['nombre'])} está {('en el km ' + format(p['km'], 'g') + ' de la Panamericana Sur') if p['km'] else 'sobre la Panamericana Sur'}, en {E(p['zona'])}, provincia de Cañete. Tu asesor te envía la ubicación exacta y el punto de encuentro por WhatsApp.</p>
-<div class="bens" style="grid-template-columns:1fr"><div><i></i>Visitas guiadas los fines de semana, con punto de encuentro coordinado con tu asesor</div><div><i></i>{'Referencia: Km ' + format(p['km'], 'g') + ' de la Panamericana Sur' if p['km'] else 'Ubicación exacta por WhatsApp'}</div></div>
-<p style="margin-top:20px"><a class="btn b-deep" href="{mapa}" target="_blank" rel="noopener">Abrir en Google Maps</a></p></div>
-<div class="shot reveal"><img src="{img(fotos[-1] if len(fotos) > 2 else fotos[0], 1200, 72)}" alt="{E(p['nombre'])}, vista del proyecto" loading="lazy">{'<span class="ref">Referencial</span>' if (len(fotos) - 1 if len(fotos) > 2 else 0) in refs else ''}</div></div></section>'''
-    tsts = TST[:3]
-    tst = f'''<section class="sec" id="opiniones" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Propietarios Vivaldi</div><h2>Lo que dicen <em>quienes ya compraron</em></h2>
-<div class="tsts">{''.join(f'<figure><blockquote>{E(q)}</blockquote><figcaption><img src="{img(ph, 160, 70)}" alt="" width="52" height="52" loading="lazy"><span><b>{E(n)}</b>{E(r)} · Vivaldi Inmobiliaria</span></figcaption></figure>' for n, ph, r, q in tsts)}</div>
-<p style="font-size:.8rem;color:var(--mu);margin-top:12px">Testimonios publicados en vivaldiinmobiliaria.com.</p></div></section>'''
+    km = format(p['km'], 'g') if p['km'] else None
+    donde = (f"En el km {km} de la Panamericana Sur, en {E(p['zona'])}, provincia de Cañete: unos {int(p['km'])} km al sur de Lima." if km else f"Sobre la Panamericana Sur, en {E(p['zona'])}, provincia de Cañete, al sur de Lima.")
+    lado_f = mapa_f or (historia[-1] if len(historia) > 1 else hero_f)
+    ubic = f'''<section class="sec" id="ubicacion"><div class="wrap g2"><div class="reveal"><h2>Dónde está</h2>
+<p class="lead">{donde}</p><p class="lead" style="margin-top:14px">{'Las visitas son los fines de semana. Tu asesor te envía la ubicación exacta y el punto de encuentro por WhatsApp.' if not sold else 'Tu asesor te envía la ubicación exacta por WhatsApp.'}</p>
+<p style="margin-top:28px"><a class="btn b-deep" href="{mapa}" target="_blank" rel="noopener">Abrir en Google Maps</a></p></div>
+<div class="reveal"><div class="shot"><img src="{img(lado_f, 1200, 74)}" alt="{E(p['nombre'])}: {E(leyenda(lado_f).lower())}" loading="lazy">{'<span class="ref">Imagen referencial</span>' if idx[lado_f] in refs or mapa_f else ''}</div><p>{E(leyenda(lado_f))}</p></div></div></section>'''
+    fig = lambda q, cls='': f'<figure class="{cls}"><blockquote>{E(q[3])}</blockquote><figcaption><img src="{img(q[1], 160, 70)}" alt="" width="58" height="58" loading="lazy"><span><b>{E(q[0])}</b>{E(q[2])}</span></figcaption></figure>'
+    tst = f'''<section class="sec voz" id="opiniones"><div class="wrap reveal"><p class="eb">Propietarios de Vivaldi</p>{fig(TST[0], 'q1')}
+<div class="q2">{fig(TST[1])}{fig(TST[2])}</div><p style="font-size:.82rem;color:var(--mu);margin:28px 0 0">Testimonios publicados en vivaldiinmobiliaria.com.</p></div></section>'''
     qs = []
     if 'Título independizado' in p['beneficios']: qs.append(('¿El lote tiene título?', 'Sí. Cada lote cuenta con título independizado inscrito en SUNARP. Antes de firmar te entregamos la partida para que la verifiques.'))
     if price and not sold: qs.append(('¿Cómo funciona el financiamiento?', 'Es directo con Vivaldi y sin intereses: pagas una inicial y el saldo en cuotas fijas en soles. El plazo y la inicial los defines con tu asesor.'))
     qs.append(('¿En qué moneda pago?', 'En soles, así tu cuota no depende del tipo de cambio.'))
     if not sold: qs.append(('¿Puedo visitar el proyecto antes de decidir?', 'Sí. Hay visitas guiadas los fines de semana. Elige el día en el formulario y tu asesor te confirma la hora y el punto de encuentro.'))
+    if refs: qs.append(('¿Las imágenes son fotos reales?', 'Las que dicen "Render referencial" son ilustraciones del proyecto terminado. Las demás son fotos. En la visita ves el avance real.'))
     qs.append(('¿Cómo verifico a la empresa?', f"Inmobiliaria & Constructora Vivaldi S.A.C., RUC {EMP['ruc']}. Puedes consultar el RUC en SUNAT y visitarnos en {EMP['oficina']}."))
-    faq = '<section class="sec" id="preguntas"><div class="wrap reveal" style="max-width:860px"><div class="eb">Preguntas frecuentes</div><h2>Antes de <em>decidir</em></h2>' + ''.join(f'<details class="fq"><summary>{E(a)}</summary><p>{E(b)}</p></details>' for a, b in qs) + '</div></section>'
+    faq = '<section class="sec" id="preguntas"><div class="wrap reveal" style="max-width:880px"><h2>Lo que más nos preguntan</h2>' + ''.join(f'<details class="fq"><summary>{E(a)}</summary><p>{E(b)}</p></details>' for a, b in qs) + '</div></section>'
     title = f"{p['nombre']} · {p['lema']} | Vivaldi Inmobiliaria"
     desc = p['resumen']
-    calc = '' if not price or sold else f'''<section class="sec" id="cuota" style="background:#fff"><div class="wrap reveal"><div class="eb">Financiamiento directo</div><h2>Calcula tu <em>cuota</em></h2>
-<p class="lead">Sin bancos y sin intereses: pagas una inicial y el saldo en cuotas fijas en soles.</p>
+    calc = '' if not price or sold else f'''<section class="sec" id="cuota" style="background:#fff"><div class="wrap reveal"><h2>Cuánto pagarías al mes</h2>
+<p class="lead">Financiamiento directo con Vivaldi: sin bancos y sin intereses. Pagas una inicial y el resto en cuotas fijas en soles.</p>
 <div class="calc"><div><label for="ini">Cuota inicial: <span id="iniL">20%</span></label><input id="ini" type="range" min="10" max="60" step="5" value="20" aria-describedby="iniL">
-<label style="margin-top:22px">Plazo</label><div class="seg" id="plazo">{''.join(f'<button type="button" data-n="{m}" aria-pressed="{str(m == 36).lower()}">{m} meses</button>' for m in (12, 24, 36))}</div></div>
+<label style="margin-top:28px">Plazo</label><div class="seg" id="plazo">{''.join(f'<button type="button" data-n="{m}" aria-pressed="{str(m == 36).lower()}">{m} meses</button>' for m in (12, 24, 36))}</div></div>
 <div class="res" aria-live="polite"><p>Tu cuota mensual</p><b id="cuotaV">—</b><div class="row"><span>Precio del lote</span><span>{soles(price)}</span></div><div class="row"><span>Inicial</span><span id="iniS">—</span></div><div class="row"><span>Intereses</span><span>S/ 0</span></div>
-<button class="btn b-sun" type="button" id="quiero" style="margin-top:16px;width:100%">Quiero esta cuota</button></div></div><p style="font-size:.82rem;color:var(--mu);margin-top:12px">*Cuota referencial. El plan final lo confirma tu asesor.</p></div></section>'''
-    form = f'''<section class="sec contact" id="contacto"><div class="wrap g2"><div class="reveal"><div class="eb" style="color:var(--sun)">{'Agenda tu visita' if not sold else 'Próximos proyectos'}</div>
-<h2>{'Conoce ' + E(p['nombre']) + ' <em>en persona</em>' if not sold else '¿Te gustaría un proyecto <em>como este</em>?'}</h2>
-<p class="lead">{'Elige un día, deja tus datos y un asesor te confirma por WhatsApp. Visitas guiadas los fines de semana.' if not sold else 'Zafiro ya se entregó a sus propietarios. Déjanos tus datos y te avisamos del próximo proyecto, o mira los que están en venta.'}</p>
-<p style="margin-top:22px;font-weight:700">WhatsApp {E(EMP['telefono'])}<br><span style="font-weight:500;color:#CFE3F4">{E(EMP['horario'])}</span></p></div>
+<button class="btn b-deep" type="button" id="quiero" style="margin-top:20px;width:100%">Quiero esta cuota</button></div></div><p style="font-size:.85rem;color:var(--mu);margin-top:14px">*Cuota referencial. El plan final lo confirma tu asesor.</p></div></section>'''
+    form = f'''<section class="sec contact" id="contacto"><div class="wrap g2"><div class="reveal">
+<h2>{'Ven a conocerlo un fin de semana' if not sold else '¿Quieres el próximo proyecto?'}</h2>
+<p class="lead">{'Elige un día, deja tus datos y un asesor te confirma la hora por WhatsApp. La visita es guiada y sin compromiso.' if not sold else 'Zafiro ya se entregó a sus propietarios. Déjanos tus datos y te avisamos del próximo proyecto, o mira los que están en venta.'}</p>
+<p class="tel">WhatsApp {E(EMP['telefono'])}<span>{E(EMP['horario'])}</span></p></div>
 <form class="card reveal" id="lead" novalidate><label>Nombre completo<input id="fN" autocomplete="name" required maxlength="120"></label>
 <div class="two"><label>Celular<input id="fT" inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX" required></label>
 <label>¿Cuándo piensas comprar?<select id="fPl"><option>Prefiero no indicar</option><option>Este mes</option><option>En 1 a 3 meses</option><option>En más de 3 meses</option></select></label></div>
@@ -185,8 +222,8 @@ const P = {json.dumps({'id': p['id'], 'nombre': p['nombre'], 'precio': price}, e
 window.VV_APLICAR_PROYECTOS = rows => {{ const r = (rows || []).find(x => x.id === P.id), c = r && r.contenido; if (!c) return;
   const set = (k, v) => {{ const el = document.querySelector(`[data-f="${{k}}"]`); if (el && v != null) el.textContent = v; }};
   if (typeof c.precio === "number" && c.precio > 0) {{ P.precio = c.precio; set("Desde", "S/ " + c.precio.toLocaleString("es-PE")); set("Desde-s", "o S/ " + Math.round(c.precio * .8 / 36).toLocaleString("es-PE") + " al mes*"); if ($("#ini")) calc(); }}
-  if (c.estado) {{ set("Estado", c.estado); const bd = $(".hero .badge"); if (bd) bd.lastChild.textContent = bd.lastChild.textContent.replace(/^[^·]+/, c.estado + " "); }}
-  if (c.resumen) {{ const sb = $(".hero .sub"); if (sb) sb.textContent = (c.lema || "") + (c.lema ? ". " : "") + c.resumen; }} }};
+  if (c.estado) {{ set("Estado", c.estado); const bd = $(".hero .badge"); if (bd) bd.textContent = bd.textContent.replace(/^[^·]+/, c.estado + " "); }}
+  if (c.resumen) set("resumen", c.resumen); }};
 let N = 36; const fmt = n => "S/ " + Math.round(n).toLocaleString("es-PE");
 const calc = () => {{ const i = +$("#ini").value, ini = P.precio * i / 100; $("#iniL").textContent = i + "%"; $("#iniS").textContent = fmt(ini) + " (" + i + "%)"; $("#cuotaV").textContent = fmt((P.precio - ini) / N); }};
 if ($("#ini")) {{ $("#ini").addEventListener("input", calc); $("#plazo").addEventListener("click", e => {{ const b = e.target.closest("button"); if (!b) return; N = +b.dataset.n; $$("#plazo button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); calc(); }}); calc();
@@ -203,18 +240,19 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
     ld = {"@context": "https://schema.org", "@type": "Product", "name": p['nombre'], "description": p['resumen'], "brand": {"@type": "Organization", "name": "Vivaldi Inmobiliaria"},
           "category": "Lotes de terreno", "url": SITIO + p['id'] + '.html'}
     if price and not sold: ld["offers"] = {"@type": "Offer", "price": price, "priceCurrency": "PEN", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": EMP['nombre']}}
+    intro1, intro2 = p['intro'][0], p['intro'][1] if len(p['intro']) > 1 else ''
     body = f'''{head(title, desc, p['color'], slug=p['id'], ld=ld)}{base_js()}
-<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#porque">El proyecto</a><a href="#etapas">Etapas</a><a href="#galeria">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
-<main><section class="hero"><img src="{hero}" alt="{E(p['nombre'])}">{'<span class="ref">Imagen referencial</span>' if 0 in refs else ''}<div class="wrap"><span class="badge"><i></i>{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + format(p['km'], 'g')) if p['km'] else ''}</span>
-<h1>{E(p['nombre'])}</h1><p class="sub">{E(p['lema'])}.</p>
-<div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-wa" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div></section>
+<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#proyecto">El proyecto</a><a href="#fotos">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
+<main><section class="hero"><img src="{hero}" alt="{E(p['nombre'])}: {E(leyenda(hero_f).lower())}">{'<span class="ref">Render referencial</span>' if idx[hero_f] in refs else ''}<div class="wrap"><span class="badge">{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + km) if km else ''}</span>
+<h1>{E(p['nombre'])}</h1><p class="sub">{E(p['frase'])}</p>
+<div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar una visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-line" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div></section>
 <div class="wrap"><div class="facts">{''.join(f'<div><span>{a}</span><b data-f="{a}">{E(b)}</b><small data-f="{a}-s">{E(c)}</small></div>' for a, b, c in facts)}</div></div>
-<section class="sec" id="porque" style="padding-top:30px"><div class="wrap g2"><div class="reveal"><div class="eb">El proyecto</div><h2>Lo que encuentras en <em>{E(p['nombre'])}</em></h2><p class="lead">{E(p['resumen'])}</p><div class="bens">{bens}</div></div>
-<div class="shot reveal"><img src="{img(fotos[1] if len(fotos) > 1 else fotos[0], 1400, 72)}" alt="{E(p['nombre'])}" loading="lazy">{'<span class="ref">Referencial</span>' if (1 if len(fotos) > 1 else 0) in refs else ''}</div></div></section>
-<section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Etapas</div><h2>Cómo avanza <em>el proyecto</em></h2><p class="lead">Estado actual de cada etapa. Tu asesor te confirma las fechas.</p><div class="stages" style="--n:{n}">{stg}</div></div></section>
-<section class="sec" id="galeria"><div class="wrap reveal"><div class="eb">Galería</div><h2>Fotos <em>del proyecto</em></h2><div class="gal">{gal}</div></div></section>
+<section class="sec" id="proyecto"><div class="wrap intro"><div class="reveal"><p class="big" data-f="resumen">{E(intro1)}</p><p>{E(intro2)}</p></div>
+<div class="inc reveal"><p class="lbl">{'Incluye' if not sold else 'Tiene'}</p><ul>{inc}</ul></div></div></section>
+<section class="sec" id="fotos" style="padding-top:0"><div class="wrap reveal"><h2>{E(p['vida'])}</h2><div class="gal">{gal}</div></div></section>
+<section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><h2>{'En qué etapa está' if not sold else 'Cómo se hizo'}</h2><p class="lead">{'Cada etapa con su estado de hoy. Las fechas te las confirma tu asesor.' if not sold else 'Todas las etapas están terminadas.'}</p><ol class="ets" style="--n:{n}">{ets}</ol></div></section>
 {ubic}{tst}{calc}{faq}{form}
-<section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><div class="eb">Más proyectos</div><h2>Otros proyectos <em>de Vivaldi</em></h2><div class="others">{oth}</div></div></section></main>
+<section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><h2>Otros proyectos de Vivaldi</h2><div class="others">{oth}</div></div></section></main>
 <div class="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada"><button type="button" aria-label="Cerrar">×</button><img alt=""></div>
 {foot('<nav class="sticky" aria-label="Contacto rápido"><a class="btn b-wa" href="' + wa('Hola, me interesa ' + p['nombre']) + '" data-wa>WhatsApp</a><a class="btn b-deep" href="#contacto">' + ('Agendar visita' if not sold else 'Contacto') + '</a></nav>')}
 <script>const EMP = {json.dumps({'whatsapp': EMP['whatsapp']})};{js}</script>
