@@ -2,26 +2,34 @@
 const http = require("http"), {execFileSync} = require("child_process"), crypto = require("crypto");
 const PG = ["-h", "/var/tmp/vvpg", "-p", "5544", "-U", "postgres", "-d", "vv", "-X", "-q", "-At", "-v", "ON_ERROR_STOP=1"];
 const USERS = {"ana@vivaldi.pe": {id: "00000000-0000-0000-0000-00000000000a", pass: "clave-ana"}, "beto@vivaldi.pe": {id: "00000000-0000-0000-0000-00000000000b", pass: "clave-beto"}, "jefa@vivaldi.pe": {id: "00000000-0000-0000-0000-00000000000c", pass: "clave-jefa"}, "baja@vivaldi.pe": {id: "00000000-0000-0000-0000-00000000000d", pass: "clave-baja"}};
-const SKEY = "service-test-key", KEY = "anon-test-key", TOK = {}, REF = {}; let DOWN = false, EXPIRE_NEXT = false; const LOG = [];
+const SKEY = "service-test-key", KEY = "anon-test-key", TOK = {}, REF = {}, USADO = {}; let DOWN = false, EXPIRE_NEXT = false; const LOG = [];
 const lit = v => { const t = "q" + crypto.randomBytes(4).toString("hex"); return `$${t}$${v}$${t}$`; };
+const MAIL = {}; Object.entries(USERS).forEach(([e, x]) => MAIL[x.id] = e); const OTP = {};
+const uidDe = e => { const h = crypto.createHash("md5").update(e).digest("hex"); return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`; };
 function sql(uid, q) {
-  const s = uid === "anon" ? `begin; set local role anon; ${q}; commit;` : `begin; set local role authenticated; set local request.jwt.claim.sub = ${lit(uid)}; ${q}; commit;`;
+  const s = uid === "anon" ? `begin; set local role anon; ${q}; commit;` : `begin; set local role authenticated; set local request.jwt.claim.sub = ${lit(uid)}; set local request.jwt.claims = ${lit(JSON.stringify({sub: uid, email: MAIL[uid] || ""}))}; ${q}; commit;`;
   try { return {ok: true, out: execFileSync("psql", [...PG, "-c", s], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]}).trim()}; }
   catch (e) { return {ok: false, err: (e.stderr || "").replace(/^.*ERROR:\s*/s, "").trim()}; }
 }
 const send = (res, code, obj) => { res.writeHead(code, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}); res.end(obj === undefined ? "" : JSON.stringify(obj)); };
 const issue = uid => { const a = "at-" + crypto.randomBytes(8).toString("hex"), r = "rt-" + crypto.randomBytes(8).toString("hex"); TOK[a] = uid; REF[r] = uid; return {a, r}; };
 http.createServer((req, res) => {
-  if (req.method === "OPTIONS") { res.writeHead(204, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS"}); return res.end(); }
+  if (req.method === "OPTIONS") { res.writeHead(204, {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS"}); return res.end(); }
   const u = new URL(req.url, "http://x"); let body = ""; req.on("data", d => body += d); req.on("end", () => {
     if (u.pathname === "/__ctl") { const c = u.searchParams.get("c"); if (c === "down") DOWN = true; if (c === "up") DOWN = false; if (c === "expire") EXPIRE_NEXT = true; if (c === "log") return send(res, 200, LOG); return send(res, 200, {ok: 1}); }
     if (DOWN) { req.socket.destroy(); return; }
     LOG.push(req.method + " " + u.pathname + u.search);
     if (req.headers.apikey !== KEY && req.headers.apikey !== SKEY) return send(res, 401, {message: "Invalid API key"});
+    if (u.pathname === "/auth/v1/otp" && req.method === "POST") { const b = JSON.parse(body || "{}"); if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(b.email || "")) return send(res, 400, {msg: "Invalid email"}); OTP[b.email.toLowerCase()] = "246810"; return send(res, 200, {}); }
+    if (u.pathname === "/auth/v1/verify" && req.method === "POST") { const b = JSON.parse(body || "{}"), e = String(b.email || "").toLowerCase();
+      if (b.type !== "email" || !OTP[e] || OTP[e] !== b.token) return send(res, 403, {msg: "Token has expired or is invalid"}); delete OTP[e];
+      const id = (USERS[e] && USERS[e].id) || uidDe(e); MAIL[id] = e; const t = issue(id); return send(res, 200, {access_token: t.a, refresh_token: t.r, expires_in: 3600, user: {id, email: e}}); }
     if (u.pathname === "/auth/v1/token") {
       const b = JSON.parse(body || "{}");
       if (u.searchParams.get("grant_type") === "password") { const x = USERS[b.email]; if (!x || x.pass !== b.password) return send(res, 400, {error: "invalid_grant", error_description: "Invalid login credentials"}); const t = issue(x.id); return send(res, 200, {access_token: t.a, refresh_token: t.r, user: {id: x.id, email: b.email}}); }
-      const uid = REF[b.refresh_token]; if (!uid) return send(res, 400, {error_description: "Invalid Refresh Token"}); delete REF[b.refresh_token]; const t = issue(uid); return send(res, 200, {access_token: t.a, refresh_token: t.r});
+      // como Supabase: un token de renovación ya usado se acepta 10 segundos más (recargas o pedidos simultáneos)
+      const uid = REF[b.refresh_token] || (USADO[b.refresh_token] && Date.now() - USADO[b.refresh_token].t < 10000 && USADO[b.refresh_token].uid); if (!uid) return send(res, 400, {error_description: "Invalid Refresh Token"});
+      if (REF[b.refresh_token]) { USADO[b.refresh_token] = {uid, t: Date.now()}; delete REF[b.refresh_token]; } const t = issue(uid); return send(res, 200, {access_token: t.a, refresh_token: t.r});
     }
     const tok = (req.headers.authorization || "").replace("Bearer ", ""); let uid = TOK[tok];
     if (!uid && (!tok || tok === KEY)) uid = "anon"; if (req.headers.apikey === SKEY && tok === SKEY) uid = "service";
@@ -38,7 +46,7 @@ http.createServer((req, res) => {
       const r = sql(uid, `with x as (select * from jsonb_to_recordset(${lit(JSON.stringify(arr))}::jsonb) as y(id text, contenido jsonb)),
         i as (insert into public.proyectos (id, contenido) select id, contenido from x on conflict (id) do update set contenido = excluded.contenido returning *) select coalesce(json_agg(i), '[]') from i`);
       return r.ok ? send(res, 201, JSON.parse(r.out)) : send(res, 403, {message: r.err}); }
-    const m = u.pathname.match(/^\/rest\/v1\/(perfiles|registros|solicitudes|reclamos|proyectos|mensajes|no_contactar)$/); if (!m) return send(res, 404, {message: "not found"});
+    const m = u.pathname.match(/^\/rest\/v1\/(perfiles|registros|solicitudes|reclamos|proyectos|mensajes|no_contactar|accesos_comprador)$/); if (!m) return send(res, 404, {message: "not found"});
     const t = m[1], p = u.searchParams;
     if (req.method === "GET") {
       const w = [];
@@ -63,9 +71,15 @@ http.createServer((req, res) => {
     }
     if (req.method === "POST" && (t === "solicitudes" || t === "reclamos")) {
       let arr = JSON.parse(body); if (!Array.isArray(arr)) arr = [arr];
-      const r = sql(uid, `insert into public.${t} select * from json_populate_recordset(null::public.${t}, ${lit(JSON.stringify(arr))}::json)`.replace("select *", t === "solicitudes" ? "select nextval('solicitudes_id_seq'), now(), nombre, celular, proyecto, plazo, pago, visita, mensaje, coalesce(acepta_promos,false), coalesce(origen,'Web'), campana, null, 'nueva', null, null, asesor_codigo, pais" : "select nextval('reclamos_id_seq'), codigo, now(), null, tipo, nombre, documento, celular, correo, proyecto, detalle, pedido, 'abierto', null, null"));
+      const r = t === "solicitudes" ? sql(uid, `insert into public.solicitudes (nombre, celular, proyecto, plazo, pago, visita, mensaje, acepta_promos, origen, campana, asesor_codigo, pais, tipo, lote, dni, correo) select nombre, celular, proyecto, plazo, pago, visita, mensaje, coalesce(acepta_promos,false), coalesce(origen,'Web'), campana, asesor_codigo, pais, coalesce(tipo,'consulta'), lote, dni, correo from json_populate_recordset(null::public.solicitudes, ${lit(JSON.stringify(arr))}::json)`) : sql(uid, `insert into public.${t} select * from json_populate_recordset(null::public.${t}, ${lit(JSON.stringify(arr))}::json)`.replace("select *", t === "solicitudes" ? "select nextval('solicitudes_id_seq'), now(), nombre, celular, proyecto, plazo, pago, visita, mensaje, coalesce(acepta_promos,false), coalesce(origen,'Web'), campana, null, 'nueva', null, null, asesor_codigo, pais" : "select nextval('reclamos_id_seq'), codigo, now(), null, tipo, nombre, documento, celular, correo, proyecto, detalle, pedido, 'abierto', null, null"));
       return r.ok ? send(res, 201) : send(res, 400, {message: r.err});
     }
+    if (req.method === "POST" && t === "accesos_comprador") { const b = JSON.parse(body || "{}");
+      const r = sql(uid, `insert into public.accesos_comprador (correo, registro) values (${lit(String(b.correo || ""))}, ${lit(String(b.registro || ""))})`);
+      return r.ok ? send(res, 201) : send(res, /duplicate/.test(r.err) ? 409 : 403, {message: r.err}); }
+    if (req.method === "DELETE" && t === "accesos_comprador") { const c = (p.get("correo") || "").replace(/^eq\./, ""), g = (p.get("registro") || "").replace(/^eq\./, "");
+      const r = sql(uid, `with i as (delete from public.accesos_comprador where correo = ${lit(c)} and registro = ${lit(g)} returning *) select coalesce(json_agg(i), '[]') from i`);
+      return r.ok ? send(res, 200, JSON.parse(r.out)) : send(res, 403, {message: r.err}); }
     if (req.method === "POST" && t === "no_contactar") { const b = JSON.parse(body || "{}");
       const r = sql(uid, `insert into public.no_contactar (celular, motivo) values (${lit(String(b.celular || ""))}, ${lit(String(b.motivo || ""))})`);
       return r.ok ? send(res, 201) : send(res, 409, {message: r.err}); }

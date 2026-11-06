@@ -161,6 +161,29 @@ Costo: Meta cobra cada mensaje de plantilla entregado según su tabla de precios
 
 La landing para extranjeros acepta celulares internacionales con su código de país (`+1…`, `+34…`) y guarda el país. Esos clientes también reciben la bienvenida automática.
 
+## Mi Vivaldi: venta en línea, compradores y asesores
+
+`web/portal.html` es el portal de clientes y asesores. Se publica junto a la web (`https://vivaldiinmobiliaria.com/portal.html`) y tiene tres partes:
+
+- **Lotes en línea (cualquier visitante).** Muestra los lotes del inventario de la herramienta, libres u ocupados, con precio y cuota referencial. Nunca muestra nombres de clientes ni los lotes bloqueados. El visitante elige un lote y pide la separación con nombre, DNI, celular y correo: queda como solicitud de tipo "separación", con el lote, y se asigna al asesor de su enlace o por turno. No se cobra nada en línea: el asesor confirma y envía la cuenta de la empresa.
+- **Comprador.** Entra con su correo y un código de 6 dígitos que le llega por correo (sin contraseña). Ve solo las compras en las que su asesor registró ese correo: lote, cronograma, lo pagado, el saldo, la próxima cuota o las vencidas, cómo pagar y el WhatsApp de su asesor para enviar el comprobante.
+- **Asesor.** Entra con su usuario de la herramienta. Ve sus solicitudes nuevas (las de separación primero), separa lotes para un cliente, envía la ficha de un lote por WhatsApp, da o quita acceso a sus compradores y copia sus enlaces de venta.
+
+### Activarlo (una vez)
+
+1. Ejecutar de nuevo `esquema-supabase.sql` completo (sección 8). No borra datos.
+2. En `web/portal.html`, escribir la misma URL y clave pública que en la web: `const BASE = {url: "", key: ""};`. Sin esos datos el portal funciona en **modo demostración**, con datos de ejemplo y un aviso visible.
+3. Opcional: en la misma línea de abajo, `CUENTA_PAGO`, escribir el texto con la cuenta para pagar cuotas (banco, número y CCI a nombre de la empresa). Si queda vacío, el comprador ve que su asesor le enviará la cuenta.
+4. En Supabase, **Authentication → Providers → Email**: dejar activo el ingreso por correo. En **Authentication → Email Templates → Magic Link**, incluir el código con `{{ .Token }}` (por ejemplo: "Tu código para entrar a Mi Vivaldi es {{ .Token }}"). En **Authentication → URL Configuration**, poner `https://vivaldiinmobiliaria.com` como dirección del sitio.
+5. Para enviar correos a clientes reales, configurar un servidor de correo propio en **Authentication → SMTP Settings** (el correo incluido en Supabase tiene un límite bajo de envíos por hora y está pensado para pruebas).
+
+### Seguridad
+
+- Un comprador es un usuario sin perfil: no puede leer la tabla de registros, ni solicitudes, ni separar lotes. Solo llega a sus compras mediante la función `mis_compras`, que filtra por el correo de su sesión.
+- Solo el asesor dueño de la venta (o la jefatura) puede dar acceso a un correo. Los accesos quedan en la tabla `accesos_comprador`.
+- Separar un lote usa la función `separar_lote`: solo cambia el lote si sigue "Disponible", así dos asesores no pueden separar el mismo. El cambio queda en el historial y la herramienta lo recibe en la siguiente sincronización.
+- La constancia de separación y el registro del pago se siguen haciendo en la herramienta de ventas, que lleva la numeración.
+
 ## Consultar y descargar la información
 
 - En Supabase, **Table Editor → registros** muestra todos los registros; se puede filtrar por `coleccion` (clientes, proformas, separaciones, cobranza, visitas, lotes) y exportar a CSV.
@@ -181,3 +204,5 @@ La landing para extranjeros acepta celulares internacionales con su código de p
 - La automatización se probó de punta a punta: formularios llenados en la web desde un celular, reparto entre asesores, llegada a la herramienta de cada asesor, alerta a la jefatura y registro del reclamo con su plazo.
 - **Falta probarlo con el proyecto real de Supabase de Vivaldi**, que debe crear la empresa. Una vez creado, la primera prueba es entrar con un asesor y la jefatura y revisar que cada uno vea lo que le corresponde.
 - Lo nuevo (enlace del asesor, proyectos y mensajes) se probó en PostgreSQL 16 (`test7.sql`) y de punta a punta con la web, las landings y la herramienta contra el servidor de prueba: el cliente que entra por el enlace de un asesor le queda asignado; un código inexistente vuelve al turno normal; reprogramar una visita cancela los avisos anteriores; pagar una cuota cancela su recordatorio; la tarea periódica no duplica mensajes; un número en "no contactar" no recibe nada; un asesor no ve la cola ni publica proyectos. La función `enviar-whatsapp` se probó contra un servidor que imita la API de Meta: envío correcto, reintento ante error (máximo 3) y rechazo sin la clave. **El envío real debe probarse con la cuenta de Meta de Vivaldi** una vez aprobadas las plantillas.
+- El portal Mi Vivaldi se probó contra el servidor de prueba con PostgreSQL y las reglas de seguridad (`tportal.js`, 22 comprobaciones): el visitante no ve clientes ni lotes bloqueados y no lee la tabla de registros; el pedido de separación queda asignado al asesor del enlace; el asesor separa el lote y otro asesor ya no puede; un código de correo incorrecto se rechaza; el comprador sin acceso no ve nada, no lee registros ni solicitudes y no puede separar; un asesor no puede dar acceso a la venta de otro; con el acceso, el comprador ve su compra, lo pagado y su asesora. **El envío del código por correo debe probarse con el proyecto real**, después de configurar la plantilla y el correo (pasos 4 y 5).
+- Para repetir todas las pruebas: `bash fuentes/pruebas/base-de-datos/reiniciar.sh` deja la base de prueba limpia y `bash fuentes/pruebas/todas.sh` corre cada prueba sobre una base nueva.

@@ -117,6 +117,7 @@ const send = (fila) => { const B = window.VV_BASE || {}; if (!B.url || !B.key) r
 const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), {threshold: 0, rootMargin: "0px 0px -8% 0px"}) : null;
 $$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
 const chk = () => $$(".reveal:not(.in)").forEach(el => { if (el.getBoundingClientRect().top < innerHeight) el.classList.add("in"); }); addEventListener("scroll", chk, {passive: true}); addEventListener("load", chk); setTimeout(chk, 300);
+if (location.protocol === "file:") $$("[data-portal]").forEach(a => { a.href = "../web/portal.html" + a.dataset.portal; });
 // galería ampliada
 const lb = $(".lb"); if (lb) { $$(".gal button").forEach(b => b.addEventListener("click", () => { lb.querySelector("img").src = b.querySelector("img").src; lb.querySelector("img").alt = b.querySelector("img").alt; lb.classList.add("on"); lb.querySelector("button").focus(); }));
   lb.addEventListener("click", e => { if (e.target === lb || e.target.closest("button")) lb.classList.remove("on"); }); addEventListener("keydown", e => { if (e.key === "Escape") lb.classList.remove("on"); }); }
@@ -242,13 +243,13 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
     if price and not sold: ld["offers"] = {"@type": "Offer", "price": price, "priceCurrency": "PEN", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": EMP['nombre']}}
     intro1, intro2 = p['intro'][0], p['intro'][1] if len(p['intro']) > 1 else ''
     body = f'''{head(title, desc, p['color'], slug=p['id'], ld=ld)}{base_js()}
-<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#proyecto">El proyecto</a><a href="#fotos">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
+<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#proyecto">El proyecto</a><a href="#fotos">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}{'' if sold else '<a href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Lotes en línea</a>'}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
 <main><section class="hero"><img src="{hero}" alt="{E(p['nombre'])}: {E(leyenda(hero_f).lower())}">{'<span class="ref">Render referencial</span>' if idx[hero_f] in refs else ''}<div class="wrap"><span class="badge">{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + km) if km else ''}</span>
 <h1>{E(p['nombre'])}</h1><p class="sub">{E(p['frase'])}</p>
 <div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar una visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-line" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div></section>
 <div class="wrap"><div class="facts">{''.join(f'<div><span>{a}</span><b data-f="{a}">{E(b)}</b><small data-f="{a}-s">{E(c)}</small></div>' for a, b, c in facts)}</div></div>
 <section class="sec" id="proyecto"><div class="wrap intro"><div class="reveal"><p class="big" data-f="resumen">{E(intro1)}</p><p>{E(intro2)}</p></div>
-<div class="inc reveal"><p class="lbl">{'Incluye' if not sold else 'Tiene'}</p><ul>{inc}</ul></div></div></section>
+<div class="inc reveal"><p class="lbl">{'Incluye' if not sold else 'Tiene'}</p><ul>{inc}</ul>{'' if sold else '<p style="margin-top:22px"><a class="btn b-deep" href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Ver qué lotes quedan</a></p>'}</div></div></section>
 <section class="sec" id="fotos" style="padding-top:0"><div class="wrap reveal"><h2>{E(p['vida'])}</h2><div class="gal">{gal}</div></div></section>
 <section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><h2>{'En qué etapa está' if not sold else 'Cómo se hizo'}</h2><p class="lead">{'Cada etapa con su estado de hoy. Las fechas te las confirma tu asesor.' if not sold else 'Todas las etapas están terminadas.'}</p><ol class="ets" style="--n:{n}">{ets}</ol></div></section>
 {ubic}{tst}{calc}{faq}{form}

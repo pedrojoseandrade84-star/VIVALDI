@@ -6,7 +6,7 @@ const ok = (c, m) => { console.log((c ? "OK   " : "FAIL ") + m); if (!c) process
   const ctx = await b.newContext(devices["iPhone 13"]); const w = await ctx.newPage(); w.on("pageerror", e => errs.push(e.message));
   await w.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
   const pops = []; ctx.on("page", p => pops.push(p.url()));
-  await w.goto("file://" + D + "/web_db.html?asesor=beto&n=Beto%20Ruiz&t=922222222"); await w.waitForTimeout(2500);
+  await w.goto("file://" + D + "/web_db.html?asesor=beto&n=Beto%20Ruiz&t=922222222", {timeout: 180000}); await w.waitForTimeout(2500);
   const bar = await w.evaluate(() => (document.querySelector(".vv-asesor") || {}).textContent || ""); ok(/Te atiende Beto Ruiz/.test(bar), "barra del asesor: " + bar.slice(0, 60));
   const href = await w.evaluate(() => { const a = document.querySelector('a[href*="wa.me/51922549723"]'); a.addEventListener("click", e => e.preventDefault(), {once: true}); a.click(); return a.href; });
   ok(/wa\.me\/51922222222/.test(href), "WhatsApp de la página va al celular del asesor");
@@ -19,7 +19,7 @@ const ok = (c, m) => { console.log((c ? "OK   " : "FAIL ") + m); if (!c) process
   ok(/(wa\.me\/|phone=)51922222222/.test(pops.join(" ")), "el WhatsApp del formulario abre el del asesor: " + pops.join(" ").slice(0, 80));
   // solo con código: nombre y celular desde la base de datos
   const ctx2 = await b.newContext(); const w2 = await ctx2.newPage(); await w2.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
-  await w2.goto("file://" + D + "/web_db.html?asesor=ana"); await w2.waitForTimeout(2500);
+  await w2.goto("file://" + D + "/web_db.html?asesor=ana", {timeout: 180000}); await w2.waitForTimeout(2500);
   ok(/Ana Flores/.test(await w2.evaluate(() => (document.querySelector(".vv-asesor") || {}).textContent || "")), "solo con el código, el nombre llega de la base de datos");
   await w2.goto("file://" + D + "/web_db.html"); await w2.waitForTimeout(1500);
   ok(/Ana Flores/.test(await w2.evaluate(() => (document.querySelector(".vv-asesor") || {}).textContent || "")), "el asesor se recuerda al volver a entrar");

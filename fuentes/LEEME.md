@@ -49,3 +49,12 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 ## Cotización y paquete de venta
 - `cotizacion/cotizacion.html` → `node cotizacion/pdf.js ../entregables/cotizacion/Cotizacion-Vivaldi-COT-2026-002.pdf`
 - `entrega/build_paquete.py <destino>` arma `Vivaldi-Sistema-Comercial.zip` con el índice de entrega en PDF. Excluye la presentación, el guion, la propuesta anterior y el documento interno de investigación.
+
+## Mi Vivaldi (portal de compradores y asesores)
+- `portal/portal.html` es la plantilla; `python3 portal/build_portal.py` genera `entregables/web/portal.html` con las fotos, tipografías y logo de la web y el módulo del enlace del asesor.
+- La web principal enlaza al portal desde el menú (`<a href="portal.html" data-vv-portal>Mi Vivaldi</a>`) y las páginas por proyecto desde "Lotes en línea" (`landings/build.py`).
+- Base de datos: sección 8 de `esquema-supabase.sql` (lotes públicos, separación, accesos del comprador, compras del comprador).
+
+## Pruebas
+- `bash pruebas/base-de-datos/reiniciar.sh` deja la base de prueba limpia; `bash pruebas/base-de-datos/preparar.sh` arma los archivos que usan las pruebas.
+- Con el servidor de prueba encendido (`node pruebas/base-de-datos/mock.js`), `bash pruebas/todas.sh` corre todas las pruebas, cada una sobre una base nueva.

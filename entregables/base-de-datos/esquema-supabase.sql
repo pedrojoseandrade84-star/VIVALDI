@@ -147,6 +147,14 @@ alter table public.solicitudes add column if not exists pais text;
 do $$ begin alter table public.solicitudes add constraint solicitudes_pais_ok check (char_length(pais) <= 60 and pais !~ '[<>]'); exception when duplicate_object then null; end $$;
 alter table public.solicitudes drop constraint if exists solicitudes_celular_check;
 do $$ begin alter table public.solicitudes add constraint solicitudes_celular_ok check (celular ~ '^(9[0-9]{8}|\+[1-9][0-9]{7,14})$'); exception when duplicate_object then null; end $$;
+alter table public.solicitudes add column if not exists tipo text not null default 'consulta';
+do $$ begin alter table public.solicitudes add constraint solicitudes_tipo_ok check (tipo in ('consulta', 'separacion')); exception when duplicate_object then null; end $$;
+alter table public.solicitudes add column if not exists lote text;
+do $$ begin alter table public.solicitudes add constraint solicitudes_lote_ok check (lote ~ '^[A-Za-z0-9:_-]{1,80}$'); exception when duplicate_object then null; end $$;
+alter table public.solicitudes add column if not exists dni text;
+do $$ begin alter table public.solicitudes add constraint solicitudes_dni_ok check (dni ~ '^([0-9]{8}|[A-Z0-9]{9,12})$'); exception when duplicate_object then null; end $$;
+alter table public.solicitudes add column if not exists correo text;
+do $$ begin alter table public.solicitudes add constraint solicitudes_correo_ok check (char_length(correo) <= 120 and correo ~* '^[^@\s<>]+@[^@\s<>]+\.[a-z]{2,}$'); exception when duplicate_object then null; end $$;
 -- defensa adicional: los campos cortos que llegan desde la web pública no aceptan etiquetas HTML
 do $$ begin
   alter table public.solicitudes add constraint solicitudes_sin_html check (
@@ -160,7 +168,9 @@ language plpgsql security definer set search_path = public as $$
 declare elegido uuid;
 begin
   if tg_op = 'INSERT' then
-    if exists (select 1 from public.solicitudes where celular = new.celular and fecha > now() - interval '24 hours') then
+    -- una consulta por celular cada 24 horas; un pedido de separación por lote, aparte de las consultas
+    if exists (select 1 from public.solicitudes where celular = new.celular and fecha > now() - interval '24 hours'
+               and tipo = coalesce(new.tipo, 'consulta') and coalesce(lote, '') = coalesce(new.lote, '')) then
       return null;   -- repetida: no se duplica
     end if;
     if (select count(*) from public.solicitudes where fecha > now() - interval '1 hour') >= 300 then
@@ -184,6 +194,7 @@ begin
     new.id := old.id; new.fecha := old.fecha; new.nombre := old.nombre; new.celular := old.celular;
     new.proyecto := old.proyecto; new.plazo := old.plazo; new.pago := old.pago; new.visita := old.visita;
     new.mensaje := old.mensaje; new.acepta_promos := old.acepta_promos; new.origen := old.origen; new.campana := old.campana; new.asesor_codigo := old.asesor_codigo; new.pais := old.pais;
+    new.tipo := old.tipo; new.lote := old.lote; new.dni := old.dni; new.correo := old.correo;
     if not public.es_jefatura() then new.asesor := old.asesor; end if;
     if new.estado <> old.estado and new.estado = 'en herramienta' then new.tomada := now(); end if;
   end if;
@@ -485,3 +496,73 @@ do $$ begin
     grant execute on function public.automatizacion_periodica() to service_role;
   end if;
 end $$;
+
+-- 8. Portal Mi Vivaldi: lotes en línea, compradores y venta desde la web
+-- correo de la sesión (Supabase lo pone en el token del usuario)
+create or replace function public.correo_sesion() returns text
+language sql stable as $$ select lower(coalesce(nullif(current_setting('request.jwt.claims', true), '')::json->>'email', '')) $$;
+
+-- a) lotes disponibles para cualquier visitante, sin nombres de clientes
+create or replace function public.lotes_publicos() returns table (id text, proyecto text, mz text, lt text, area numeric, precio numeric, ubicacion text, disponible boolean)
+language sql stable security definer set search_path = public as $$
+  select r.id, r.contenido->>'proj', r.contenido->>'mz', r.contenido->>'lt',
+         case when r.contenido->>'area' ~ '^[0-9]+(\.[0-9]+)?$' then (r.contenido->>'area')::numeric end,
+         case when r.contenido->>'price' ~ '^[0-9]+(\.[0-9]+)?$' then (r.contenido->>'price')::numeric end,
+         r.contenido->>'loc', coalesce(r.contenido->>'st', '') = 'Disponible'
+  from public.registros r
+  where r.coleccion = 'lotes' and not r.eliminado and coalesce(r.contenido->>'demo', 'false') <> 'true' and coalesce(r.contenido->>'st', '') <> 'Bloqueado'
+  order by 2, 3, case when r.contenido->>'lt' ~ '^[0-9]+$' then (r.contenido->>'lt')::int end, 4
+$$;
+revoke execute on function public.lotes_publicos() from public;
+grant execute on function public.lotes_publicos() to anon, authenticated;
+
+-- b) separar un lote desde el portal del asesor: solo si sigue disponible (dos asesores no pueden separar el mismo)
+create or replace function public.separar_lote(p_lote text, p_cliente text, p_celular text, p_solicitud bigint default null) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  if not public.es_activo() then raise exception 'Sin permiso'; end if;
+  if char_length(coalesce(p_cliente, '')) not between 3 and 120 or p_cliente ~ '[<>]' then raise exception 'Nombre del cliente no válido'; end if;
+  if coalesce(p_celular, '') !~ '^(9[0-9]{8}|\+[1-9][0-9]{7,14})$' then raise exception 'Celular no válido'; end if;
+  update public.registros set contenido = contenido || jsonb_build_object('st', 'Separado', 'client', p_cliente, 'phone', p_celular,
+           'sepAt', to_char(now() at time zone 'America/Lima', 'YYYY-MM-DD'), 'sepBy', auth.uid()), actualizado = now()
+    where id = p_lote and coleccion = 'lotes' and not eliminado and contenido->>'st' = 'Disponible';
+  get diagnostics n = row_count;
+  if n = 1 and p_solicitud is not null then
+    update public.solicitudes set estado = 'en herramienta' where id = p_solicitud and (asesor = auth.uid() or public.es_jefatura());
+  end if;
+  return n = 1;
+end $$;
+revoke execute on function public.separar_lote(text, text, text, bigint) from public, anon;
+grant execute on function public.separar_lote(text, text, text, bigint) to authenticated;
+
+-- c) acceso del comprador: el asesor registra el correo del comprador en su venta
+create table if not exists public.accesos_comprador (
+  correo       text not null check (correo = lower(correo) and char_length(correo) <= 120 and correo ~ '^[^@\s<>]+@[^@\s<>]+\.[a-z]{2,}$'),
+  registro     text not null references public.registros (id),
+  otorgado_por uuid not null default auth.uid() references auth.users (id),
+  creado       timestamptz not null default now(),
+  primary key (correo, registro)
+);
+alter table public.accesos_comprador enable row level security;
+drop policy if exists "asesor ve sus accesos" on public.accesos_comprador;
+create policy "asesor ve sus accesos" on public.accesos_comprador for select to authenticated using (public.es_activo() and (otorgado_por = auth.uid() or public.es_jefatura()));
+drop policy if exists "asesor da acceso" on public.accesos_comprador;
+create policy "asesor da acceso" on public.accesos_comprador for insert to authenticated with check (
+  public.es_activo() and otorgado_por = auth.uid()
+  and exists (select 1 from public.registros r where r.id = registro and r.coleccion = 'cobranza' and not r.eliminado and (r.asesor = auth.uid() or public.es_jefatura())));
+drop policy if exists "asesor quita acceso" on public.accesos_comprador;
+create policy "asesor quita acceso" on public.accesos_comprador for delete to authenticated using (public.es_activo() and (otorgado_por = auth.uid() or public.es_jefatura()));
+
+-- d) lo que ve el comprador: solo sus compras, con los datos de su asesor
+create or replace function public.mis_compras() returns table (id text, proyecto text, lote text, cronograma jsonb, pagos jsonb, asesor text, asesor_celular text, desde text)
+language sql stable security definer set search_path = public as $$
+  select r.id, r.contenido->>'projName', r.contenido->>'lot', coalesce(r.contenido->'sched', '[]'::jsonb), coalesce(r.contenido->'paid', '{}'::jsonb),
+         p.nombre, p.celular, r.contenido->>'at'
+  from public.accesos_comprador a
+  join public.registros r on r.id = a.registro and r.coleccion = 'cobranza' and not r.eliminado
+  join public.perfiles p on p.id = r.asesor
+  where a.correo = public.correo_sesion() and public.correo_sesion() <> ''
+$$;
+revoke execute on function public.mis_compras() from public, anon;
+grant execute on function public.mis_compras() to authenticated;

@@ -71,9 +71,13 @@
     L.set("nube-sesion", JSON.stringify(ses)); ST.user = ses.user.id; ST.nombre = ses.nombre; saveST();
     try { if (!localStorage.getItem("vivaldi-asesor") && ses.rol === "asesor") localStorage.setItem("vivaldi-asesor", ses.nombre); } catch (e) {}
   }
-  async function refresh() {
-    const j = await api("/auth/v1/token?grant_type=refresh_token", {method: "POST", body: JSON.stringify({refresh_token: ses.refresh_token})}, false);
-    ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
+  // una sola renovación a la vez: si varios pedidos vencen juntos, todos esperan la misma (el token de renovación se usa una vez)
+  let renovando = null;
+  function refresh() {
+    return renovando || (renovando = (async () => {
+      const j = await api("/auth/v1/token?grant_type=refresh_token", {method: "POST", body: JSON.stringify({refresh_token: ses.refresh_token})}, false);
+      ses.access_token = j.access_token; ses.refresh_token = j.refresh_token; L.set("nube-sesion", JSON.stringify(ses));
+    })().finally(() => { renovando = null; }));
   }
 
 

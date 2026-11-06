@@ -187,6 +187,7 @@ const send = (fila) => { const B = window.VV_BASE || {}; if (!B.url || !B.key) r
 const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), {threshold: 0, rootMargin: "0px 0px -8% 0px"}) : null;
 $$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
 const chk = () => $$(".reveal:not(.in)").forEach(el => { if (el.getBoundingClientRect().top < innerHeight) el.classList.add("in"); }); addEventListener("scroll", chk, {passive: true}); addEventListener("load", chk); setTimeout(chk, 300);
+if (location.protocol === "file:") $$("[data-portal]").forEach(a => { a.href = "../web/portal.html" + a.dataset.portal; });
 // galería ampliada
 const lb = $(".lb"); if (lb) { $$(".gal button").forEach(b => b.addEventListener("click", () => { lb.querySelector("img").src = b.querySelector("img").src; lb.querySelector("img").alt = b.querySelector("img").alt; lb.classList.add("on"); lb.querySelector("button").focus(); }));
   lb.addEventListener("click", e => { if (e.target === lb || e.target.closest("button")) lb.classList.remove("on"); }); addEventListener("keydown", e => { if (e.key === "Escape") lb.classList.remove("on"); }); }

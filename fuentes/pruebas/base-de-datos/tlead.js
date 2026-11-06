@@ -5,7 +5,7 @@ const ok = (c, m) => { console.log((c ? "OK   " : "FAIL ") + m); if (!c) process
   // --- web, en celular
   const wctx = await b.newContext(devices["iPhone 13"]); const w = await wctx.newPage(); w.on("pageerror", e => errs.push("web: " + e.message));
   await w.route(/^https?:/, r => { const u = r.request().url(); return u.startsWith(M) || u.startsWith("file:") ? r.continue() : r.abort(); });
-  await w.goto("file://" + D + "/web_db.html?utm_source=facebook&utm_campaign=planicie-nov"); await w.waitForTimeout(2500);
+  await w.goto("file://" + D + "/web_db.html?utm_source=facebook&utm_campaign=planicie-nov", {timeout: 180000}); await w.waitForTimeout(2500);
   await w.evaluate(() => { const c = document.querySelector("#cookie"); if (c) c.hidden = true; window.open = () => ({}); });
   const lead = async (n, ph, plazo, acepta = true) => { await w.fill("#fName", n); await w.fill("#fPhone", ph); if (plazo) await w.selectOption("#gxPlazo", plazo).catch(() => {}); if (acepta) await w.check("#fPriv"); else await w.uncheck("#fPriv"); await w.evaluate(() => document.querySelector("#leadForm").requestSubmit()); await w.waitForTimeout(700); };
   await lead("Lucía Torres", "987 111 222", "Este mes"); await lead("Jorge Ramos", "987333444"); await lead("Ana Díaz", "987555666"); await lead("Lucía Torres", "987111222");

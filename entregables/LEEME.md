@@ -6,6 +6,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 |---|---|---|
 | web/ | Vivaldi-web-whatsapp.html (≈9 MB) | Versión liviana para enviar por WhatsApp |
 | web/ | Vivaldi-web-final.html (≈22 MB) | Máxima calidad, para publicar o presentar en computadora |
+| web/ | portal.html (Mi Vivaldi) | Venta en línea: el cliente elige su lote y pide la separación; el comprador entra con su correo y ve sus cuotas; el asesor entra con su usuario, separa lotes y da acceso a sus compradores. Sin conexión a la base funciona en modo demostración |
 | software/ | planicie-herramienta-whatsapp.html (≈1.7 MB) | Herramienta comercial para los asesores, versión liviana |
 | software/ | planicie-herramienta-final.html (≈2.8 MB) | Herramienta comercial, máxima calidad |
 | base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios, seguridad, enlaces de asesor, proyectos y mensajes automáticos |

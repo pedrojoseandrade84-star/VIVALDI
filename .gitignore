@@ -1,0 +1,4 @@
+# archivos temporales de las pruebas
+fuentes/pruebas/**/*_db.html
+fuentes/pruebas/base-de-datos/fn.mts
+__pycache__/
