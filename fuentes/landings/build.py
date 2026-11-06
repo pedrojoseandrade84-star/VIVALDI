@@ -145,7 +145,8 @@ def foot(extra=''):
 def base_js():
     return '<script>const BASE = {url: "", key: ""};\nwindow.VV_BASE = BASE;</script>'
 
-RECORRIDOS = {'portada'}   # proyectos con explorador 3D de lotes (fuentes/experiencia/explorador.py)
+# proyectos con explorador 3D de lotes (fuentes/experiencia/explorador.py): se enlazan solo si su página existe
+RECORRIDOS = {x['id'] for x in PRJ if os.path.exists(f"{ROOT}/entregables/experiencia/explorar-{x['id']}.html")}
 LEYENDA = [('kmz', 'Ubicación en el corredor'), ('mapa', 'Ubicación en el corredor'), ('portico', 'El ingreso'), ('cancha-de-tennis', 'La cancha de tenis'),
            ('cancha-de-futbol', 'La cancha de fútbol'), ('cancha', 'La losa deportiva'), ('piscina', 'La piscina'), ('gimnasio', 'El gimnasio al aire libre'), ('gym', 'El gimnasio al aire libre'),
            ('multiusos', 'La losa multiusos'), ('juego', 'Los juegos para niños'), ('parrilla', 'La zona de parrillas'), ('grill', 'La zona de parrillas'), ('camping', 'La zona de camping'),

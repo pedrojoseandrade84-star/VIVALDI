@@ -1,30 +1,34 @@
 # Explorador de lotes estilo "elige tu unidad": fachada del condominio → lote → corte de la casa → ambientes.
 # Diseño y desarrollo: Pedrojose Andrade Paredes
-# Uso: node capturas_explorador.js capturas portada && python3 explorador.py
+# Uso: node capturas_explorador.js capturas/<proyecto> <proyecto> && python3 explorador.py <proyecto>   (sin argumento: todos los que tengan capturas)
 import base64, io, json, os, sys, urllib.parse
 from PIL import Image
 D = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(D + '/../..')
 sys.path.insert(0, ROOT + '/fuentes/landings')
 import build as L
 
-P = next(p for p in L.PRJ if p['id'] == 'portada'); EMP = L.EMP; E = L.E
-CAP = D + '/capturas'
+PID = sys.argv[1] if len(sys.argv) > 1 else 'portada'
+P = next(p for p in L.PRJ if p['id'] == PID); EMP = L.EMP; E = L.E
+CAP = D + '/capturas/' + PID
 LOTES = json.load(open(CAP + '/lotes.json')); CASA = json.load(open(CAP + '/casa.json'))
 def png(n, w=1920, q=80):
     im = Image.open(f'{CAP}/{n}.png').convert('RGB')
     if im.width > w: im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
     b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); return 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode()
 
-km = format(P['km'], 'g'); precio = P['precio']
+km = format(P['km'], 'g') if P['km'] else ''; precio = P['precio']; UBI = E(P['zona']) + (' · Km ' + km if km else '')
 techada = round(CASA['m']['techada']); banos = CASA['m']['banos']
 amb1 = [r['n'] for r in CASA['rooms'] if r['lvl'] == 0 and r['n'] not in ('Escalera', 'Hall')]
 amb2 = [r['n'] for r in CASA['rooms'] if r['lvl'] == 1 and r['n'] not in ('Escalera', 'Hall')]
-INTER = [('e4-sala', 'Sala', 'Primer piso · frente a la calle'), ('e5-comedor-cocina', 'Comedor y cocina', 'Primer piso · hacia el patio'),
-         ('e6-dormitorio', 'Dormitorio principal', 'Segundo piso · con baño propio'), ('e7-terraza', 'Terraza', 'Segundo piso · con pérgola')]
+LW, LD = CASA['W'], CASA['D']; AREA = round(LW * LD); MED = f"{format(LW, 'g')} × {format(LD, 'g')} m"
+PISO = lambda lvl: 'Primer piso' if lvl == 0 else 'Segundo piso' if lvl == 1 else f'Piso {lvl + 1}'
+DET = {'e4-sala': 'frente a la calle', 'e5-comedor-cocina': 'hacia el patio', 'e7-terraza': 'al aire libre',
+       'e6-dormitorio': 'con baño propio' if any(r['n'] == 'Baño principal' for r in CASA['rooms']) else ''}
+INTER = [(a['k'], a['n'], PISO(a['lvl']) + (' · ' + DET[a['k']] if DET.get(a['k']) else '')) for a in CASA['amb']]
 # lotes visibles en la fachada, de izquierda a derecha; la casa del centro es la casa de referencia
 VIS = sorted(LOTES, key=lambda q: q['l'])
 DEMO_ESTADOS = ['Vendido', 'Disponible', 'Separado', 'Disponible', 'Vendido', 'Disponible', 'Disponible']
-HOT = [{'l': q['l'], 'r': q['r'], 't': q['t'], 'b': q['b'], 'n': i + 1, 'st': DEMO_ESTADOS[i % len(DEMO_ESTADOS)]} for i, q in enumerate(VIS)]
+HOT = [{'l': q['l'], 'r': q['r'], 't': q['t'], 'b': q['b'], 'n': i + 1, 'st': DEMO_ESTADOS[i % len(DEMO_ESTADOS)], 'ref': q['k'] == 0} for i, q in enumerate(VIS)]
 # zonas sin superposición: el borde entre dos lotes vecinos queda a mitad de camino; nada fuera de la imagen
 for i in range(len(HOT) - 1):
     m = (HOT[i]['r'] + HOT[i + 1]['l']) / 2; HOT[i]['r'] = m; HOT[i + 1]['l'] = m
@@ -123,7 +127,7 @@ JS = r'''
     if (movil()) { const W = box.offsetWidth; const L0 = (innerWidth - W) / 2 + camDx; dot.style.left = (L0 + (h.l + h.r) / 2 * W) + "px"; } else dot.style.left = cx + "px";
     dot.style.top = cy + "px"; dot.style.opacity = 1;
     card.dataset.i = i; delete card.dataset.tap;
-    card.innerHTML = `<div class="n"><small>LOTE</small>${String(h.lt || h.n).padStart(2, "0")}</div><div><h3>${h.mz ? "Manzana " + h.mz : "Lote de " + (h.area || 90) + " m²"}</h3><p>6 × 15 m${h.n === 4 ? " · con la casa de referencia" : " · frente a la calle interna"}</p>
+    card.innerHTML = `<div class="n"><small>LOTE</small>${String(h.lt || h.n).padStart(2, "0")}</div><div><h3>${h.mz ? "Manzana " + h.mz : "Lote de " + (h.area || P.area) + " m²"}</h3><p>${P.med}${h.ref ? " · con la casa de referencia" : " · frente a la calle interna"}</p>
       <span class="st ${h.st}">${h.st}${h.st === "Disponible" ? " · desde " + soles(h.precio || precio) : ""}</span><button class="go" type="button" data-go="${i}">Explorar el lote →</button></div>`;
     const cw = card.offsetWidth, chh = card.offsetHeight, right = cx + 120 + cw < innerWidth - 20, x = right ? cx + 110 : cx - 110 - cw, y = Math.min(Math.max(90, cy - chh / 2 - 40), innerHeight - chh - 120);
     card.style.left = x + "px"; card.style.top = y + "px"; card.style.opacity = 1;
@@ -131,14 +135,14 @@ JS = r'''
     Object.assign(lnk.style, {left: x1 + "px", top: cy + "px", width: len + "px", transform: `rotate(${ang}rad)`, opacity: 1}); }
   card.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) explorar(+g.dataset.go); });
   // recorrido automático del marcador hasta que la persona interactúe
-  const orden = [3, 2, 1, 2, 3, 4, 5, 4]; let oi = 0; show(3);
+  const C = Math.max(0, HOT.findIndex(h => h.ref)), orden = [0, -1, -2, -1, 0, 1, 2, 1].map(d => Math.min(HOT.length - 1, Math.max(0, C + d))); let oi = 0; show(C);
   $("#lPrev").addEventListener("click", () => { auto = false; show(Math.max(0, cur - 1)); }); $("#lNext").addEventListener("click", () => { auto = false; show(Math.min(HOT.length - 1, cur + 1)); });
   let tx = null; vF.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, {passive: true});
   vF.addEventListener("touchend", e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(d) > 45) { auto = false; show(Math.max(0, Math.min(HOT.length - 1, cur + (d < 0 ? 1 : -1)))); } }, {passive: true});
   const timer = setInterval(() => { if (!auto || movil() || vF.classList.contains("on") === false) return; oi = (oi + 1) % orden.length; show(orden[oi]); }, 1700);
   addEventListener("resize", () => { if (cur >= 0 && vF.classList.contains("on")) show(cur); });
   addEventListener("keydown", e => { if (!vF.classList.contains("on")) { if (e.key === "Escape") volver(); if (vI.classList.contains("on") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) paso(e.key === "ArrowRight" ? 1 : -1); return; }
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { auto = false; show(Math.min(HOT.length - 1, Math.max(0, (cur < 0 ? 3 : cur) + (e.key === "ArrowRight" ? 1 : -1)))); $$("#boxF .hot")[cur].focus(); }
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { auto = false; show(Math.min(HOT.length - 1, Math.max(0, (cur < 0 ? C : cur) + (e.key === "ArrowRight" ? 1 : -1)))); $$("#boxF .hot")[cur].focus(); }
     if (e.key === "Enter" && cur >= 0) explorar(cur); });
   $("#dia").addEventListener("click", () => { document.body.classList.remove("night"); $("#dia").setAttribute("aria-pressed", "true"); $("#tarde").setAttribute("aria-pressed", "false"); });
   $("#tarde").addEventListener("click", () => { document.body.classList.add("night"); $("#tarde").setAttribute("aria-pressed", "true"); $("#dia").setAttribute("aria-pressed", "false"); });
@@ -171,20 +175,20 @@ JS = r'''
 
 def page():
     t = f"{P['nombre']}: elige tu lote | Vivaldi Inmobiliaria"
-    d = f"Explora {P['nombre']}: elige tu lote en el condominio, mira la casa que podrías construir en 6 × 15 m y recorre sus ambientes."
-    pj = {'id': P['id'], 'nombre': P['nombre'], 'precio': precio, 'wa': EMP['whatsapp'], 'amb1': ', '.join(amb1), 'amb2': ', '.join(amb2)}
+    d = f"Explora {P['nombre']}: elige tu lote en el condominio, mira la casa que podrías construir en {MED} y recorre sus ambientes."
+    pj = {'id': P['id'], 'nombre': P['nombre'], 'precio': precio, 'wa': EMP['whatsapp'], 'amb1': ', '.join(amb1), 'amb2': ', '.join(amb2), 'area': AREA, 'med': MED}
     inter_ly = ''.join(f'<img class="ly" src="{IMG[k]}" alt="{E(n)} de la casa de referencia (vista del simulador 3D)" decoding="async">' for k, n, _ in INTER)
     return f'''<!doctype html><html lang="es-PE"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{E(t)}</title><meta name="description" content="{E(d)}"><meta name="theme-color" content="#0B151C"><link rel="canonical" href="https://vivaldiinmobiliaria.com/proyectos/explorar-portada.html">
+<title>{E(t)}</title><meta name="description" content="{E(d)}"><meta name="theme-color" content="#0B151C"><link rel="canonical" href="https://vivaldiinmobiliaria.com/proyectos/explorar-{PID}.html">
 <meta property="og:title" content="{E(t)}"><meta property="og:description" content="{E(d)}"><meta property="og:type" content="website">
 <style>{L.FONTS}{CSS.replace("%%", "%")}</style></head><body>
 {L.base_js()}
-<header class="top"><div class="brand"><img src="{L.LOGO}" alt="Vivaldi Inmobiliaria"><i></i><span>{E(P['nombre'])} · Asia · Km {km}</span></div>
-<nav aria-label="Principal"><a href="/proyectos/portada.html" data-local="../landings/portada.html">El proyecto</a><a href="/portal.html?p=portada#lotes" data-local="../web/portal.html?p=portada#lotes">Lotes</a><a class="tour" href="/proyectos/portada.html#contacto" data-local="../landings/portada.html#contacto">Agendar visita</a></nav></header>
+<header class="top"><div class="brand"><img src="{L.LOGO}" alt="Vivaldi Inmobiliaria"><i></i><span>{E(P['nombre'])} · {UBI}</span></div>
+<nav aria-label="Principal"><a href="/proyectos/{PID}.html" data-local="../landings/{PID}.html">El proyecto</a><a href="/portal.html?p={PID}#lotes" data-local="../web/portal.html?p={PID}#lotes">Lotes</a><a class="tour" href="/proyectos/{PID}.html#contacto" data-local="../landings/{PID}.html#contacto">Agendar visita</a></nav></header>
 <main><p class="demo" hidden>Disponibilidad de ejemplo · se actualiza al conectar el inventario</p>
 <section class="view on" id="vFachada" aria-label="Elige tu lote"><div class="box" id="boxWrap"><div class="cam" id="cam"><img src="{IMG['fachada']}" alt="Fila de casas del condominio {E(P['nombre'])} vista desde la calle (vista referencial del simulador 3D)"><img class="tarde" src="{IMG['tarde']}" alt=""><div class="box" id="boxF" style="width:100%;height:100%;left:0;top:0;transform:none"></div></div></div>
   <div class="dot" id="dot" aria-hidden="true"></div><div class="lnk" id="lnk" aria-hidden="true"></div><div class="card" id="card" aria-live="polite"></div>
-  <div class="intro"><small>Condominio · {E(P['estado'])}</small><h1>Elige tu lote</h1><p>Pasa el mouse o toca una casa para ver su lote. Lotes de 90 m² desde {L.soles(precio)}, en soles y sin intereses.</p>
+  <div class="intro"><small>Condominio · {E(P['estado'])}</small><h1>Elige tu lote</h1><p>Pasa el mouse o toca una casa para ver su lote. Lotes de {AREA} m² desde {L.soles(precio)}, en soles y sin intereses.</p>
   <div class="legend" aria-hidden="true"><span class="a">Disponible</span><span class="s">Separado</span><span class="v">Vendido</span></div></div>
   <div class="lotnav" role="group" aria-label="Cambiar de lote"><button type="button" id="lPrev" aria-label="Lote anterior">‹</button><button type="button" id="lNext" aria-label="Lote siguiente">›</button></div>
   <div class="tools" role="group" aria-label="Luz"><button class="chip" id="dia" type="button" aria-pressed="true">Día</button><button class="chip" id="tarde" type="button" aria-pressed="false">Atardecer</button></div>
@@ -194,20 +198,20 @@ def page():
   <img class="ly" data-p="1" src="{IMG['p1']}" alt="Corte de la casa de referencia, primer piso" decoding="async"><img class="ly" data-p="2" src="{IMG['p2']}" alt="Corte de la casa de referencia, segundo piso" decoding="async">
   <button class="back" type="button" data-volver>← Volver al condominio</button><span class="tag">Propuesta referencial · simulador 3D</span>
   <div class="panel" tabindex="-1"><small>{E(P['nombre'])}</small><h2 id="pTitle">Lote</h2><span class="st" id="pSt"></span>
-    <div class="meta"><div><b>90</b><span>m² de lote</span></div><div><b>{techada}</b><span>m² techados</span></div><div><b>{banos}</b><span>baños</span></div></div>
+    <div class="meta"><div><b>{AREA}</b><span>m² de lote</span></div><div><b>{techada}</b><span>m² techados</span></div><div><b>{banos}</b><span>baños</span></div></div>
     <div class="seg" role="group" aria-label="Piso"><button class="chip" type="button" data-piso="1" aria-pressed="true">Piso 1</button><button class="chip" type="button" data-piso="2" aria-pressed="false">Piso 2</button></div>
-    <p><b>Ambientes:</b> <span id="pAmb"></span>. Casa de playa de 2 pisos sobre el lote de 6 × 15 m.</p>
-    <div class="acts"><button class="btn b-gold" id="entrar" type="button">Entrar a la casa</button><a class="btn b-line" href="/portal.html?p=portada#lotes" data-local="../web/portal.html?p=portada#lotes">Separar este lote</a><a class="btn b-wa" href="https://wa.me/{EMP['whatsapp']}" data-wa>WhatsApp</a></div></div>
+    <p><b>Ambientes:</b> <span id="pAmb"></span>. Casa de playa de {CASA["pisos"]} pisos sobre el lote de {MED}.</p>
+    <div class="acts"><button class="btn b-gold" id="entrar" type="button">Entrar a la casa</button><a class="btn b-line" href="/portal.html?p={PID}#lotes" data-local="../web/portal.html?p={PID}#lotes">Separar este lote</a><a class="btn b-wa" href="https://wa.me/{EMP['whatsapp']}" data-wa>WhatsApp</a></div></div>
 </section>
 <section class="view" id="vInter" aria-label="Ambientes">{inter_ly}
   <button class="back" type="button" id="aCorte">← Ver la casa completa</button><span class="tag">Vista referencial · simulador 3D</span>
   <div class="room" aria-live="polite"><small id="rSub"></small><h2 id="rName"></h2></div>
   <div class="nav2"><span class="ct" id="rCt"></span><button type="button" id="prev" aria-label="Ambiente anterior">←</button><button type="button" id="next" aria-label="Ambiente siguiente">→</button><button type="button" data-volver aria-label="Volver al condominio" style="width:auto;border-radius:0;padding:0 14px;font-size:.7rem;letter-spacing:.12em">CONDOMINIO</button></div>
 </section>
-<p class="sr">Las vistas del condominio y de la casa son referenciales, generadas con el simulador 3D de Vivaldi para un lote de 6 × 15 m ({techada} m² techados). El diseño final, el costo y los permisos dependen de cada propietario.</p></main>
+<p class="sr">Las vistas del condominio y de la casa son referenciales, generadas con el simulador 3D de Vivaldi para un lote de {MED} ({techada} m² techados). El diseño final, el costo y los permisos dependen de cada propietario.</p></main>
 <script>{JS.replace('__HOT__', json.dumps(HOT)).replace('__P__', json.dumps(pj, ensure_ascii=False)).replace('__INTER__', json.dumps(INTER, ensure_ascii=False))}</script>
 {L.ASESOR}</body></html>'''
 
 if __name__ == '__main__':
     out = ROOT + '/entregables/experiencia'; os.makedirs(out, exist_ok=True)
-    s = page(); open(out + '/explorar-portada.html', 'w', encoding='utf-8').write(s); print('ok', round(len(s) / 1e6, 2), 'MB')
+    s = page(); open(out + f'/explorar-{PID}.html', 'w', encoding='utf-8').write(s); print('ok', PID, round(len(s) / 1e6, 2), 'MB')
