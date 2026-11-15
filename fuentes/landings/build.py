@@ -13,13 +13,28 @@ i = src.find('var D={'); j = src.find('};', i); IMGMAP = src[i:j]
 ASESOR = open(ROOT + '/fuentes/asesor.html', encoding='utf-8').read()
 E = lambda s: html.escape(str(s), quote=True)
 _cache = {}
-def img(key, w=1600, q=74):
+ORIG = ROOT + '/fuentes/fotos-originales'   # fotos originales de Vivaldi (cámara o dron), opcional: reemplazan a las de la web
+def _orig(key):
+    base = os.path.splitext(os.path.basename(key))[0].lower()
+    if os.path.isdir(ORIG):
+        for f in sorted(os.listdir(ORIG)):
+            if os.path.splitext(f)[0].lower() == base and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp', '.tif', '.tiff')): return os.path.join(ORIG, f)
+def img(key, w=3840, q=90):
+    """Foto en máxima calidad: hasta 4K (3840 px). Sin original nuevo y sin necesidad de reducir, se incrusta el archivo tal cual (sin recomprimir)."""
     if (key, w, q) in _cache: return _cache[(key, w, q)]
-    m = re.search(re.escape(key) + r'"\s*:\s*"data:image/[a-z]+;base64,([A-Za-z0-9+/=]+)', IMGMAP)
-    if not m: raise SystemExit('falta foto ' + key)
-    im = Image.open(io.BytesIO(base64.b64decode(m.group(1)))).convert('RGB')
-    if im.width > w: im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
-    b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); u = 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode(); _cache[(key, w, q)] = u; return u
+    o = _orig(key)
+    if o: raw, mime = open(o, 'rb').read(), None
+    else:
+        m = re.search(re.escape(key) + r'"\s*:\s*"data:(image/[a-z]+);base64,([A-Za-z0-9+/=]+)', IMGMAP)
+        if not m: raise SystemExit('falta foto ' + key)
+        raw, mime = base64.b64decode(m.group(2)), m.group(1)
+    im = Image.open(io.BytesIO(raw))
+    if mime == 'image/webp' and im.width <= w: u = 'data:image/webp;base64,' + base64.b64encode(raw).decode()
+    else:
+        im = im.convert('RGB')
+        if im.width > w: im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); u = 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode()
+    _cache[(key, w, q)] = u; return u
 def soles(n): return 'S/ ' + f'{round(n):,}'
 TC = EMP['tipo_cambio']
 
@@ -220,7 +235,7 @@ def landing(p):
     others = [x for x in PRJ if x['id'] != p['id'] and x['estado'] != 'Vendido 100%'][:3]
     refs = set(p.get('fotos_referenciales', [])); fotos = p['fotos']; idx = {f: k for k, f in enumerate(fotos)}
     es_mapa = lambda f: any(k in f.lower() for k in ('kmz', 'mapa'))
-    hero_f = p.get('hero', fotos[0]); hero = img(hero_f, 2400, 82); price = p['precio']; sold = p['estado'].startswith('Vendido')
+    hero_f = p.get('hero', fotos[0]); hero = img(hero_f); price = p['precio']; sold = p['estado'].startswith('Vendido')
     mapa_f = next((f for f in fotos if es_mapa(f)), None)
     historia = [f for f in fotos if f != hero_f and not es_mapa(f)] or [hero_f]
     cuota36 = soles(price * .8 / 36) if price else None
@@ -235,9 +250,9 @@ def landing(p):
     lay = FILAS[min(len(historia), 7)]
     alto = lambda s: 'min(60vw,560px)' if s == 6 else '300px' if s == 2 else '360px'
     movil_ancha = lambda k: k == 0 or (len(historia[:7]) - k == 1 and k % 2 == 1)
-    gal = ''.join(f'''<figure{' class="w"' if movil_ancha(k) else ''} style="--s:{lay[k]};--h:{alto(lay[k])}"><button type="button" aria-label="Ampliar: {E(leyenda(f))}"><img src="{img(f, 1920 if k == 0 else 1600, 80)}" alt="{E(p['nombre'])}: {E(leyenda(f).lower())}" loading="lazy">{ref(f)}</button><figcaption><b>{E(leyenda(f))}</b></figcaption></figure>''' for k, f in enumerate(historia[:7]))
+    gal = ''.join(f'''<figure{' class="w"' if movil_ancha(k) else ''} style="--s:{lay[k]};--h:{alto(lay[k])}"><button type="button" aria-label="Ampliar: {E(leyenda(f))}"><img src="{img(f)}" alt="{E(p['nombre'])}: {E(leyenda(f).lower())}" loading="lazy">{ref(f)}</button><figcaption><b>{E(leyenda(f))}</b></figcaption></figure>''' for k, f in enumerate(historia[:7]))
     inc = ''.join(f'<li>{E(b)}</li>' for b in p['beneficios'])
-    oth = ''.join(f'''<a href="{x['id']}.html"><span class="ph"><img src="{img(x.get('hero', x['fotos'][0]), 900, 80)}" alt="{E(x['nombre'])}" loading="lazy"></span><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])} · {E(x['zona'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span><br><em>Conocer el proyecto →</em></div></a>''' for x in others)
+    oth = ''.join(f'''<a href="{x['id']}.html"><span class="ph"><img src="{img(x.get('hero', x['fotos'][0]), 1200, 88)}" alt="{E(x['nombre'])}" loading="lazy"></span><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])} · {E(x['zona'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span><br><em>Conocer el proyecto →</em></div></a>''' for x in others)
     import urllib.parse as _u
     mapa = 'https://www.google.com/maps/search/?api=1&query=' + _u.quote(f"{p['nombre']} {'Km ' + format(p['km'], 'g') + ' ' if p['km'] else ''}Panamericana Sur {p['zona']} Cañete")
     km = format(p['km'], 'g') if p['km'] else None
@@ -246,7 +261,7 @@ def landing(p):
     ubic = f'''<section class="sec" id="ubicacion"><div class="wrap g2"><div class="reveal"><h2>Dónde está</h2>
 <p class="lead">{donde}</p><p class="lead" style="margin-top:14px">{'Las visitas son los fines de semana. Tu asesor te envía la ubicación exacta y el punto de encuentro por WhatsApp.' if not sold else 'Tu asesor te envía la ubicación exacta por WhatsApp.'}</p>
 <p style="margin-top:28px"><a class="btn b-deep" href="{mapa}" target="_blank" rel="noopener">Abrir en Google Maps</a></p></div>
-<div class="reveal"><div class="shot"><img src="{img(lado_f, 1200, 74)}" alt="{E(p['nombre'])}: {E(leyenda(lado_f).lower())}" loading="lazy">{'<span class="ref">Imagen referencial</span>' if idx[lado_f] in refs or mapa_f else ''}</div><p>{E(leyenda(lado_f))}</p></div></div></section>'''
+<div class="reveal"><div class="shot"><img src="{img(lado_f, 1920, 90)}" alt="{E(p['nombre'])}: {E(leyenda(lado_f).lower())}" loading="lazy">{'<span class="ref">Imagen referencial</span>' if idx[lado_f] in refs or mapa_f else ''}</div><p>{E(leyenda(lado_f))}</p></div></div></section>'''
     fig = lambda q, cls='': f'<figure class="{cls}"><blockquote>{E(q[3])}</blockquote><figcaption><img src="{img(q[1], 160, 70)}" alt="" width="58" height="58" loading="lazy"><span><b>{E(q[0])}</b>{E(q[2])}</span></figcaption></figure>'
     tst = f'''<section class="sec voz" id="opiniones"><div class="wrap reveal"><p class="eb">Propietarios de Vivaldi</p>{fig(TST[0], 'q1')}
 <div class="q2">{fig(TST[1])}{fig(TST[2])}</div><p style="font-size:.82rem;color:var(--mu);margin:28px 0 0">Testimonios publicados en vivaldiinmobiliaria.com.</p></div></section>'''

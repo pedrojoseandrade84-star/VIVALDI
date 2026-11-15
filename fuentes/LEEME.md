@@ -72,3 +72,8 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 ## Explorador 3D de lotes
 - `experiencia/capturas_explorador.js experiencia/capturas/<proyecto> <proyecto>` toma del simulador 3D la fachada del condominio, el corte de la casa y sus ambientes, y calcula la posición de cada lote en pantalla (`lotes.json`).
 - `python3 experiencia/explorador.py <proyecto>` genera `entregables/experiencia/explorar-<proyecto>.html` (hoy: portada, planicie, terrazas, esmeralda y lirios).
+
+## Imágenes en máxima calidad
+- `landings/build.py` incrusta cada foto de la web tal cual (sin recomprimir) cuando no hace falta reducirla, hasta 3840 px.
+- `fotos-originales/`: si Vivaldi entrega sus fotos de cámara o dron, copiarlas aquí con el mismo nombre que la foto de la web y ejecutar `python3 fuentes/regenerar.py`: las páginas pasan a usar el original, hasta 4K. Ver `fotos-originales/LEEME.md`.
+- El explorador se captura en 4K (`ESCALA=2` por defecto en `experiencia/capturas_explorador.js`). El simulador se abre con `?captura` para que no baje la resolución sola durante la captura.

@@ -11,7 +11,7 @@ PID = sys.argv[1] if len(sys.argv) > 1 else 'portada'
 P = next(p for p in L.PRJ if p['id'] == PID); EMP = L.EMP; E = L.E
 CAP = D + '/capturas/' + PID
 LOTES = json.load(open(CAP + '/lotes.json')); CASA = json.load(open(CAP + '/casa.json'))
-def png(n, w=1920, q=80):
+def png(n, w=3840, q=88):
     im = Image.open(f'{CAP}/{n}.png').convert('RGB')
     if im.width > w: im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
     b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); return 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode()

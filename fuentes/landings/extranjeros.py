@@ -43,9 +43,9 @@ def page(g):
     tc = EMP['tipo_cambio']; t = lambda k: f'<span data-i="{k}">{T[k][0]}</span>'
     usd = lambda n: f"{round(n / tc / 100) * 100:,}"
     disp = [p for p in PRJ if p['estado'] in ('Preventa', 'En construcción', 'Entrega inmediata')]
-    cards = ''.join(f'''<a href="{p['id']}.html"><img src="{img(p.get('hero', p['fotos'][0]), 800, 72)}" alt="{E(p['nombre'])}" loading="lazy"><div><b>{E(p['nombre'])}</b><span>{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + format(p['km'], 'g')) if p['km'] else ''}</span>
+    cards = ''.join(f'''<a href="{p['id']}.html"><img src="{img(p.get('hero', p['fotos'][0]), 1200, 88)}" alt="{E(p['nombre'])}" loading="lazy"><div><b>{E(p['nombre'])}</b><span>{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + format(p['km'], 'g')) if p['km'] else ''}</span>
 <span style="display:block;margin-top:6px;color:var(--ink);font-weight:800">{t('from')} {soles(p['precio']) if p['precio'] else ''} <small style="color:var(--mu);font-weight:600">(≈ US$ {usd(p['precio']) if p['precio'] else ''})</small></span></div></a>''' for p in disp)
-    HP = next(x for x in PRJ if x['id'] == 'lirios'); hero = img(HP['hero'], 1920, 74)
+    HP = next(x for x in PRJ if x['id'] == 'lirios'); hero = img(HP['hero'])
     steps = ''.join(f'<div class="st curso"><div class="dot">{k}</div><div><b data-i="s{k}">{T["s" + str(k)][0]}</b><p class="sd" data-i="s{k}s">{T["s" + str(k) + "s"][0]}</p></div></div>' for k in range(1, 6))
     faq = ''.join(f'<details class="fq"><summary>{t("q" + str(k))}</summary><p>{t("a" + str(k))}</p></details>' for k in range(1, 5))
     opts = ''.join(f'<option>{E(p["nombre"])}</option>' for p in disp)

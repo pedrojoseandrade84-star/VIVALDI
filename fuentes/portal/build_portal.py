@@ -11,7 +11,7 @@ def corto(n):
     for x in ('La ', 'Las ', 'Los '):
         if n.startswith(x): n = n[len(x):]
     return n.split(' de ')[0].split(' del ')[0]
-PROY = {p['nombre']: {'id': p['id'], 'nombre': p['nombre'], 'corto': corto(p['nombre']), 'img': L.img(p.get('hero', p['fotos'][0]), 520, 70),
+PROY = {p['nombre']: {'id': p['id'], 'nombre': p['nombre'], 'corto': corto(p['nombre']), 'img': L.img(p.get('hero', p['fotos'][0]), 900, 88),
                       'estado': p['estado'], 'zona': p['zona'], 'km': format(p['km'], 'g') if p['km'] else '', 'url': L.SITIO + p['id'] + '.html'}
         for p in DATA['proyectos']}
 

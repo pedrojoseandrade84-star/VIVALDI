@@ -1757,7 +1757,8 @@ canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); $("#loadi
 canvas.addEventListener("webglcontextrestored", () => { setTime(); $("#loading").hidden = true; });
 let PR = Math.min(devicePixelRatio || 1, 2); renderer.setPixelRatio(PR);
 const perf = {n: 0, t: 0};
-function adaptQuality(dt) {   // si el equipo va lento (celulares antiguos), baja un poco la resolución para mantener la fluidez
+const CAPTURA = /[?&]captura\b/.test(location.search);   // modo captura: resolución fija para generar imágenes 4K
+function adaptQuality(dt) { if (CAPTURA) return;   // si el equipo va lento (celulares antiguos), baja un poco la resolución para mantener la fluidez
   perf.n++; perf.t += dt; if (perf.n < 90) return;
   const avg = perf.t / perf.n; perf.n = perf.t = 0;
   if (avg > 0.045 && PR > 1.25) { PR = Math.max(1.25, PR - 0.35); renderer.setPixelRatio(PR); }

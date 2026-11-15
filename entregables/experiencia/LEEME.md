@@ -33,3 +33,7 @@ Subir cada uno como `/proyectos/explorar-<proyecto>.html`. La página de cada pr
 
 ## Regenerarlo
 Para cada proyecto: `node fuentes/experiencia/capturas_explorador.js fuentes/experiencia/capturas/<proyecto> <proyecto>` toma las vistas del simulador (las cámaras se calculan con las medidas del lote y los ambientes del diseño, y se calcula la posición de cada lote en pantalla) y `python3 fuentes/experiencia/explorador.py <proyecto>` genera la página. Diamante y Zafiro no están en el simulador.
+
+## Resolución
+
+Las vistas del condominio, los cortes y los ambientes están renderizadas por el simulador en 4K (3840 × 2160 px), con detalle real, no ampliadas. Por eso cada explorador pesa entre 5 y 8 MB.

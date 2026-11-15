@@ -4,11 +4,11 @@
 // lotes.json (posición de cada lote en pantalla) y casa.json (medidas del lote, métricas y ambientes capturados).
 // Las cámaras se calculan con el ancho y fondo del lote y con los ambientes del diseño: sirven para cualquier proyecto del simulador.
 const {chromium} = require('playwright'); const path = require('path'); const fs = require('fs');
-const OUT = process.argv[2], PROJ = process.argv[3] || 'portada', W = 1920, H = 1080;
+const OUT = process.argv[2], PROJ = process.argv[3] || 'portada', W = 1920, H = 1080, ESC = +(process.env.ESCALA || 2); // ESCALA=2: imágenes 4K (3840 × 2160) renderizadas por el simulador
 fs.mkdirSync(OUT, {recursive: true});
-(async () => { const b = await chromium.launch(); const p = await b.newPage({viewport: {width: W, height: H}});
+(async () => { const b = await chromium.launch(); const p = await b.newPage({viewport: {width: W, height: H}, deviceScaleFactor: ESC});
   const errs = []; p.on('pageerror', e => errs.push(e.message)); await p.route(/^https?:/, r => r.abort());
-  await p.goto('file:///home/user/VIVALDI/entregables/simulador/Simulador-3D-Lotes-Vivaldi.html'); await p.waitForTimeout(5000);
+  await p.goto('file:///home/user/VIVALDI/entregables/simulador/Simulador-3D-Lotes-Vivaldi.html?captura'); await p.waitForTimeout(5000);
   await p.selectOption('#proj', PROJ); await p.waitForTimeout(2000);
   const click = t => p.evaluate(t => { const x = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === t); if (x) x.click(); return !!x; }, t);
   await click('Familia de playa'); await p.click('#aiGo'); await p.waitForTimeout(4000);
@@ -17,7 +17,7 @@ fs.mkdirSync(OUT, {recursive: true});
   await p.evaluate(() => { dispatchEvent(new Event('resize')); });
   await p.waitForTimeout(1500);
   const sinRotulos = () => p.evaluate(() => { window.__sim.scene.traverse(o => { if (o.name === 'etiquetas' || o.name === 'lugares') o.visible = false; }); });
-  const foto = async (nombre, espera = 5000) => { await p.waitForTimeout(espera); await p.screenshot({path: path.join(OUT, nombre + '.png'), clip: {x: 0, y: 0, width: W, height: H}, timeout: 120000}); console.log('ok', nombre); };
+  const foto = async (nombre, espera = 5000) => { await p.waitForTimeout(espera); const cw = await p.evaluate(() => Math.max(...[...document.querySelectorAll('canvas')].map(c => c.width))); if (cw < W * ESC) console.log('aviso: el simulador renderizó a', cw, 'px en', nombre); await p.screenshot({path: path.join(OUT, nombre + '.png'), clip: {x: 0, y: 0, width: W, height: H}, timeout: 120000}); console.log('ok', nombre); };
   const camara = (pos, tgt, fov = 50) => p.evaluate(([pos, tgt, fov]) => { const {cam, controls} = window.__sim; cam.fov = fov; cam.updateProjectionMatrix(); controls.target.set(...tgt); cam.position.set(...pos); controls.update(); }, [pos, tgt, fov]);
   const g = await p.evaluate(() => { const d = window.__sim.design; return {W: d.W, D: d.D, z0: d.z0, fd: d.fd, rooms: d.rooms.map(r => ({n: r.name, t: r.type, x: r.x, z: r.z, w: r.w, d: r.d, lvl: r.lvl}))}; });
   const s = g.W / 6;
