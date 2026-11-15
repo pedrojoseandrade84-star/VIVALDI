@@ -31,6 +31,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | manual/ | Manual-Herramienta-Ventas-Vivaldi.pdf | Manual de uso de la herramienta comercial |
 | manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
 | manual/ | Anexo-2-Manual-Funciones-Nuevas-Mi-Vivaldi.pdf | Anexo 2: borrar clientes, historial del cliente, enlaces de venta, proyectos, mensajes automáticos, Tablero de dirección y Mi Vivaldi (asesores y clientes) |
+| manual/ | Anexo-3-Guia-para-la-Gerencia.pdf | Anexo 3 (guía para la gerencia): leer el Tablero de dirección, resumen y cierre del mes, meta, alertas, rutina sugerida y lotes guardados por el cliente en el explorador 3D |
 | contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato de servicio mensual con referencia a la cotización COT-2026-002; revisar con un abogado antes de firmar |
 | rotulado/ | PDF de diseños y archivos para imprenta | Rotulado de la flota: camionetas, van y sedanes |
 

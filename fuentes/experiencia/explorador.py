@@ -89,6 +89,20 @@ button{font:inherit;color:inherit}a{color:inherit}
 .tag{position:absolute;right:14px;top:84px;z-index:7;font-size:.66rem;letter-spacing:.08em;background:rgba(0,0,0,.5);padding:4px 9px;color:rgba(255,255,255,.85)}
 .demo{position:fixed;left:50%%;top:70px;transform:translateX(-50%%);z-index:41;font-size:.7rem;letter-spacing:.06em;background:rgba(242,198,106,.95);color:#2A1D04;padding:5px 12px;font-weight:700;white-space:nowrap}
 :focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.save{display:inline-flex;align-items:center;gap:6px;margin:8px 0 0 8px;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;font:inherit;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;padding:5px 9px;cursor:pointer;vertical-align:middle}
+.save[aria-pressed=true]{background:var(--gold2);border-color:var(--gold2);color:#1A1306}
+.chip.mis{background:var(--gold);color:#1A1306;border-color:var(--gold);font-weight:800}.chip.mis[hidden]{display:none}
+dialog.cmp{max-width:min(920px,calc(100vw - 24px));width:100%%;max-height:calc(100dvh - 24px);overflow:auto;background:#0E1A22;color:#fff;border:1px solid rgba(255,255,255,.16);padding:26px clamp(16px,3vw,32px) 22px}
+dialog.cmp::backdrop{background:rgba(4,9,13,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.cmp h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:2.1rem;margin:0}.cmp .sub{color:rgba(255,255,255,.7);font-size:.88rem;margin:4px 0 18px}
+.cmp .x{position:absolute;top:14px;right:14px;width:40px;height:40px;background:none;border:1px solid rgba(255,255,255,.3);color:#fff;font-size:1.1rem;cursor:pointer}
+.cmp .tw{overflow-x:auto}.cmp table{border-collapse:collapse;width:100%%;min-width:420px;font-size:.88rem}
+.cmp th,.cmp td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;vertical-align:top}
+.cmp thead th{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.5rem}.cmp tbody th{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:800;white-space:nowrap}
+.cmp td b{font-size:1.05rem}.cmp .lnks{display:flex;gap:12px;flex-wrap:wrap}.cmp .lnks button{background:none;border:0;padding:0;color:var(--gold2);font:inherit;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;cursor:pointer}.cmp .lnks button.q{color:rgba(255,255,255,.6)}
+.cmp tbody th,.cmp thead td{position:sticky;left:0;background:#0E1A22;z-index:1}
+@media (max-width:640px){.cmp h2{font-size:1.65rem;padding-right:48px}.cmp .sub{font-size:.82rem}.cmp table{min-width:0;font-size:.82rem}.cmp th,.cmp td{padding:9px 8px}.cmp tbody th{white-space:normal;width:84px;font-size:.58rem;letter-spacing:.1em}.cmp td{min-width:128px}.cmp thead th{font-size:1.25rem}.cmp .x{width:36px;height:36px}}
+.cmp .acts2{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.cmp .acts2 .btn{flex:1 1 220px}.cmp .nota{font-size:.74rem;color:rgba(255,255,255,.6);margin:14px 0 0}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .lotnav{display:none}
 @media (max-width:760px){.tag{display:none}.back{top:96px}.lotnav{display:flex;position:absolute;right:12px;bottom:18px;z-index:7;gap:8px}.lotnav button{width:46px;height:46px;border-radius:50%;background:rgba(10,18,24,.75);border:1px solid rgba(255,255,255,.35);font-size:1.4rem;cursor:pointer}
@@ -104,7 +118,7 @@ JS = r'''
   const HOT = __HOT__, P = __P__, INTER = __INTER__;
   const soles = n => "S/ " + Math.round(n).toLocaleString("es-PE");
   const vF = $("#vFachada"), vC = $("#vCorte"), vI = $("#vInter"), cam = $("#cam"), dot = $("#dot"), card = $("#card"), lnk = $("#lnk");
-  let cur = -1, auto = true, sel = null;
+  let cur = -1, auto = true, sel = null, selI = -1, hv = null;
   // lotes: con la base de datos, estado y precio vienen del inventario (lotes_publicos); sin ella, disponibilidad de ejemplo
   const B = window.VV_BASE || {}; let precio = P.precio;
   if (B.url && B.key) fetch(B.url.replace(/\/$/, "") + "/rest/v1/rpc/lotes_publicos", {method: "POST", headers: {apikey: B.key, Authorization: "Bearer " + B.key, "Content-Type": "application/json"}, body: "{}"})
@@ -115,7 +129,7 @@ JS = r'''
   function pintar() { $$("#boxF .hot").forEach((b, i) => { const h = HOT[i]; b.setAttribute("aria-label", `Lote ${h.lt || h.n}, ${h.st}`); }); }
   HOT.forEach((h, i) => { const b = document.createElement("button"); b.className = "hot"; b.type = "button";
     Object.assign(b.style, {left: h.l * 100 + "%", top: h.t * 100 + "%", width: (h.r - h.l) * 100 + "%", height: (h.b - h.t) * 100 + "%"});
-    b.addEventListener("mouseenter", () => { auto = false; show(i); }); b.addEventListener("focus", () => { auto = false; show(i); });
+    b.addEventListener("mouseenter", () => { auto = false; clearTimeout(hv); hv = setTimeout(() => cur !== i && show(i), cur < 0 ? 0 : 160); }); b.addEventListener("mouseleave", () => clearTimeout(hv)); b.addEventListener("focus", () => { auto = false; show(i); });
     b.addEventListener("click", () => { auto = false; if (cur !== i) show(i); if (matchMedia("(hover: hover)").matches || card.dataset.i == i && card.dataset.tap) explorar(i); else card.dataset.tap = "1"; });
     box.appendChild(b); }); pintar();
   const movil = () => innerWidth / innerHeight < 1; let camDx = 0;
@@ -128,12 +142,33 @@ JS = r'''
     dot.style.top = cy + "px"; dot.style.opacity = 1;
     card.dataset.i = i; delete card.dataset.tap;
     card.innerHTML = `<div class="n"><small>LOTE</small>${String(h.lt || h.n).padStart(2, "0")}</div><div><h3>${h.mz ? "Manzana " + h.mz : "Lote de " + (h.area || P.area) + " m²"}</h3><p>${P.med}${h.ref ? " · con la casa de referencia" : " · frente a la calle interna"}</p>
-      <span class="st ${h.st}">${h.st}${h.st === "Disponible" ? " · desde " + soles(h.precio || precio) : ""}</span><button class="go" type="button" data-go="${i}">Explorar el lote →</button></div>`;
+      <span class="st ${h.st}">${h.st}${h.st === "Disponible" ? " · desde " + soles(h.precio || precio) : ""}</span>${h.st === "Disponible" ? `<button class="save" type="button" data-save="${i}" aria-pressed="${esG(i)}">${esG(i) ? "✓ Guardado" : "+ Guardar"}</button>` : ""}<button class="go" type="button" data-go="${i}">Explorar el lote →</button></div>`;
     const cw = card.offsetWidth, chh = card.offsetHeight, right = cx + 120 + cw < innerWidth - 20, x = right ? cx + 110 : cx - 110 - cw, y = Math.min(Math.max(90, cy - chh / 2 - 40), innerHeight - chh - 120);
     card.style.left = x + "px"; card.style.top = y + "px"; card.style.opacity = 1;
     const x1 = cx + (right ? 12 : -12), x2 = right ? x : x + cw, y2 = y + chh / 2, len = Math.hypot(x2 - x1, y2 - cy), ang = Math.atan2(y2 - cy, x2 - x1);
     Object.assign(lnk.style, {left: x1 + "px", top: cy + "px", width: len + "px", transform: `rotate(${ang}rad)`, opacity: 1}); }
-  card.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) explorar(+g.dataset.go); });
+  card.addEventListener("click", e => { const sv = e.target.closest("[data-save]"); if (sv) { auto = false; alternar(+sv.dataset.save); sv.setAttribute("aria-pressed", String(esG(+sv.dataset.save))); sv.textContent = esG(+sv.dataset.save) ? "✓ Guardado" : "+ Guardar"; return; }
+    const g = e.target.closest("[data-go]"); if (g) explorar(+g.dataset.go); });
+  // lotes guardados y comparación (solo en este navegador)
+  const GK = "vv-lotes-" + P.id; let G = []; try { G = JSON.parse(localStorage.getItem(GK) || "[]").filter(i => HOT[i]); } catch (x) { G = []; }
+  const esG = i => G.includes(i), guardar = () => { try { localStorage.setItem(GK, JSON.stringify(G)); } catch (x) {} };
+  const nom = h => h.mz ? `Mz ${h.mz}, lote ${h.lt}` : `Lote ${String(h.lt || h.n).padStart(2, "0")}`;
+  function alternar(i) { G = esG(i) ? G.filter(x => x !== i) : G.concat(i).slice(-4); guardar(); barra(); }
+  function barra() { const b = $("#mis"); b.hidden = !G.length; b.textContent = `Mis lotes (${G.length})`; if (selI >= 0) { const ps = $("#pSave"); ps.setAttribute("aria-pressed", String(esG(selI))); ps.textContent = esG(selI) ? "✓ Guardado" : "+ Guardar"; } }
+  function comparar() { const L = G.map(i => [i, HOT[i]]), pr = h => h.precio || precio, row = (t, f) => `<tr><th scope="row">${t}</th>${L.map(([i, h]) => `<td>${f(h, i)}</td>`).join("")}</tr>`;
+    $("#cmpB").innerHTML = !L.length ? `<p>Aún no guardaste lotes. Toca "+ Guardar" en la tarjeta de un lote disponible.</p>` : `<table><thead><tr><td></td>${L.map(([, h]) => `<th scope="col">${nom(h)}</th>`).join("")}</tr></thead><tbody>
+      ${row("Estado", h => `<span class="st ${h.st}">${h.st}</span>`)}${row("Área", h => `<b>${h.area || P.area} m²</b>`)}${row("Medidas", () => P.med)}
+      ${row("Precio desde", h => `<b>${soles(pr(h))}</b>`)}${row("Inicial 20%", h => soles(pr(h) * .2))}${row("Cuota referencial", h => `<b>${soles(pr(h) * .8 / 36)}</b> al mes × 36`)}
+      ${row("Casa de referencia", h => h.ref ? "Sí, es el lote con la casa modelo" : "Misma propuesta, adaptable")}
+      ${row(`<span class="sr">Acciones</span>`, (h, i) => `<div class="lnks"><button type="button" data-ver="${i}">Explorar →</button><button type="button" class="q" data-quitar="${i}">Quitar</button></div>`)}</tbody></table>`; }
+  $("#mis").addEventListener("click", () => { auto = false; comparar(); const d = $("#cmp"); if (d.showModal) d.showModal(); else d.setAttribute("open", ""); });
+  $("#cmpX").addEventListener("click", () => $("#cmp").close());
+  $("#cmp").addEventListener("click", e => { if (e.target === e.currentTarget) return $("#cmp").close(); const q = e.target.closest("[data-quitar]"), v = e.target.closest("[data-ver]");
+    if (q) { alternar(+q.dataset.quitar); comparar(); if (cur >= 0 && vF.classList.contains("on")) show(cur); if (!G.length) $("#cmp").close(); }
+    if (v) { $("#cmp").close(); const i = +v.dataset.ver; if (!vF.classList.contains("on")) volver(); setTimeout(() => { show(i); explorar(i); }, vF.classList.contains("on") ? 0 : 950); } });
+  $("#cmpWa").addEventListener("click", e => { e.preventDefault(); const t = `Hola, en el explorador de ${P.nombre} guardé ${G.length === 1 ? "este lote" : "estos lotes"}:\n` + G.map(i => { const h = HOT[i]; return `• ${nom(h)}: ${h.area || P.area} m², desde ${soles(h.precio || precio)}`; }).join("\n") + "\n¿Me ayudan a compararlos y a agendar una visita?";
+    const u = `https://wa.me/${P.wa}?text=${encodeURIComponent(t)}`, w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (x) {} } else location.href = u; });
+  $("#pSave").addEventListener("click", () => { if (selI >= 0) alternar(selI); });
   // recorrido automático del marcador hasta que la persona interactúe
   const C = Math.max(0, HOT.findIndex(h => h.ref)), orden = [0, -1, -2, -1, 0, 1, 2, 1].map(d => Math.min(HOT.length - 1, Math.max(0, C + d))); let oi = 0; show(C);
   $("#lPrev").addEventListener("click", () => { auto = false; show(Math.max(0, cur - 1)); }); $("#lNext").addEventListener("click", () => { auto = false; show(Math.min(HOT.length - 1, cur + 1)); });
@@ -141,17 +176,17 @@ JS = r'''
   vF.addEventListener("touchend", e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(d) > 45) { auto = false; show(Math.max(0, Math.min(HOT.length - 1, cur + (d < 0 ? 1 : -1)))); } }, {passive: true});
   const timer = setInterval(() => { if (!auto || movil() || vF.classList.contains("on") === false) return; oi = (oi + 1) % orden.length; show(orden[oi]); }, 1700);
   addEventListener("resize", () => { if (cur >= 0 && vF.classList.contains("on")) show(cur); });
-  addEventListener("keydown", e => { if (!vF.classList.contains("on")) { if (e.key === "Escape") volver(); if (vI.classList.contains("on") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) paso(e.key === "ArrowRight" ? 1 : -1); return; }
+  addEventListener("keydown", e => { if ($("#cmp").open) return; if (!vF.classList.contains("on")) { if (e.key === "Escape") volver(); if (vI.classList.contains("on") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) paso(e.key === "ArrowRight" ? 1 : -1); return; }
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") { auto = false; show(Math.min(HOT.length - 1, Math.max(0, (cur < 0 ? C : cur) + (e.key === "ArrowRight" ? 1 : -1)))); $$("#boxF .hot")[cur].focus(); }
     if (e.key === "Enter" && cur >= 0) explorar(cur); });
   $("#dia").addEventListener("click", () => { document.body.classList.remove("night"); $("#dia").setAttribute("aria-pressed", "true"); $("#tarde").setAttribute("aria-pressed", "false"); });
   $("#tarde").addEventListener("click", () => { document.body.classList.add("night"); $("#tarde").setAttribute("aria-pressed", "true"); $("#dia").setAttribute("aria-pressed", "false"); });
   // 1) acercamiento al lote  2) corte de la casa
-  function explorar(i) { sel = HOT[i]; auto = false; const h = sel, cx = (h.l + h.r) / 2, cy = (h.t + h.b) / 2, z = Math.min(4, .62 / (h.r - h.l));
+  function explorar(i) { sel = HOT[i]; selI = i; auto = false; const h = sel, cx = (h.l + h.r) / 2, cy = (h.t + h.b) / 2, z = Math.min(4, .62 / (h.r - h.l));
     dot.style.opacity = 0; card.style.opacity = 0; lnk.style.opacity = 0;
     cam.style.transform = `translate(${(.5 - cx) * 100 * z}%, ${(.5 - cy) * 100 * z}%) scale(${z})`;
     setTimeout(() => { $("#pTitle").textContent = h.mz ? `Manzana ${h.mz}, lote ${h.lt}` : `Lote ${String(h.n).padStart(2, "0")}`;
-      $("#pSt").className = "st " + h.st; $("#pSt").textContent = h.st + (h.st === "Disponible" ? " · desde " + soles(h.precio || precio) : "");
+      $("#pSt").className = "st " + h.st; $("#pSt").textContent = h.st + (h.st === "Disponible" ? " · desde " + soles(h.precio || precio) : ""); $("#pSave").hidden = h.st !== "Disponible"; barra();
       piso(1); vF.classList.remove("on"); vC.classList.add("on"); $("#vCorte .panel").focus({preventScroll: true}); }, 1250); }
   function piso(n) { $$("#vCorte .ly").forEach(l => l.classList.toggle("on", l.dataset.p == n)); $$("#vCorte [data-piso]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.piso == n)));
     $("#pAmb").textContent = n === 1 ? P.amb1 : P.amb2; }
@@ -167,6 +202,7 @@ JS = r'''
   $("#aCorte").addEventListener("click", () => { clearTimeout(rt); vI.classList.remove("on"); vC.classList.add("on"); });
   function volver() { clearTimeout(rt); vC.classList.remove("on"); vI.classList.remove("on"); vF.classList.add("on"); cam.style.transform = ""; if (cur >= 0) centrar(cur); setTimeout(() => cur >= 0 && show(cur), 900); }
   $$("[data-volver]").forEach(b => b.addEventListener("click", volver));
+  barra();
   if (location.protocol === "file:") $$("[data-local]").forEach(a => { a.href = a.dataset.local; });
   $$("[data-wa]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); const h = sel || HOT[cur] || {}; const t = `Hola, vi el explorador de ${P.nombre} y me interesa ${h.mz ? "la manzana " + h.mz + ", lote " + h.lt : "un lote"}. ¿Me dan información y horarios de visita?`;
     const u = `https://wa.me/${P.wa}?text=${encodeURIComponent(t)}`, w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (x) {} } else location.href = u; }));
@@ -191,13 +227,13 @@ def page():
   <div class="intro"><small>Condominio · {E(P['estado'])}</small><h1>Elige tu lote</h1><p>Pasa el mouse o toca una casa para ver su lote. Lotes de {AREA} m² desde {L.soles(precio)}, en soles y sin intereses.</p>
   <div class="legend" aria-hidden="true"><span class="a">Disponible</span><span class="s">Separado</span><span class="v">Vendido</span></div></div>
   <div class="lotnav" role="group" aria-label="Cambiar de lote"><button type="button" id="lPrev" aria-label="Lote anterior">‹</button><button type="button" id="lNext" aria-label="Lote siguiente">›</button></div>
-  <div class="tools" role="group" aria-label="Luz"><button class="chip" id="dia" type="button" aria-pressed="true">Día</button><button class="chip" id="tarde" type="button" aria-pressed="false">Atardecer</button></div>
+  <div class="tools" role="group" aria-label="Herramientas"><button class="chip mis" id="mis" type="button" hidden>Mis lotes</button><button class="chip" id="dia" type="button" aria-pressed="true">Día</button><button class="chip" id="tarde" type="button" aria-pressed="false">Atardecer</button></div>
   <span class="tag" style="top:auto;bottom:6px;right:50%;transform:translateX(50%)">Vista referencial del condominio construido · simulador 3D Vivaldi</span>
 </section>
 <section class="view" id="vCorte" aria-label="La casa en el lote">
   <img class="ly" data-p="1" src="{IMG['p1']}" alt="Corte de la casa de referencia, primer piso" decoding="async"><img class="ly" data-p="2" src="{IMG['p2']}" alt="Corte de la casa de referencia, segundo piso" decoding="async">
   <button class="back" type="button" data-volver>← Volver al condominio</button><span class="tag">Propuesta referencial · simulador 3D</span>
-  <div class="panel" tabindex="-1"><small>{E(P['nombre'])}</small><h2 id="pTitle">Lote</h2><span class="st" id="pSt"></span>
+  <div class="panel" tabindex="-1"><small>{E(P['nombre'])}</small><h2 id="pTitle">Lote</h2><span class="st" id="pSt"></span><button class="save" id="pSave" type="button" aria-pressed="false">+ Guardar</button>
     <div class="meta"><div><b>{AREA}</b><span>m² de lote</span></div><div><b>{techada}</b><span>m² techados</span></div><div><b>{banos}</b><span>baños</span></div></div>
     <div class="seg" role="group" aria-label="Piso"><button class="chip" type="button" data-piso="1" aria-pressed="true">Piso 1</button><button class="chip" type="button" data-piso="2" aria-pressed="false">Piso 2</button></div>
     <p><b>Ambientes:</b> <span id="pAmb"></span>. Casa de playa de {CASA["pisos"]} pisos sobre el lote de {MED}.</p>
@@ -208,6 +244,9 @@ def page():
   <div class="room" aria-live="polite"><small id="rSub"></small><h2 id="rName"></h2></div>
   <div class="nav2"><span class="ct" id="rCt"></span><button type="button" id="prev" aria-label="Ambiente anterior">←</button><button type="button" id="next" aria-label="Ambiente siguiente">→</button><button type="button" data-volver aria-label="Volver al condominio" style="width:auto;border-radius:0;padding:0 14px;font-size:.7rem;letter-spacing:.12em">CONDOMINIO</button></div>
 </section>
+<dialog class="cmp" id="cmp" aria-labelledby="cmpT"><button class="x" type="button" id="cmpX" aria-label="Cerrar">✕</button><h2 id="cmpT">Tus lotes guardados</h2><p class="sub">Compáralos lado a lado y envíaselos a tu asesor para que te ayude a decidir.</p><div class="tw" id="cmpB"></div>
+  <div class="acts2"><a class="btn b-wa" href="https://wa.me/{EMP['whatsapp']}" id="cmpWa">Enviar mi selección por WhatsApp</a><a class="btn b-line" href="/portal.html?p={PID}#lotes" data-local="../web/portal.html?p={PID}#lotes">Separar en línea</a></div>
+  <p class="nota">Precios y cuotas referenciales: la cuota se calcula con 20% de inicial y 36 cuotas fijas en soles, sin intereses. La disponibilidad y el precio final se confirman al separar. Tu selección se guarda solo en este navegador.</p></dialog>
 <p class="sr">Las vistas del condominio y de la casa son referenciales, generadas con el simulador 3D de Vivaldi para un lote de {MED} ({techada} m² techados). El diseño final, el costo y los permisos dependen de cada propietario.</p></main>
 <script>{JS.replace('__HOT__', json.dumps(HOT)).replace('__P__', json.dumps(pj, ensure_ascii=False)).replace('__INTER__', json.dumps(INTER, ensure_ascii=False))}</script>
 {L.ASESOR}</body></html>'''

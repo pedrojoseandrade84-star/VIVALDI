@@ -63,6 +63,9 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - `python3 regenerar.py` actualiza, en orden: páginas por proyecto, portal, correcciones y capa de diseño de la web (`mejoras_web.py` + `estilo-web.html`) y los módulos de la herramienta que se reemplazan en su mismo lugar (`sync.html`, `gestion.html` con los datos de `landings/proyectos.json`).
 - `landings/proyectos.json` es la fuente única de los datos públicos de cada proyecto (nombre, km, precio, estado, etapas, textos y fotos).
 
+## Manual: Anexo 3
+- `manual/capturas_anexo3.js manual/capturas` toma las capturas (tablero en modo demostración y explorador 3D) y `manual/anexo3_pdf.js <salida.pdf>` genera el PDF desde `manual/anexo3.html`.
+
 ## Manual: Anexo 2
 - `manual/capturas_anexo2.js capturas` toma las capturas en modo demostración y `manual/anexo2_pdf.js <salida.pdf>` genera el PDF desde `manual/anexo2.html`.
 

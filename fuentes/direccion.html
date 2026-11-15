@@ -138,8 +138,9 @@
     PFLOG.forEach(r => { if (inP(r.at)) pp.cot += r.net || 0; });
     COB_().forEach(k => { const sl = saleOf(k); if (inP(sl.date)) pp.ven += sl.val; Object.entries(k.paid || {}).forEach(([i, d]) => { if (inP(d)) pp.cob += (k.sched.find(x => x.i === +i) || {}).amt || 0; }); });
     SEPS_().forEach(x => { if (inP(x.at)) pp.cob += x.amt || 0; });
-    const age = {fut: 0, a: 0, b: 0, c: 0, d: 0, nFut: 0, nLate: 0}, lim = iso2(new Date(Date.now() + 30 * 864e5));
-    COB_().forEach(k => (k.sched || []).forEach(s => { if (k.paid && k.paid[s.i]) return; if (s.d >= t) { if (s.d <= lim) { age.fut += s.amt; age.nFut++; } return; }
+    const age = {fut: 0, a: 0, b: 0, c: 0, d: 0, nFut: 0, nLate: 0, mes: 0, nMes: 0}, lim = iso2(new Date(Date.now() + 30 * 864e5));
+    const hoy0 = new Date(), fin = iso2(new Date(hoy0.getFullYear(), hoy0.getMonth() + 1, 0));
+    COB_().forEach(k => (k.sched || []).forEach(s => { if (k.paid && k.paid[s.i]) return; if (s.d >= t && s.d <= fin) { age.mes += s.amt; age.nMes++; } if (s.d >= t) { if (s.d <= lim) { age.fut += s.amt; age.nFut++; } return; }
       const days = Math.round((new Date(t + "T12:00") - new Date(s.d + "T12:00")) / 864e5); age.nLate++; age[days <= 30 ? "a" : days <= 60 ? "b" : days <= 90 ? "c" : "d"] += s.amt; }));
     const inv = {}; INV_().forEach(l => { const p = l.proj || "Sin proyecto"; inv[p] = inv[p] || {Vendido: 0, Separado: 0, Disponible: 0, Bloqueado: 0}; inv[p][l.st] = (inv[p][l.st] || 0) + 1; });
     const ord = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], rk = s => ord.indexOf(s);
@@ -280,6 +281,8 @@
     R.push(["Meta", `<strong>${meta.c} de ${meta.g}</strong> lotes separados o vendidos este mes (${Math.min(100, Math.round(meta.c / meta.g * 100))}%)` + (meta.c >= meta.g ? ": meta cumplida." : `; faltan ${meta.g - meta.c}.`)]);
     R.push(["Cobranza", late ? `Hay <strong>${S(late)}</strong> vencidos en ${A.nLate} ${A.nLate === 1 ? "cuota" : "cuotas"} y ${S(A.fut)} vencen en los próximos 30 días. Se cobró ${S(cur.cob)} en el mes.` : `Al día: no hay cuotas vencidas. Se cobró <strong>${S(cur.cob)}</strong> en el mes y ${S(A.fut)} vencen en los próximos 30 días.`]);
     if (tm && (tm.sale || tm.sep || tm.amt)) R.push(["Equipo", `<strong>${E(tm.adv)}</strong> lidera el mes con ${tm.sale} ${tm.sale === 1 ? "venta" : "ventas"} y ${tm.sep} ${tm.sep === 1 ? "separación" : "separaciones"}, y ${S(tm.amt)} cotizados.` + (best && best[1].w ? ` El canal con más cierres es <strong>${E(best[0])}</strong>.` : "")]);
+    { const ult = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), rest = ult - now.getDate(), falta = Math.max(0, meta.g - meta.c);
+      R.push(["Cierre del mes", `Quedan ${rest} ${rest === 1 ? "día" : "días"}. ` + (A.nMes ? `Si se pagan las ${A.nMes} ${A.nMes === 1 ? "cuota que vence" : "cuotas que vencen"} hasta el ${ult} de ${mesL}, la cobranza del mes llegaría a <strong>${S(cur.cob + A.mes)}</strong>` : `No hay más cuotas programadas en ${mesL}; la cobranza del mes cierra en <strong>${S(cur.cob)}</strong> salvo pagos adelantados`) + (falta ? `. Para la meta faltan ${falta} ${falta === 1 ? "lote" : "lotes"}` + (rest ? `: uno cada ${Math.max(1, Math.floor(rest / falta))} ${Math.floor(rest / falta) === 1 ? "día" : "días"}.` : ".") : ". La meta de lotes ya está cumplida.")]); }
     if (tl) R.push(["Inventario", `Quedan <strong>${avail} de ${tl}</strong> lotes disponibles, por un valor de ${S(valD)}. Hay ${al.filter(x => x[0] !== "ok").length || "ninguna"} ${al.filter(x => x[0] !== "ok").length === 1 ? "alerta" : "alertas"} para revisar en Atención de la gerencia.`]);
     document.getElementById("dxRes").innerHTML = R.map(([k, v]) => `<li><b>${k}</b>${v}</li>`).join("");
     sec.dataset.resumen = `Vivaldi · Resumen comercial al ${now.getDate()} de ${mesL} de ${now.getFullYear()}\n\n` + R.map(([k, v]) => `• ${k}: ${v.replace(/<[^>]+>/g, "")}`).join("\n") + `\n\nVendido: ${S(cur.ven)} · Cotizado: ${S(cur.cot)} · Cobrado: ${S(cur.cob)}`;

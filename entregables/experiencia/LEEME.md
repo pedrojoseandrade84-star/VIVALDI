@@ -18,6 +18,8 @@ Cada uno tiene tres pasos:
 2. **Explorar el lote.** La cámara se acerca a esa casa y pasa al corte en 3D de la casa, con su panel: estado, m² de lote, m² techados, baños, ambientes de cada piso (Piso 1 / Piso 2), y los botones Entrar a la casa, Separar este lote (Mi Vivaldi) y WhatsApp.
 3. **Entrar a la casa.** Sala, comedor y cocina, dormitorio principal y terraza, cada uno con su nombre; pasan solos o con las flechas. Desde ahí se vuelve a la casa completa o al condominio.
 
+**Guardar y comparar.** En la tarjeta de cada lote disponible (y en la vista de la casa) está **+ Guardar**. Los lotes guardados aparecen en **Mis lotes** (abajo a la derecha), donde se comparan lado a lado: estado, área, medidas, precio desde, inicial de 20% y cuota referencial a 36 meses. Desde ahí el cliente envía su selección al asesor por WhatsApp o va a separar en línea. La selección se guarda solo en el navegador del cliente (hasta 4 lotes).
+
 Funciona sin internet, en computadora y en celular (en celular la cámara se centra en el lote elegido y se cambia de lote con flechas o deslizando). Se maneja con teclado (flechas, Enter y Escape). Lleva el módulo del asesor: con `?asesor=código&n=Nombre&t=celular` los WhatsApp van al asesor.
 
 ## Disponibilidad
