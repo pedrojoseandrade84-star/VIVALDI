@@ -43,3 +43,12 @@ Para buscadores: cada página tiene su dirección canónica (https://vivaldiinmo
 ## Cómo se probó
 
 En computadora y celular (Chromium): sin errores, sin desplazamiento lateral y sin problemas de accesibilidad (axe-core). Formularios de punta a punta contra el servidor de prueba: solicitud guardada con proyecto, visita, plazo, origen y asesor; WhatsApp al asesor del enlace; bienvenida automática encolada; cliente del extranjero con celular internacional y país; cambio de idioma; precio y estado tomados de la base de datos.
+
+## Experiencia visual
+
+- **Portada:** la foto entra con un acercamiento lento y el texto aparece escalonado; a la derecha, la indicación "Descubre" lleva a la presentación.
+- **Barra superior flotante:** al pasar la portada aparece una barra con el nombre del proyecto, las secciones (marca la sección en la que estás) y el botón Visita.
+- **Galería a pantalla completa:** al tocar una foto se abre con flechas, teclado (← → y Escape), deslizar en celular, contador y pie de foto. Las fotos se incluyen con más resolución para verlas grandes.
+- **Etapas:** las líneas se llenan al llegar a la sección y la etapa en curso tiene un punto que late.
+- **Cuota:** el monto se anima al mover la inicial o el plazo.
+- Quien tiene activado "reducir movimiento" en su equipo ve todo sin animaciones.

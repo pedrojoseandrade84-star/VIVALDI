@@ -14,12 +14,12 @@ ASESOR = open(ROOT + '/fuentes/asesor.html', encoding='utf-8').read()
 E = lambda s: html.escape(str(s), quote=True)
 _cache = {}
 def img(key, w=1600, q=74):
-    if (key, w) in _cache: return _cache[(key, w)]
+    if (key, w, q) in _cache: return _cache[(key, w, q)]
     m = re.search(re.escape(key) + r'"\s*:\s*"data:image/[a-z]+;base64,([A-Za-z0-9+/=]+)', IMGMAP)
     if not m: raise SystemExit('falta foto ' + key)
     im = Image.open(io.BytesIO(base64.b64decode(m.group(1)))).convert('RGB')
     if im.width > w: im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
-    b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); u = 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode(); _cache[(key, w)] = u; return u
+    b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); u = 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode(); _cache[(key, w, q)] = u; return u
 def soles(n): return 'S/ ' + f'{round(n):,}'
 TC = EMP['tipo_cambio']
 
@@ -99,7 +99,49 @@ form.card .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.days{display
 footer{background:#0F1A22;color:#A9B4BC;padding:44px 0 110px;font-size:.88rem}footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}footer a{color:#fff}
 .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;gap:10px}.sticky .btn{flex:1;min-height:52px;box-shadow:0 8px 24px rgba(0,0,0,.22)}.sticky .b-deep{background:var(--ink)}
 .reveal{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease}.reveal.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}/* ---- capa estética: portada, barra flotante, galería, etapas y detalles ---- */
+html{scroll-behavior:smooth}::selection{background:var(--ink);color:#fff}
+.hero>img{animation:kb 16s cubic-bezier(.2,.6,.2,1) both;transform-origin:60%% 55%%}
+@keyframes kb{from{transform:scale(1.1)}to{transform:scale(1)}}
+.hero .wrap>*{opacity:0;transform:translateY(22px);animation:up 1s cubic-bezier(.2,.7,.2,1) forwards}
+.hero .badge{animation-delay:.2s}.hero h1{animation-delay:.35s}.hero .sub{animation-delay:.55s}.hero .cta{animation-delay:.75s}
+@keyframes up{to{opacity:1;transform:none}}
+.cue{position:absolute;right:clamp(20px,4vw,56px);bottom:72px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;writing-mode:vertical-rl;opacity:0;animation:up 1s 1.2s forwards}
+.cue i{display:block;width:1px;height:64px;background:rgba(255,255,255,.3);position:relative;overflow:hidden}.cue i::after{content:"";position:absolute;left:0;top:-40%%;width:1px;height:40%%;background:#fff;animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{to{top:100%%}}
+header.top .pn{display:none;color:#fff;font-family:"Instrument Serif",Georgia,serif;font-size:1.3rem;margin-left:18px;padding-left:18px;border-left:1px solid rgba(255,255,255,.3);white-space:nowrap}
+header.top .wrap>div{display:flex;align-items:center}
+header.top.solid{position:fixed;background:rgba(15,26,34,.9);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 1px 0 rgba(255,255,255,.06),0 10px 30px rgba(0,0,0,.18);animation:bar .45s cubic-bezier(.2,.7,.2,1)}
+header.top.solid .wrap{height:66px}header.top.solid img{height:24px}header.top.solid .pn{display:block}
+header.top.solid nav a:last-child{background:#fff;color:var(--ink);padding:8px 16px;border-radius:4px;border:0}
+header.top nav a.on{border-color:#fff}
+@keyframes bar{from{transform:translateY(-100%%)}to{transform:none}}
+.facts b{font-variant-numeric:lining-nums}
+.reveal .gal img{transform:scale(1.07);transition:transform 1.8s cubic-bezier(.2,.7,.2,1)}.reveal.in .gal img{transform:scale(1)}
+.reveal.in .gal button:hover img{transform:scale(1.035);transition-duration:.9s}
+.gal button::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%%,rgba(8,20,30,.28));opacity:0;transition:opacity .5s}.gal button:hover::after{opacity:1}
+.lb{flex-direction:column;padding:56px 72px 26px;background:rgba(8,13,18,.97)}
+.lb figure{margin:0;display:flex;flex-direction:column;align-items:stretch;width:fit-content;max-width:min(1500px,100%%)}html.lbo .sticky{display:none!important}
+.lb img{max-width:100%%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:2px;transition:opacity .35s ease,transform .5s cubic-bezier(.2,.7,.2,1)}.lb img.fade{opacity:0;transform:scale(.985)}
+.lb figcaption{display:flex;justify-content:space-between;gap:20px;width:100%%;color:rgba(255,255,255,.85);font-size:.95rem;margin-top:14px}.lb figcaption .ln{font-variant-numeric:tabular-nums;letter-spacing:.14em;color:rgba(255,255,255,.55);font-size:.8rem;font-weight:700}
+.lb .lx{top:18px;right:18px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+.lb .la{top:50%%;transform:translateY(-50%%);width:54px;height:54px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22);font-size:1.6rem;transition:background .2s}.lb .la:hover{background:rgba(255,255,255,.2)}
+.lb .lp{left:16px;right:auto}.lb .lnx{right:16px;left:auto}
+.lb button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.ets li{position:relative;border-top-color:var(--ln)!important}
+.ets li::before{content:"";position:absolute;left:0;top:-3px;height:3px;width:0;background:var(--ink);transition:width 1.2s cubic-bezier(.2,.7,.2,1)}
+.ets li.curso::before{background:var(--ac)}.ets li.curso::after{content:"";position:absolute;top:-7px;left:0;width:11px;height:11px;border-radius:50%%;background:var(--ac);opacity:0;transition:left 1.2s cubic-bezier(.2,.7,.2,1),opacity .3s .9s}
+.reveal.in .ets li.hecho::before{width:100%%}.reveal.in .ets li.curso::before{width:55%%}.reveal.in .ets li.curso::after{left:calc(55%% - 6px);opacity:1;animation:pulse 2.4s 1.4s ease-out infinite}
+.ets li:nth-child(2)::before{transition-delay:.25s}.ets li:nth-child(3)::before,.ets li:nth-child(3)::after{transition-delay:.5s}.ets li:nth-child(4)::before,.ets li:nth-child(4)::after{transition-delay:.75s}.ets li:nth-child(5)::before{transition-delay:1s}
+@keyframes pulse{0%%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ac) 55%%,transparent)}70%%{box-shadow:0 0 0 12px transparent}100%%{box-shadow:0 0 0 0 transparent}}
+.ets li.curso small{color:color-mix(in srgb,var(--ac) 62%%,#000)}
+.others .ph{display:block;overflow:hidden;border-radius:4px}.others img{transition:transform 1.1s cubic-bezier(.2,.7,.2,1),opacity .2s}.others a:hover img{opacity:1;transform:scale(1.05)}
+.others em{display:inline-block;margin-top:10px;font-style:normal;font-weight:700;font-size:.85rem;color:var(--ink);border-bottom:1px solid currentColor;padding-bottom:2px}
+.others a:hover em{color:var(--ac)}
+.res b{font-variant-numeric:tabular-nums}
+@media (max-width:900px){.cue{display:none}header.top.solid .wrap{height:58px}.lb{padding:60px 12px 20px}.lb .la{top:auto;bottom:18px;transform:none;width:48px;height:48px}.lb .lp{left:auto;right:76px}.lb figcaption{font-size:.88rem}.lb{padding-bottom:84px}}
+@media (max-width:520px){header.top .pn{font-size:1.1rem;margin-left:12px;padding-left:12px;max-width:52vw;overflow:hidden;text-overflow:ellipsis}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero>img,.hero .wrap>*,.cue,.cue i::after,header.top.solid{animation:none!important;opacity:1;transform:none}.reveal .gal img{transform:none!important;transition:none}.ets li::before,.ets li::after{transition:none!important;animation:none!important}.lb img{transition:none}}
 @media (max-width:900px){.g2,.calc,.intro{grid-template-columns:1fr;gap:36px}.facts{grid-template-columns:1fr 1fr}.facts div{margin:0;padding:22px 16px 20px 0}.facts div:nth-child(2n){border-right:0;padding-left:16px}.facts div:nth-child(2n+1){padding-right:16px}.facts div:nth-child(-n+2){border-bottom:1px solid var(--ln)}
  .facts b{font-size:1.85rem}.gal{grid-template-columns:1fr 1fr;gap:14px 10px}.gal figure{grid-column:span 1}.gal figure.w{grid-column:span 2}.gal button{height:210px}.gal figure.w button{height:250px}
  .others{grid-template-columns:1fr}.ets{grid-template-columns:1fr;gap:0}.ets li{padding:16px 0 18px}.voz .q2{grid-template-columns:1fr;gap:32px}
@@ -119,9 +161,25 @@ $$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
 const chk = () => $$(".reveal:not(.in)").forEach(el => { if (el.getBoundingClientRect().top < innerHeight) el.classList.add("in"); }); addEventListener("scroll", chk, {passive: true}); addEventListener("load", chk); setTimeout(chk, 300);
 if (location.protocol === "file:") $$("[data-portal]").forEach(a => { a.href = "../web/portal.html" + a.dataset.portal; });
 if (location.protocol === "file:") $$("[data-local]").forEach(a => { a.href = a.dataset.local; });
-// galería ampliada
-const lb = $(".lb"); if (lb) { $$(".gal button").forEach(b => b.addEventListener("click", () => { lb.querySelector("img").src = b.querySelector("img").src; lb.querySelector("img").alt = b.querySelector("img").alt; lb.classList.add("on"); lb.querySelector("button").focus(); }));
-  lb.addEventListener("click", e => { if (e.target === lb || e.target.closest("button")) lb.classList.remove("on"); }); addEventListener("keydown", e => { if (e.key === "Escape") lb.classList.remove("on"); }); }
+// galería a pantalla completa: flechas, teclado, deslizar y contador
+const lb = $(".lb"); if (lb) { const G = $$(".gal button"), im = lb.querySelector("img"); let gi = 0, back = null, tx = null;
+  const ver = (i, anim) => { gi = (i + G.length) % G.length; const b = G[gi], s = b.querySelector("img"), cap = b.closest("figure")?.querySelector("figcaption");
+    const put = () => { im.src = s.src; im.alt = s.alt; lb.querySelector(".lc").textContent = cap ? cap.textContent : ""; lb.querySelector(".ln").textContent = String(gi + 1).padStart(2, "0") + " / " + String(G.length).padStart(2, "0"); im.classList.remove("fade"); };
+    if (anim && !matchMedia("(prefers-reduced-motion: reduce)").matches) { im.classList.add("fade"); setTimeout(put, 220); } else put(); };
+  const cerrar = () => { lb.classList.remove("on"); document.documentElement.style.overflow = ""; document.documentElement.classList.remove("lbo"); if (back) back.focus(); };
+  G.forEach((b, i) => b.addEventListener("click", () => { back = b; ver(i); lb.classList.add("on"); document.documentElement.style.overflow = "hidden"; document.documentElement.classList.add("lbo"); lb.querySelector(".lx").focus(); }));
+  lb.querySelector(".lx").addEventListener("click", cerrar); lb.querySelector(".lp").addEventListener("click", () => ver(gi - 1, 1)); lb.querySelector(".lnx").addEventListener("click", () => ver(gi + 1, 1));
+  lb.addEventListener("click", e => { if (e.target === lb || e.target.tagName === "FIGURE") cerrar(); });
+  lb.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, {passive: true}); lb.addEventListener("touchend", e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(d) > 45) ver(gi + (d < 0 ? 1 : -1), 1); }, {passive: true});
+  addEventListener("keydown", e => { if (!lb.classList.contains("on")) return; if (e.key === "Escape") cerrar(); else if (e.key === "ArrowRight") ver(gi + 1, 1); else if (e.key === "ArrowLeft") ver(gi - 1, 1);
+    else if (e.key === "Tab") { const f = [...lb.querySelectorAll("button")], k = f.indexOf(document.activeElement); e.preventDefault(); f[(k + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); } }); }
+// barra superior flotante al pasar la portada, con la sección actual marcada
+const top_ = $("header.top"), hero_ = $(".hero"); if (top_ && hero_) { const secs = $$("header.top nav a[href^='#']").map(a => [a, $(a.getAttribute("href"))]).filter(x => x[1]);
+  const onS = () => { const y = scrollY, h = hero_.offsetHeight; top_.classList.toggle("solid", y > h * .8); let act = null; secs.forEach(([a, el]) => { if (el.getBoundingClientRect().top < innerHeight * .35) act = a; }); secs.forEach(([a]) => a.classList.toggle("on", a === act && y > h * .8)); };
+  addEventListener("scroll", onS, {passive: true}); onS(); }
+// el monto de la cuota cambia con una transición suave
+const tween = (el, to, fmt) => { const from = +(el.dataset.v || to), t0 = performance.now(), D = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 420; el.dataset.v = to;
+  const st = t => { const k = D ? Math.min(1, (t - t0) / D) : 1, e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); };
 // días de visita: los próximos 4 sábados o domingos
 const days = $(".days"); let VIS = {day: "", hour: ""};
 if (days) { const D = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"], M = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]; let d = new Date(); const out = [];
@@ -162,7 +220,7 @@ def landing(p):
     others = [x for x in PRJ if x['id'] != p['id'] and x['estado'] != 'Vendido 100%'][:3]
     refs = set(p.get('fotos_referenciales', [])); fotos = p['fotos']; idx = {f: k for k, f in enumerate(fotos)}
     es_mapa = lambda f: any(k in f.lower() for k in ('kmz', 'mapa'))
-    hero_f = p.get('hero', fotos[0]); hero = img(hero_f, 1920, 74); price = p['precio']; sold = p['estado'].startswith('Vendido')
+    hero_f = p.get('hero', fotos[0]); hero = img(hero_f, 2400, 82); price = p['precio']; sold = p['estado'].startswith('Vendido')
     mapa_f = next((f for f in fotos if es_mapa(f)), None)
     historia = [f for f in fotos if f != hero_f and not es_mapa(f)] or [hero_f]
     cuota36 = soles(price * .8 / 36) if price else None
@@ -177,9 +235,9 @@ def landing(p):
     lay = FILAS[min(len(historia), 7)]
     alto = lambda s: 'min(60vw,560px)' if s == 6 else '300px' if s == 2 else '360px'
     movil_ancha = lambda k: k == 0 or (len(historia[:7]) - k == 1 and k % 2 == 1)
-    gal = ''.join(f'''<figure{' class="w"' if movil_ancha(k) else ''} style="--s:{lay[k]};--h:{alto(lay[k])}"><button type="button" aria-label="Ampliar: {E(leyenda(f))}"><img src="{img(f, 1600 if k == 0 else 1100, 74)}" alt="{E(p['nombre'])}: {E(leyenda(f).lower())}" loading="lazy">{ref(f)}</button><figcaption><b>{E(leyenda(f))}</b></figcaption></figure>''' for k, f in enumerate(historia[:7]))
+    gal = ''.join(f'''<figure{' class="w"' if movil_ancha(k) else ''} style="--s:{lay[k]};--h:{alto(lay[k])}"><button type="button" aria-label="Ampliar: {E(leyenda(f))}"><img src="{img(f, 1920 if k == 0 else 1600, 80)}" alt="{E(p['nombre'])}: {E(leyenda(f).lower())}" loading="lazy">{ref(f)}</button><figcaption><b>{E(leyenda(f))}</b></figcaption></figure>''' for k, f in enumerate(historia[:7]))
     inc = ''.join(f'<li>{E(b)}</li>' for b in p['beneficios'])
-    oth = ''.join(f'''<a href="{x['id']}.html"><img src="{img(x.get('hero', x['fotos'][0]), 800, 72)}" alt="{E(x['nombre'])}" loading="lazy"><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])} · {E(x['zona'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span></div></a>''' for x in others)
+    oth = ''.join(f'''<a href="{x['id']}.html"><span class="ph"><img src="{img(x.get('hero', x['fotos'][0]), 900, 80)}" alt="{E(x['nombre'])}" loading="lazy"></span><div><b>{E(x['nombre'])}</b><span>{E(x['estado'])} · {E(x['zona'])}{' · desde ' + soles(x['precio']) if x['precio'] else ''}</span><br><em>Conocer el proyecto →</em></div></a>''' for x in others)
     import urllib.parse as _u
     mapa = 'https://www.google.com/maps/search/?api=1&query=' + _u.quote(f"{p['nombre']} {'Km ' + format(p['km'], 'g') + ' ' if p['km'] else ''}Panamericana Sur {p['zona']} Cañete")
     km = format(p['km'], 'g') if p['km'] else None
@@ -229,7 +287,7 @@ window.VV_APLICAR_PROYECTOS = rows => {{ const r = (rows || []).find(x => x.id =
   if (c.estado) {{ set("Estado", c.estado); const bd = $(".hero .badge"); if (bd) bd.textContent = bd.textContent.replace(/^[^·]+/, c.estado + " "); }}
   if (c.resumen) set("resumen", c.resumen); }};
 let N = 36; const fmt = n => "S/ " + Math.round(n).toLocaleString("es-PE");
-const calc = () => {{ const i = +$("#ini").value, ini = P.precio * i / 100; $("#iniL").textContent = i + "%"; $("#iniS").textContent = fmt(ini) + " (" + i + "%)"; $("#cuotaV").textContent = fmt((P.precio - ini) / N); }};
+const calc = () => {{ const i = +$("#ini").value, ini = P.precio * i / 100; $("#iniL").textContent = i + "%"; $("#iniS").textContent = fmt(ini) + " (" + i + "%)"; tween($("#cuotaV"), (P.precio - ini) / N, fmt); }};
 if ($("#ini")) {{ $("#ini").addEventListener("input", calc); $("#plazo").addEventListener("click", e => {{ const b = e.target.closest("button"); if (!b) return; N = +b.dataset.n; $$("#plazo button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); calc(); }}); calc();
   $("#quiero").addEventListener("click", () => {{ $("#contacto").scrollIntoView({{behavior: "smooth"}}); setTimeout(() => $("#fN").focus(), 600); }}); }}
 $$("[data-wa]").forEach(a => a.addEventListener("click", e => {{ e.preventDefault(); openWa(`Hola, me interesa ${{P.nombre}}. ¿Me pasan precios, lotes disponibles y horarios de visita?`); }}));
@@ -246,10 +304,10 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
     if price and not sold: ld["offers"] = {"@type": "Offer", "price": price, "priceCurrency": "PEN", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": EMP['nombre']}}
     intro1, intro2 = p['intro'][0], p['intro'][1] if len(p['intro']) > 1 else ''
     body = f'''{head(title, desc, p['color'], slug=p['id'], ld=ld)}{base_js()}
-<header class="top"><div class="wrap"><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><nav aria-label="Secciones"><a href="#proyecto">El proyecto</a><a href="#fotos">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}{'<a href="/proyectos/explorar-' + p['id'] + '.html" data-local="../experiencia/explorar-' + p['id'] + '.html">Explorar en 3D</a>' if p['id'] in RECORRIDOS else ''}{'' if sold else '<a href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Lotes en línea</a>'}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
+<header class="top"><div class="wrap"><div><img src="{LOGO}" alt="Vivaldi Inmobiliaria"><span class="pn" aria-hidden="true">{E(p['nombre'])}</span></div><nav aria-label="Secciones"><a href="#proyecto">El proyecto</a><a href="#fotos">Fotos</a><a href="#ubicacion">Ubicación</a>{'<a href="#cuota">Cuota</a>' if price and not sold else ''}{'<a href="/proyectos/explorar-' + p['id'] + '.html" data-local="../experiencia/explorar-' + p['id'] + '.html">Explorar en 3D</a>' if p['id'] in RECORRIDOS else ''}{'' if sold else '<a href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Lotes en línea</a>'}<a href="#contacto">{'Visita' if not sold else 'Contacto'}</a></nav></div></header>
 <main><section class="hero"><img src="{hero}" alt="{E(p['nombre'])}: {E(leyenda(hero_f).lower())}">{'<span class="ref">Render referencial</span>' if idx[hero_f] in refs else ''}<div class="wrap"><span class="badge">{E(p['estado'])} · {E(p['zona'])}{(' · Km ' + km) if km else ''}</span>
 <h1>{E(p['nombre'])}</h1><p class="sub">{E(p['frase'])}</p>
-<div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar una visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-line" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div></section>
+<div class="cta">{'<a class="btn b-sun" href="#contacto">Agendar una visita</a>' if not sold else '<a class="btn b-sun" href="#otros">Ver proyectos en venta</a>'}<a class="btn b-line" href="{wa('Hola, me interesa ' + p['nombre'])}" data-wa>Escribir por WhatsApp</a></div></div><a class="cue" href="#proyecto" aria-label="Bajar a la presentación del proyecto">Descubre<i></i></a></section>
 <div class="wrap"><div class="facts">{''.join(f'<div><span>{a}</span><b data-f="{a}">{E(b)}</b><small data-f="{a}-s">{E(c)}</small></div>' for a, b, c in facts)}</div></div>
 <section class="sec" id="proyecto"><div class="wrap intro"><div class="reveal"><p class="big" data-f="resumen">{E(intro1)}</p><p>{E(intro2)}</p></div>
 <div class="inc reveal"><p class="lbl">{'Incluye' if not sold else 'Tiene'}</p><ul>{inc}</ul>{'' if sold else '<p style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn b-deep" href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Ver qué lotes quedan</a>' + ('<a class="btn" style="box-shadow:inset 0 0 0 1px #CFC7B8" href="/proyectos/explorar-' + p['id'] + '.html" data-local="../experiencia/explorar-' + p['id'] + '.html">Elige tu lote en 3D</a>' if p['id'] in RECORRIDOS else '') + '</p>'}</div></div></section>
@@ -257,7 +315,7 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
 <section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><h2>{'En qué etapa está' if not sold else 'Cómo se hizo'}</h2><p class="lead">{'Cada etapa con su estado de hoy. Las fechas te las confirma tu asesor.' if not sold else 'Todas las etapas están terminadas.'}</p><ol class="ets" style="--n:{n}">{ets}</ol></div></section>
 {ubic}{tst}{calc}{faq}{form}
 <section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><h2>Otros proyectos de Vivaldi</h2><div class="others">{oth}</div></div></section></main>
-<div class="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada"><button type="button" aria-label="Cerrar">×</button><img alt=""></div>
+<div class="lb" role="dialog" aria-modal="true" aria-label="Galería de fotos"><button type="button" class="lx" aria-label="Cerrar">×</button><button type="button" class="la lp" aria-label="Foto anterior">‹</button><figure><img alt=""><figcaption><span class="lc"></span><span class="ln"></span></figcaption></figure><button type="button" class="la lnx" aria-label="Foto siguiente">›</button></div>
 {foot('<nav class="sticky" aria-label="Contacto rápido"><a class="btn b-wa" href="' + wa('Hola, me interesa ' + p['nombre']) + '" data-wa>WhatsApp</a><a class="btn b-deep" href="#contacto">' + ('Agendar visita' if not sold else 'Contacto') + '</a></nav>')}
 <script>const EMP = {json.dumps({'whatsapp': EMP['whatsapp']})};{js}</script>
 {ASESOR}</body></html>'''
