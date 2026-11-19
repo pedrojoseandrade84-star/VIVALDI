@@ -12,7 +12,8 @@ def corto(n):
         if n.startswith(x): n = n[len(x):]
     return n.split(' de ')[0].split(' del ')[0]
 PROY = {p['nombre']: {'id': p['id'], 'nombre': p['nombre'], 'corto': corto(p['nombre']), 'img': L.img(p.get('hero', p['fotos'][0]), 900, 88),
-                      'estado': p['estado'], 'zona': p['zona'], 'km': format(p['km'], 'g') if p['km'] else '', 'url': L.SITIO + p['id'] + '.html'}
+                      'estado': p['estado'], 'zona': p['zona'], 'km': format(p['km'], 'g') if p['km'] else '', 'url': L.SITIO + p['id'] + '.html',
+                      'explora': os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'entregables', 'experiencia', 'explorar-' + p['id'] + '.html'))}
         for p in DATA['proyectos']}
 
 if __name__ == '__main__':

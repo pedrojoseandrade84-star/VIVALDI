@@ -11,6 +11,7 @@ h1,h2,h3{font-family:"Instrument Serif",Georgia,serif;font-weight:400;line-heigh
 .top{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20}.top .wrap{display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px}
 .top img{height:26px}.top nav{display:flex;gap:6px;align-items:center}.top nav a{color:#fff;text-decoration:none;font-weight:600;font-size:.93rem;padding:8px 12px;border-radius:6px;white-space:nowrap}
 .top nav a[aria-current=page]{background:rgba(255,255,255,.14)}.top nav a:hover{background:rgba(255,255,255,.1)}
+.ver3d{display:flex;align-items:center;gap:10px;margin:14px 0 4px;padding:12px 14px;border-radius:10px;background:#EEF3F5;color:var(--ink,#16232D);font-weight:700;font-size:.92rem;text-decoration:none}.ver3d:hover{background:#E2ECEF}.ver3d svg{flex:none}
 .demo{background:#FBF0DC;color:#6B4A10;font-size:.88rem;font-weight:600;text-align:center;padding:8px 14px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:6px;border:0;font-weight:700;font-size:.98rem;text-decoration:none;cursor:pointer;transition:background-color .2s}
 .btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #E5A53C;outline-offset:2px}
@@ -122,7 +123,7 @@ Precios y disponibilidad referenciales: se confirman al separar. Tus datos se us
 <script>
 const PROY = /*PROY*/;
 // página de cada proyecto: en la computadora (archivos) o publicada en /proyectos/
-Object.values(PROY).forEach(p => { p.pagina = (location.protocol === "file:" ? "../landings/" : "/proyectos/") + p.id + ".html"; });
+Object.values(PROY).forEach(p => { p.pagina = (location.protocol === "file:" ? "../landings/" : "/proyectos/") + p.id + ".html"; if (p.explora) p.explorar = (location.protocol === "file:" ? "../experiencia/" : "/proyectos/") + "explorar-" + p.id + ".html"; });
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const soles = n => "S/ " + Math.round(+n || 0).toLocaleString("es-PE");
@@ -188,6 +189,8 @@ function demoApi() {
   const P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = [];
   [["A", 6], ["B", 8]].forEach(([mz, n]) => { for (let i = 1; i <= n; i++) L.push({id: `lotes:demo-p${mz}${i}`, proj: P, mz, lt: String(i), area: 200, price: i <= 2 ? 31500 : 29000, loc: i <= 2 ? "Frente al parque" : "Interior",
     st: (mz === "A" && [3, 5].includes(i)) || (mz === "B" && i === 2) ? "Vendido" : mz === "B" && i === 7 ? "Separado" : mz === "B" && i === 8 ? "Bloqueado" : "Disponible", client: mz === "A" && i === 3 ? "María Fernández Soto" : mz === "B" && i === 7 ? "Luis Gamarra Ruiz" : ""}); });
+  const MAS = [["La Portada del Sol", "D", 8, 90, 37900, [1, 2, 5], [3]], ["Lirios del Mar de Asia", "F", 8, 90, 60000, [1, 2, 3, 4, 6], []], ["La Esmeralda de Cerro Azul", "C", 6, 250, 38000, [2], [5]]];
+  MAS.forEach(([pr, mz, n, area, price, vend, sep]) => { for (let i = 1; i <= n; i++) L.push({id: `lotes:demo-${mz}${i}-${pr.length}`, proj: pr, mz, lt: String(i), area, price, loc: i <= 2 ? "Frente al parque" : "Interior", st: vend.includes(i) ? "Vendido" : sep.includes(i) ? "Separado" : "Disponible", client: ""}); });
   for (let i = 1; i <= 10; i++) L.push({id: `lotes:demo-tA${i}`, proj: T, mz: "A", lt: String(i), area: 200, price: 25000, loc: i <= 3 ? "Frente al parque" : "Interior", st: i <= 3 ? "Vendido" : i === 4 ? "Separado" : "Disponible", client: ""});
   const ventas = [{id: "cobranza:demo-1", name: "María Fernández Soto", phone: "987654321", projName: P, lot: "Mz A Lt 3", at: add(ini, -1), ...plan(29000, ini, 36, 5)},
                   {id: "cobranza:demo-2", name: "Pedro Salas Rojas", phone: "981222333", projName: T, lot: "Mz A Lt 1", at: add(ini, 1), ...plan(25000, add(ini, 2), 24, 2)}];
@@ -250,6 +253,7 @@ function fichaLote(l) {
   $("#ficha").innerHTML = `<p class="lbl" style="margin:0">${esc(l.proyecto)}</p><h3>Manzana ${esc(l.mz)}, lote ${esc(l.lt)}</h3>
   ${l.precio ? `<div class="pr">${soles(l.precio)}</div><p style="margin:0 0 14px;color:var(--mu)">o ${soles(c36)} al mes en 36 cuotas, con 20% de inicial y sin intereses*</p>` : '<p style="color:var(--mu)">Precio con tu asesor.</p>'}
   <div class="kv"><span>Área</span><span>${l.area ? l.area + " m²" : "Consultar"}</span></div><div class="kv"><span>Ubicación</span><span>${esc(l.ubicacion || "—")}</span></div>
+  ${(PROY[l.proyecto] || {}).explorar ? `<a class="ver3d" href="${PROY[l.proyecto].explorar}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Mira la casa que puedes construir aquí, en 3D</a>` : ""}
   <form class="f" id="fSep" novalidate><label>Nombre completo<input id="sN" autocomplete="name" required maxlength="120"></label>
   <label>DNI o carné de extranjería<input id="sD" inputmode="text" maxlength="12" autocomplete="off" required></label>
   <label>Celular<input id="sT" inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX" required></label>
