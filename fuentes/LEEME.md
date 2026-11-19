@@ -77,3 +77,15 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - `landings/build.py` incrusta cada foto de la web tal cual (sin recomprimir) cuando no hace falta reducirla, hasta 3840 px.
 - `fotos-originales/`: si Vivaldi entrega sus fotos de cámara o dron, copiarlas aquí con el mismo nombre que la foto de la web y ejecutar `python3 fuentes/regenerar.py`: las páginas pasan a usar el original, hasta 4K. Ver `fotos-originales/LEEME.md`.
 - El explorador se captura en 4K (`ESCALA=2` por defecto en `experiencia/capturas_explorador.js`). El simulador se abre con `?captura` para que no baje la resolución sola durante la captura.
+
+## Herramienta de ventas: módulos nuevos
+- `conectar.html`: Conectar datos. Importa clientes y lotes de cualquier Excel (.xlsx) o CSV (cualquier separador, UTF-8 o Windows-1252), reconoce las columnas por sus nombres habituales, muestra la vista previa, no duplica (celular, DNI o manzana y lote) y permite deshacer. Conexión a Google Sheets que se sincroniza al abrir y cada 10 minutos. Datos para conectar otros sistemas (Zapier, Make, n8n) a la tabla `solicitudes`. Prueba: `pruebas/base-de-datos/tconectar.js`.
+- `interfaz.html`: barra lateral por tareas (desde 1200 px de ancho), buscador universal con Ctrl/⌘ + K (botón flotante en celular) y la paleta de colores de Vivaldi.
+- `parche_proyectos.py`: agrega La Esmeralda de Cerro Azul a la herramienta y ajusta contrastes. Idempotente.
+- `regenerar.py` reemplaza en su lugar los módulos `growth-sync`, `direccion`, `conectar`, `interfaz` y `gestion`.
+
+## Paquetes finales
+- `entrega/capturas_demo.js entrega/capturas` toma las capturas de la portada de la demostración.
+- `entrega/build_demo.py <carpeta>` arma `Vivaldi-Demo-Gerencia.zip` (demostración para los gerentes, se abre con `ABRIR-AQUI.html`) y `Vivaldi-Completo-Pedrojose.zip` (todo el proyecto, uso personal).
+- `entrega/build_paquete.py <carpeta>` arma el paquete de entrega completo para Vivaldi.
+

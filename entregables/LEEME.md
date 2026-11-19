@@ -8,8 +8,8 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | web/ | Vivaldi-web-final.html (≈22 MB) | Máxima calidad, para publicar o presentar en computadora |
 | web/ | portal.html (Mi Vivaldi) | Venta en línea: el cliente elige su lote y pide la separación; el comprador entra con su correo y ve sus cuotas; el asesor entra con su usuario, separa lotes y da acceso a sus compradores. Sin conexión a la base funciona en modo demostración |
 | experiencia/ | explorar-portada.html, explorar-planicie.html, explorar-terrazas.html, explorar-esmeralda.html, explorar-lirios.html | Explorador 3D de cada proyecto (La Portada del Sol, La Planicie, Las Terrazas, La Esmeralda y Lirios): el cliente pasa el mouse por las casas del condominio, ve el estado y precio de cada lote, entra a la casa cortada en 3D (piso 1 y 2) y recorre sala, comedor, dormitorio y terraza. Se publican en /proyectos/explorar-<proyecto>.html |
-| software/ | planicie-herramienta-whatsapp.html (≈1.7 MB) | Herramienta comercial para los asesores, versión liviana |
-| software/ | planicie-herramienta-final.html (≈2.8 MB) | Herramienta comercial, máxima calidad |
+| software/ | planicie-herramienta-whatsapp.html (≈2.5 MB) | Herramienta comercial para los asesores, versión liviana |
+| software/ | planicie-herramienta-final.html (≈3.6 MB) | Herramienta comercial, máxima calidad. Interfaz tipo app con barra lateral, buscador universal (Ctrl/⌘ + K) y **Conectar datos** (importa clientes y lotes de cualquier Excel, CSV o Google Sheets, y recibe interesados de otros sistemas) |
 | base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios, seguridad, enlaces de asesor, proyectos y mensajes automáticos |
 | base-de-datos/ | funciones/enviar-whatsapp, activar-envios.sql, plantillas-whatsapp.md | Envío automático por WhatsApp (API oficial de Meta): función, activación y las 8 plantillas para aprobar |
 | landings/ | 7 landings por proyecto y extranjeros.html | Una página por proyecto con sus etapas, galería, cuota y visita; página bilingüe para clientes del extranjero. Ver LEEME |

@@ -1,4 +1,4 @@
-# Agrega La Esmeralda de Cerro Azul a la herramienta de ventas (proforma, lotes, clientes, mensajes) y muestra la
+# Parches de la herramienta de ventas. Agrega La Esmeralda de Cerro Azul a la herramienta de ventas (proforma, lotes, clientes, mensajes) y muestra la
 # ubicación por zona cuando el kilómetro no está confirmado. Idempotente: se puede ejecutar varias veces.
 # Diseño y desarrollo: Pedrojose Andrade Paredes
 import os
@@ -14,6 +14,8 @@ R = [
  ('kv("Ubicación", `Km ${c.v.km} Panamericana Sur`)', 'kv("Ubicación", vUbi(c.v))'),
  ('proj: v.name, km: v.km,', 'proj: v.name, km: v.km, ubi: vUbi(v),'),
  ('te confirmo la visita guiada a ${c.proj} (km ${c.km} de la Panamericana Sur)', 'te confirmo la visita guiada a ${c.proj} (${c.ubi})'),
+ # contraste: verde de WhatsApp con texto blanco legible (5.6:1)
+ ('.gx-it button.w{background:#1FA855;border-color:#1FA855;color:#fff}', '.gx-it button.w{background:#17733F;border-color:#17733F;color:#fff}'),
 ]
 for f in ['planicie-herramienta-final.html', 'planicie-herramienta-whatsapp.html']:
     p = os.path.join(ROOT, 'entregables', 'software', f); s = open(p, encoding='utf-8').read()
