@@ -1,10 +1,13 @@
-const {chromium} = require("playwright"); const F = "file://" + process.argv[2]; const M = "http://127.0.0.1:54321";
+const {chromium} = require("playwright"); const M = "http://127.0.0.1:54321";
+// la herramienta se sirve por http: Chromium pierde a veces el almacenamiento de páginas file:// al recargar cuando hay dos sesiones abiertas a la vez
+const W = "http://127.0.0.1:54400", F = W + "/herramienta.html";
+const srv = require("http").createServer((q, r) => { if (q.url.split("?")[0].split("#")[0] !== "/herramienta.html") { r.writeHead(404); return r.end(); } r.writeHead(200, {"Content-Type": "text/html; charset=utf-8"}); require("fs").createReadStream(process.argv[2]).pipe(r); }).listen(54400, "127.0.0.1");
 const ctl = c => fetch(M + "/__ctl?c=" + c).then(r => r.json());
 const ok = (c, m) => { console.log((c ? "OK   " : "FAIL ") + m); if (!c) process.exitCode = 1; };
 async function dev(b, name, seed) {
   const ctx = await b.newContext({viewport: {width: 1300, height: 900}}); const p = await ctx.newPage(); p.errs = [];
   p.on("pageerror", e => p.errs.push(e.message)); p.on("dialog", d => d.accept());
-  await p.route(/^https?:/, r => r.request().url().startsWith(M) ? r.continue() : r.abort());
+  await p.route(/^https?:/, r => r.request().url().startsWith(M) || r.request().url().startsWith(W) ? r.continue() : r.abort());
   await p.addInitScript(([cfg, seed]) => { if (!localStorage.getItem("nube-config")) { localStorage.setItem("nube-config", cfg); for (const [k, v] of Object.entries(seed || {})) localStorage.setItem(k, JSON.stringify(v)); } }, [JSON.stringify({url: M, key: "anon-test-key"}), seed]);
   await p.goto(F + "#clientes"); await p.waitForTimeout(1200); p.label = name; return p;
 }
@@ -63,7 +66,8 @@ const names = p => p.evaluate(() => CLIENTS.map(c => c.name).sort().join(","));
 
   // recarga: la sesión se mantiene y no duplica
   await ana.reload(); await ana.waitForFunction(() => window.vivaldiNube && document.querySelector("#nubeBtn").innerText === "Sincronizado", null, {timeout: 20000}).catch(() => {});
-  ok((await ana.evaluate(() => document.querySelector("#nubeBtn").innerText)) === "Sincronizado", "tras recargar sigue conectada");
+  r = await ana.evaluate(() => [document.querySelector("#nubeBtn").innerText, Object.keys(localStorage).sort().join(","), (localStorage.getItem("nube-sesion") || "").slice(0, 60), CLIENTS.length, document.querySelector("#nubeMsg").innerText]);
+  ok(r[0] === "Sincronizado", "tras recargar sigue conectada: " + JSON.stringify(r));
   ok((await ana.evaluate(() => CLIENTS.length)) === 2, "sin duplicados: " + await names(ana));
 
   // otro usuario entra en el mismo equipo de Ana: no sube los datos de Ana como suyos
@@ -76,5 +80,5 @@ const names = p => p.evaluate(() => CLIENTS.map(c => c.name).sort().join(","));
   await sync(jefa); ok((await names(jefa)) === "Carmen Sin Señal,Jorge Ramos", "Jefa conserva todo: " + await names(jefa));
 
   for (const p of [ana, jefa, beto, baja]) ok(!p.errs.length, p.label + " sin errores de página " + p.errs.join(";"));
-  await b.close();
+  await b.close(); srv.close();
 })();

@@ -1,0 +1,171 @@
+<!--interfaz-start-->
+<style id="interfaz-css">
+/* Paleta Vivaldi: papel cálido, azul Pacífico y arena dorada (la misma familia de las páginas de cada proyecto) */
+:root{--bg:#F5F2EC;--surface:#FFFFFF;--ink:#122130;--muted:#55636D;--line:#E2DCD1;--sea:#0E5F73;--sea-soft:#DCECEE;--sun:#D49A2E;--sun-soft:#F7ECD6;--deep:#0C2433;--good:#1E7B4F;--warn:#8A5A0B;--bad:#B4382B;--comp:#A9B3B5;--sbw:264px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A141C;--surface:#111E29;--ink:#E8EEF2;--muted:#9DB0BE;--line:#22364A;--sea:#6FBBD0;--sea-soft:#163240;--sun:#E9B44C;--sun-soft:#3A2F15}}
+::selection{background:var(--sea);color:#fff}
+/* barra lateral (computadora) */
+#vvSide{display:none}
+@media (min-width:1200px){
+  body.vv-app{padding-left:var(--sbw)}
+  body.vv-app nav.top{display:none}
+  body.vv-app section[id]{scroll-margin-top:22px}
+  body.vv-app #nubeBtn{left:calc(var(--sbw) + 14px)}
+  #vvSide{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:var(--sbw);z-index:40;background:#0C1F2C;color:#C9D6DF;border-right:1px solid #0A1822}
+  #vvSide .sb-top{padding:20px 18px 12px}
+  #vvSide .sb-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+  #vvSide .sb-brand img{height:22px}#vvSide .sb-brand span{font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#E9B44C;line-height:1.25;border-left:1px solid rgba(255,255,255,.18);padding-left:10px}
+  #vvSide .sb-search{display:flex;align-items:center;gap:10px;width:100%;margin-top:18px;min-height:42px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#AFC0CC;font:inherit;font-size:.88rem;cursor:pointer;text-align:left}
+  #vvSide .sb-search:hover{background:rgba(255,255,255,.09);color:#fff}
+  #vvSide .sb-search kbd{margin-left:auto;font:inherit;font-size:.7rem;font-weight:700;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:2px 6px;color:#C9D6DF}
+  #vvSide nav{flex:1;overflow-y:auto;padding:6px 10px 16px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+  #vvSide .sb-g{font-size:.64rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7F95A5;padding:16px 10px 6px}
+  #vvSide a{display:flex;align-items:center;gap:11px;min-height:38px;padding:0 10px;border-radius:9px;color:#C9D6DF;text-decoration:none;font-size:.9rem;font-weight:500;position:relative}
+  #vvSide a svg{width:18px;height:18px;flex:none;opacity:.8}
+  #vvSide a:hover{background:rgba(255,255,255,.06);color:#fff}
+  #vvSide a.on{background:rgba(255,255,255,.1);color:#fff;font-weight:700}
+  #vvSide a.on::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#E9B44C}
+  #vvSide a .ct{margin-left:auto;min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.1);color:#fff;font-size:.72rem;font-weight:800;display:grid;place-items:center}
+  #vvSide a .ct.hot{background:#D9573F}
+  #vvSide details summary{list-style:none;cursor:pointer}#vvSide details summary::-webkit-details-marker{display:none}
+  #vvSide details summary.sb-g{display:flex;align-items:center;justify-content:space-between}
+  #vvSide details summary.sb-g::after{content:"+";font-size:.9rem;letter-spacing:0}#vvSide details[open] summary.sb-g::after{content:"−"}
+  #vvSide .sb-foot{padding:12px 18px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:.74rem;color:#7F95A5;line-height:1.45}
+  #vvSide a:focus-visible,#vvSide .sb-search:focus-visible,#vvSide summary:focus-visible{outline:2px solid #E9B44C;outline-offset:2px}
+}
+/* buscador universal */
+#vvCmd{position:fixed;inset:0;z-index:200;background:rgba(6,14,20,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
+#vvCmd.on{display:flex;animation:cmdIn .16s ease-out}
+@keyframes cmdIn{from{opacity:0}to{opacity:1}}
+#vvCmd .box{width:min(640px,100%);background:var(--surface);color:var(--ink);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--line)}
+#vvCmd .in{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+#vvCmd .in svg{width:20px;height:20px;color:var(--muted);flex:none}
+#vvCmd input{flex:1;min-height:58px;border:0;background:none;font:inherit;font-size:17px;color:var(--ink);outline:none}
+#vvCmd .in kbd{font:inherit;font-size:.72rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+#vvCmd ul{list-style:none;margin:0;padding:8px;max-height:min(56vh,460px);overflow-y:auto}
+#vvCmd li.h{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:10px 10px 4px}
+#vvCmd li[role=option]{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;cursor:pointer}
+#vvCmd li[role=option] i{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--bg);font-style:normal;font-size:.8rem;font-weight:800;color:var(--sea);flex:none}
+#vvCmd li[role=option] b{display:block;font-size:.93rem;font-weight:600}#vvCmd li[role=option] small{display:block;font-size:.78rem;color:var(--muted)}
+#vvCmd li[role=option] em{margin-left:auto;font-style:normal;font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
+#vvCmd li[aria-selected=true]{background:var(--sea-soft)}
+#vvCmd .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:.92rem}
+#vvCmd .ft{display:flex;gap:16px;padding:10px 16px;border-top:1px solid var(--line);font-size:.74rem;color:var(--muted)}
+#vvFab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);z-index:55;width:52px;height:52px;border-radius:50%;border:0;background:#0C1F2C;color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.28);display:grid;place-items:center;cursor:pointer}
+#vvFab svg{width:22px;height:22px}
+@media (min-width:1200px){#vvFab{display:none}}
+.vv-flash{animation:vvFlash 2.2s ease-out}
+@keyframes vvFlash{0%,30%{background:var(--sun-soft);box-shadow:0 0 0 3px var(--sun)}100%{background:inherit;box-shadow:none}}
+@media (prefers-reduced-motion:reduce){#vvCmd.on,.vv-flash{animation:none}}
+@media print{#vvSide,#vvCmd,#vvFab{display:none!important}body.vv-app{padding-left:0}}
+</style>
+<script>
+/* Interfaz tipo app: barra lateral por tareas, buscador universal (Ctrl+K) y accesos rápidos. Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const N = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const go = (id, then) => { const el = document.getElementById(id); if (!el) return; el.scrollIntoView({behavior: reduce() ? "auto" : "smooth", block: "start"}); history.replaceState(null, "", "#" + id); if (then) setTimeout(then, reduce() ? 0 : 450); };
+  const I = {
+    direccion: '<path d="M4 19V9m6 10V5m6 14v-7"/><path d="M3 19h18"/>', hoy: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/>',
+    proforma: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6m-6 4h6"/>', inventario: '<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+    clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 010 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/>', visitas: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    cobranza: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>', panel: '<path d="M4 20V4m0 16h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+    plantillas: '<path d="M4 5h16v11H8l-4 4z"/>', objeciones: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.8.5-1.5 1-1.5 2M12 17h.01"/>',
+    gestion: '<path d="M12 3l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/>', conectar: '<path d="M9 7V3m6 4V3M7 7h10v4a5 5 0 01-10 0z"/><path d="M12 16v5"/>',
+    datos: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 01-4 0v-.1a1.6 1.6 0 00-2.7-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15.3H3a2 2 0 010-4h.1A1.6 1.6 0 004.6 9l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 0010 5.1V5a2 2 0 014 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00.3 1.8"/>',
+    web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>', analisis: '<path d="M4 20h16M7 16v-4m5 4V8m5 8v-6"/>'
+  };
+  const icon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k] || I.analisis}</svg>`;
+  const GROUPS = [
+    ["Gerencia", [["direccion", "Tablero de dirección"], ["hoy", "Agenda de hoy"]]],
+    ["Vender", [["proforma", "Proforma"], ["inventario", "Lotes"], ["clientes", "Mis clientes"], ["visitas", "Visitas"], ["cobranza", "Separación y cobranza"]]],
+    ["Equipo", [["panel", "Panel comercial"], ["plantillas", "Mensajes"], ["objeciones", "Objeciones"], ["gestion", "Proyectos y automatización"]]],
+    ["Análisis", [["duelo", "Cara a cara"], ["precios", "Precio por m²"], ["mapa", "Por kilómetro"], ["presupuesto", "Presupuesto"], ["financiamiento", "Financiamiento"], ["plusvalia", "Plusvalía"], ["comparativa", "Por qué Vivaldi"], ["oferta", "Ficha del proyecto"]], true],
+    ["Administración", [["conectar", "Conectar datos"], ["datos", "Precios y datos"], ["web", "Auditoría web"]]]
+  ];
+  const ACTIONS = [
+    ["Nueva proforma", "Cotizar un lote para un cliente", "proforma", () => go("proforma", () => document.getElementById("pfName")?.focus())],
+    ["Nuevo cliente", "Registrar un interesado", "clientes", () => go("clientes", () => document.getElementById("cName")?.focus())],
+    ["Importar clientes o lotes", "Excel, CSV, Google Sheets u otro sistema", "conectar", () => go("conectar")],
+    ["Presentar el tablero en pantalla", "Para la reunión de gerencia", "direccion", () => go("direccion", () => document.getElementById("dxFull")?.click())],
+    ["Enviar el resumen del mes por WhatsApp", "Al directorio o al equipo", "direccion", () => document.getElementById("dxWa")?.click()],
+    ["Registrar una visita", "Agenda y resultado", "visitas", () => go("visitas")],
+    ["Emitir constancia de separación", "Desde una proforma", "cobranza", () => go("cobranza")],
+    ["Ver lotes disponibles", "Inventario por proyecto", "inventario", () => go("inventario")]
+  ];
+
+  function build() {
+    if (document.getElementById("vvSide")) return;
+    const logo = document.querySelector("nav.top .brand img");
+    const side = document.createElement("aside"); side.id = "vvSide"; side.setAttribute("aria-label", "Navegación principal");
+    let h = `<div class="sb-top"><a class="sb-brand" href="#resumen">${logo ? `<img src="${logo.src}" alt="Vivaldi Inmobiliaria">` : "<b>Vivaldi</b>"}<span>Herramienta<br>de ventas</span></a>
+      <button type="button" class="sb-search" id="vvSearchBtn" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Buscar o ir a…<kbd>${/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"} K</kbd></button></div><nav aria-label="Secciones de la herramienta">`;
+    GROUPS.forEach(([g, items, fold]) => { const its = items.filter(([id]) => document.getElementById(id)); if (!its.length) return;
+      const links = its.map(([id, t]) => `<a href="#${id}" data-s="${id}">${icon(I[id] ? id : "analisis")}<span>${t}</span>${["hoy", "clientes", "inventario"].includes(id) ? `<span class="ct" data-ct="${id}" hidden></span>` : ""}</a>`).join("");
+      h += fold ? `<details><summary class="sb-g">${g}</summary>${links}</details>` : `<div class="sb-g">${g}</div>${links}`; });
+    side.innerHTML = h + `</nav><div class="sb-foot">Vivaldi Inmobiliaria · Diseño y desarrollo: Pedrojose Andrade Paredes</div>`;
+    document.body.prepend(side); document.body.classList.add("vv-app");
+    // la sección que se está viendo queda marcada
+    const marks = [...side.querySelectorAll("a[data-s]")], byId = Object.fromEntries(marks.map(a => [a.dataset.s, a]));
+    const all = [...document.querySelectorAll("main section[id], section[id]")].filter(s => byId[s.id] || s.id === "resumen");
+    const io = new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) return; marks.forEach(a => a.classList.toggle("on", a.dataset.s === en.target.id));
+      const a = byId[en.target.id]; if (a) { const d = a.closest("details"); if (d && !d.open) d.open = true; } }), {rootMargin: "-30% 0px -65% 0px"});
+    all.forEach(s => io.observe(s));
+    side.addEventListener("click", e => { const a = e.target.closest("a[data-s]"); if (!a) return; e.preventDefault(); go(a.dataset.s); });
+    side.querySelector("#vvSearchBtn").addEventListener("click", open);
+    counts(); setInterval(counts, 20000); document.addEventListener("vivaldi:datos", counts); addEventListener("storage", counts);
+    // botón flotante de búsqueda en celular
+    const fab = document.createElement("button"); fab.id = "vvFab"; fab.type = "button"; fab.setAttribute("aria-label", "Buscar o ir a una sección");
+    fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'; fab.addEventListener("click", open); document.body.appendChild(fab);
+  }
+  function counts() { const set = (k, n, hot) => { const el = document.querySelector(`#vvSide [data-ct="${k}"]`); if (!el) return; el.hidden = !n; el.textContent = n; el.classList.toggle("hot", !!hot); };
+    const nb = document.getElementById("hoyNb"); set("hoy", nb && !nb.hidden ? +nb.textContent || 0 : 0, true);
+    if (typeof CLIENTS !== "undefined") set("clientes", CLIENTS.filter(c => c.stage !== "Vendido" && c.stage !== "Descartado").length);
+    if (typeof INV !== "undefined") set("inventario", INV.filter(l => l.st === "Disponible").length); }
+
+  // ---------- buscador universal ----------
+  let cmd, inp, list, items = [], sel = 0, back = null;
+  function mk() { cmd = document.createElement("div"); cmd.id = "vvCmd"; cmd.setAttribute("role", "dialog"); cmd.setAttribute("aria-modal", "true"); cmd.setAttribute("aria-label", "Buscar o ir a");
+    cmd.innerHTML = `<div class="box"><div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="vvCmdIn" type="text" role="combobox" aria-expanded="true" aria-controls="vvCmdList" aria-autocomplete="list" placeholder="Busca un cliente, un lote (B-4), una sección o una acción" autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>
+      <ul id="vvCmdList" role="listbox" aria-label="Resultados"></ul><div class="ft"><span>↑ ↓ para moverte</span><span>Enter para abrir</span><span>Esc para cerrar</span></div></div>`;
+    document.body.appendChild(cmd); inp = cmd.querySelector("input"); list = cmd.querySelector("ul");
+    inp.addEventListener("input", () => { sel = 0; render(); });
+    inp.addEventListener("keydown", e => { if (e.key === "ArrowDown") { e.preventDefault(); sel = Math.min(items.length - 1, sel + 1); paint(); } else if (e.key === "ArrowUp") { e.preventDefault(); sel = Math.max(0, sel - 1); paint(); }
+      else if (e.key === "Enter") { e.preventDefault(); run(items[sel]); } else if (e.key === "Tab") e.preventDefault(); });
+    list.addEventListener("click", e => { const li = e.target.closest("li[role=option]"); if (li) run(items[+li.dataset.i]); });
+    list.addEventListener("mousemove", e => { const li = e.target.closest("li[role=option]"); if (li && +li.dataset.i !== sel) { sel = +li.dataset.i; paint(); } });
+    cmd.addEventListener("mousedown", e => { if (e.target === cmd) close(); }); }
+  function open() { if (!cmd) mk(); back = document.activeElement; cmd.classList.add("on"); inp.value = ""; sel = 0; render(); inp.focus(); document.documentElement.style.overflow = "hidden"; }
+  function close() { if (!cmd) return; cmd.classList.remove("on"); document.documentElement.style.overflow = ""; if (back && back.focus) back.focus(); }
+  const fmt = n => "S/ " + Math.round(+n || 0).toLocaleString("es-PE");
+  function index(q) { const out = [], qn = N(q).trim(), has = t => !qn || qn.split(/\s+/).every(w => N(t).includes(w));
+    const secs = []; GROUPS.forEach(([g, its]) => its.forEach(([id, t]) => { if (document.getElementById(id)) secs.push([id, t, g]); }));
+    const acts = ACTIONS.filter(a => document.getElementById(a[2]) && has(a[0] + " " + a[1]));
+    if (acts.length) out.push(["Acciones", acts.slice(0, qn ? 6 : 4).map(a => ({t: a[0], s: a[1], k: "→", f: () => { close(); a[3](); }}))]);
+    if (qn && typeof CLIENTS !== "undefined") { const qd = qn.replace(/\D/g, ""); const cl = CLIENTS.filter(c => has(`${c.name} ${c.proj} ${c.stage} ${c.adv || ""}`) || (qd.length >= 3 && String(c.phone || "").replace(/\D/g, "").includes(qd))).slice(0, 6);
+      if (cl.length) out.push(["Clientes", cl.map(c => ({t: c.name, s: `${c.proj || ""}${c.phone ? " · " + c.phone : ""}`, k: (c.name || "?").trim()[0].toUpperCase(), e: c.stage, f: () => { close(); openClient(c); }}))]); }
+    if (qn && typeof INV !== "undefined") { const m = qn.match(/^(?:mz\s*)?([a-z]{1,3})\s*[- ]?\s*(?:lt|lote)?\s*(\d{1,4})$/); const lots = INV.filter(l => m ? N(l.mz) === m[1] && String(l.lt) === m[2] : has(`lote ${l.mz}-${l.lt} ${l.mz} ${l.lt} ${l.proj} ${l.st} ${l.client || ""}`) && qn.length >= 3).slice(0, 6);
+      if (lots.length) out.push(["Lotes", lots.map(l => ({t: `Mz ${l.mz} · Lote ${l.lt}`, s: `${l.proj} · ${l.area} m² · ${fmt(l.price)}`, k: "▦", e: l.st, f: () => { close(); openLot(l); }}))]); }
+    const ss = secs.filter(([id, t, g]) => has(t + " " + g)); if (ss.length) out.push(["Ir a", ss.slice(0, qn ? 8 : 20).map(([id, t, g]) => ({t, s: g, k: "#", f: () => { close(); go(id); }}))]);
+    return out; }
+  function render() { const groups = index(inp.value); items = []; let h = "";
+    groups.forEach(([g, arr]) => { h += `<li class="h" role="presentation">${E(g)}</li>`; arr.forEach(it => { const i = items.push(it) - 1;
+      h += `<li role="option" id="vvo${i}" data-i="${i}" aria-selected="${i === sel}"><i aria-hidden="true">${E(it.k)}</i><span><b>${E(it.t)}</b><small>${E(it.s)}</small></span>${it.e ? `<em>${E(it.e)}</em>` : ""}</li>`; }); });
+    list.innerHTML = h || `<li class="empty" role="presentation">Sin resultados para «${E(inp.value)}». Prueba con un nombre, un celular o «B-4».</li>`; paint(); }
+  function paint() { list.querySelectorAll("li[role=option]").forEach(li => li.setAttribute("aria-selected", String(+li.dataset.i === sel)));
+    const cur = list.querySelector(`#vvo${sel}`); if (cur) { inp.setAttribute("aria-activedescendant", cur.id); cur.scrollIntoView({block: "nearest"}); } else inp.removeAttribute("aria-activedescendant"); }
+  const run = it => it && it.f();
+  function flash(el) { if (!el) return; el.classList.remove("vv-flash"); void el.offsetWidth; el.classList.add("vv-flash"); }
+  function openClient(c) { const s = document.getElementById("crmSearch"); go("clientes", () => { if (s) { s.value = c.name; s.dispatchEvent(new Event("input", {bubbles: true})); }
+    const it = document.querySelector(`#crmList [data-id="${CSS.escape(c.id)}"]`); if (it) { it.scrollIntoView({block: "center", behavior: reduce() ? "auto" : "smooth"}); flash(it); } }); }
+  function openLot(l) { const p = document.getElementById("invProj"); if (p && p.value !== l.proj) { p.value = l.proj; p.dispatchEvent(new Event("change", {bubbles: true})); }
+    go("inventario", () => { const tr = document.querySelector(`#invBody tr[data-id="${CSS.escape(l.id)}"]`); if (tr) { tr.scrollIntoView({block: "center", behavior: reduce() ? "auto" : "smooth"}); flash(tr); } }); }
+  addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); cmd && cmd.classList.contains("on") ? close() : open(); }
+    else if (e.key === "Escape" && cmd && cmd.classList.contains("on")) { e.preventDefault(); close(); } });
+  window.vivaldiBuscar = {open, close};
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(build, 0)); else setTimeout(build, 0);
+})();
+</script>
+<!--interfaz-end-->
