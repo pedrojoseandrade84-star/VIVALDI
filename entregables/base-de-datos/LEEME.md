@@ -184,6 +184,23 @@ La landing para extranjeros acepta celulares internacionales con su código de p
 - Separar un lote usa la función `separar_lote`: solo cambia el lote si sigue "Disponible", así dos asesores no pueden separar el mismo. El cambio queda en el historial y la herramienta lo recibe en la siguiente sincronización.
 - La constancia de separación y el registro del pago se siguen haciendo en la herramienta de ventas, que lleva la numeración.
 
+## Conector con el CRM o la base de datos de Vivaldi
+
+Si Vivaldi ya tiene sus clientes en un CRM o su inventario en una base de datos, el **conector** los trae solo, sin exportar archivos. Es la función `funciones/conector` del servidor: cada 15 minutos (o la frecuencia que se elija) lee la fuente y guarda en el sistema.
+
+- **Clientes:** se asignan al asesor que figura en el CRM (por su nombre o su código); si no figura, al asesor por defecto elegido. Si el cliente ya existe (mismo contacto del CRM o mismo celular), solo se completa lo que falta y la etapa solo avanza. Entran a «Mis clientes» de cada asesor por la sincronización normal. **No se envían mensajes de WhatsApp a los contactos importados.**
+- **Lotes:** se identifican por proyecto, manzana y lote; se actualizan precio, área, ubicación y estado. El portal Mi Vivaldi y el explorador 3D muestran al instante la disponibilidad real.
+- **Fuentes:** HubSpot, Pipedrive, Kommo, Zoho CRM, cualquier CRM o sistema con API que devuelva JSON (por ejemplo, el que usen hoy, con su documentación), PostgreSQL y MySQL (con una consulta de solo lectura).
+- **Columnas:** se reconocen solas (nombre, apellidos, teléfono, estado, vendedor, proyecto, manzana, lote, precio…, en español o inglés). La jefatura puede corregir cualquier columna antes de guardar.
+
+**Seguridad.** Las claves del CRM o de la base de datos nunca se guardan en la base ni en la herramienta: van como secretos de la función (Edge Functions → Secrets) y el conector solo guarda el nombre del secreto; la base rechaza una configuración que traiga una clave. Solo la jefatura crea, prueba y cambia conectores. Las consultas a una base de datos deben ser `SELECT` (se rechaza cualquier otra cosa) y conviene usar un usuario de **solo lectura**. La base de datos de Vivaldi debe aceptar conexiones desde internet (cifradas) para que el servidor la lea; si la empresa prefiere no abrirla, la alternativa es la API de su CRM o una hoja de Google Sheets.
+
+**Activación.**
+1. Publicar la función: `supabase functions deploy conector --no-verify-jwt`.
+2. Secretos: `CONECTOR_CLAVE` (clave larga inventada) y la de la fuente, por ejemplo `HUBSPOT_TOKEN`, `PIPEDRIVE_TOKEN`, `KOMMO_TOKEN`, `ZOHO_TOKEN` (o `ZOHO_REFRESH_TOKEN`, `ZOHO_CLIENT_ID` y `ZOHO_CLIENT_SECRET` para que se renueve sola) o `BD_VIVALDI` con la conexión (`postgres://usuario_lectura:clave@servidor:5432/base`).
+3. Ejecutar `activar-conector.sql` (programa la tarea con pg_cron).
+4. En la herramienta, con usuario de jefatura: **Conectar datos → CRM o base de datos de Vivaldi**: elegir el sistema, **Probar conexión** (muestra cuántos registros lee y cómo entendió cada columna), ajustar y **Guardar**. Desde ahí se ve cuándo sincronizó, cuántos trajo, y se puede pausar o sincronizar al momento.
+
 ## Consultar y descargar la información
 
 - En Supabase, **Table Editor → registros** muestra todos los registros; se puede filtrar por `coleccion` (clientes, proformas, separaciones, cobranza, visitas, lotes) y exportar a CSV.

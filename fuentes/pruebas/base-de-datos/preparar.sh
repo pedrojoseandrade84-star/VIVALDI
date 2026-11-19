@@ -5,4 +5,5 @@ sed 's#const BASE = {url: "", key: ""}#const BASE = {url: "http://127.0.0.1:5432
 grep -q '127.0.0.1:54321' "$D/web_db.html" || { echo "no se pudo conectar la web de prueba"; exit 1; }
 cp "$E/software/planicie-herramienta-final.html" "$D/tool_db.html"
 cp "$E/base-de-datos/funciones/enviar-whatsapp/index.ts" "$D/fn.mts"
+cp "$E/base-de-datos/funciones/conector/index.ts" "$D/conector.mts"
 echo "archivos de prueba listos"

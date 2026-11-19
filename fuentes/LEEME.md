@@ -89,3 +89,7 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - `entrega/build_demo.py <carpeta>` arma `Vivaldi-Demo-Gerencia.zip` (demostración para los gerentes, se abre con `ABRIR-AQUI.html`) y `Vivaldi-Completo-Pedrojose.zip` (todo el proyecto, uso personal).
 - `entrega/build_paquete.py <carpeta>` arma el paquete de entrega completo para Vivaldi.
 
+## Conector con el CRM o la base de datos de Vivaldi
+- `entregables/base-de-datos/funciones/conector/index.ts`: función del servidor (Supabase) que lee HubSpot, Pipedrive, Kommo, Zoho, cualquier API JSON, PostgreSQL o MySQL y guarda clientes o lotes con `conector_guardar` (sección 9 del esquema). Activación: `entregables/base-de-datos/activar-conector.sql`.
+- La pestaña «CRM o base de datos de Vivaldi» de `conectar.html` la configura (solo jefatura).
+- Pruebas: `pruebas/base-de-datos/tconector.mjs` (función, con CRM simulado y base PostgreSQL de origen) y `tconector_ui.mjs` (de punta a punta desde la herramienta).

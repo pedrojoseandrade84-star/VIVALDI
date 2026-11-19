@@ -38,7 +38,7 @@ http.createServer((req, res) => {
     if (req.headers.apikey === SKEY && tok === SKEY) uid = "service";
     const rpc = u.pathname.match(/^\/rest\/v1\/rpc\/(\w+)$/);
     if (rpc && req.method === "POST") { const b = JSON.parse(body || "{}"), fn = rpc[1];
-      const args = Object.entries(b).map(([k, v]) => `${k} => ${v === null ? "null" : typeof v === "number" || typeof v === "boolean" ? String(v) : lit(String(v))}`).join(", ");
+      const args = Object.entries(b).map(([k, v]) => `${k} => ${v === null ? "null" : typeof v === "number" || typeof v === "boolean" ? String(v) : typeof v === "object" ? lit(JSON.stringify(v)) + "::jsonb" : lit(String(v))}`).join(", ");
       const q = `select coalesce(json_agg(t), '[]') from public.${fn}(${args}) t`;
       const r = uid === "service" ? (() => { try { return {ok: true, out: execFileSync("psql", [...PG, "-c", q], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]}).trim()}; } catch (e) { return {ok: false, err: (e.stderr || "").replace(/^.*ERROR:\s*/s, "").trim()}; } })() : sql(uid, q);
       return r.ok ? send(res, 200, JSON.parse(r.out)) : send(res, 403, {message: r.err}); }

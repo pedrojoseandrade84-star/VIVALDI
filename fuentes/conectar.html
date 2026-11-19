@@ -38,6 +38,17 @@
 #conectar .cn-conns{display:grid;gap:8px;margin-top:14px}
 #conectar .cn-conn{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
 #conectar .cn-conn b{display:block;font-size:.9rem}#conectar .cn-conn small{display:block;color:var(--muted);font-size:.78rem;word-break:break-all}
+#conectar .cn-src{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}#conectar .cn-src span{padding:7px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:.84rem;font-weight:700}
+#conectar .cn-c{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface);margin-top:10px}
+#conectar .cn-c .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--sea-soft);color:var(--sea);font-weight:800;font-size:.8rem}
+#conectar .cn-c b{display:block}#conectar .cn-c small{display:block;color:var(--muted);font-size:.8rem;margin-top:2px}#conectar .cn-c small.err{color:var(--bad)}#conectar .cn-c small.okk{color:var(--good)}
+#conectar .cn-c .bt{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}#conectar .cn-c .bt .cn-b{min-height:40px;padding:0 14px;font-size:.85rem}
+#conectar .cn-ej{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--sun-soft);color:var(--ink);padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+#conectar .cn-f{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
+#conectar .cn-f label{display:grid;gap:6px;font-weight:700;font-size:.86rem}#conectar .cn-f label.w{grid-column:1/-1}
+#conectar .cn-f input,#conectar .cn-f textarea{font:inherit;font-size:16px;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}#conectar .cn-f textarea{min-height:90px;font-family:var(--f-mono,monospace);font-size:14px}
+#conectar .cn-f small{font-weight:500;color:var(--muted);font-size:.78rem}
+@media (max-width:640px){#conectar .cn-c{grid-template-columns:1fr}#conectar .cn-c .bt{justify-content:flex-start}}
 #conectar pre{background:#0B1720;color:#D7E6F2;border-radius:12px;padding:14px 16px;overflow-x:auto;font-size:.8rem;line-height:1.55;margin:10px 0 0}
 #conectar .cn-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0 0;padding:0;list-style:none;counter-reset:s}
 #conectar .cn-steps li{counter-increment:s;background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.86rem;line-height:1.45}
@@ -169,7 +180,7 @@
   const sec = document.createElement("section"); sec.id = "conectar"; sec.setAttribute("aria-labelledby", "cnT");
   sec.innerHTML = `<div class="sec-head"><div class="eyebrow">Administración · Integraciones</div><h2 id="cnT">Conectar datos</h2>
     <p class="lead">Trae lo que Vivaldi ya tiene: clientes y lotes de cualquier Excel, CSV, Google Sheets u otro sistema. La herramienta reconoce las columnas sola, te muestra cómo quedará, no duplica a nadie y puedes deshacer.</p></div>
-    <div class="cn-tabs" role="tablist" aria-label="Formas de conectar"><button type="button" role="tab" aria-selected="true" data-t="arc">Archivo Excel o CSV</button><button type="button" role="tab" aria-selected="false" data-t="gs">Google Sheets</button><button type="button" role="tab" aria-selected="false" data-t="api">Desde otro sistema</button></div>
+    <div class="cn-tabs" role="tablist" aria-label="Formas de conectar"><button type="button" role="tab" aria-selected="true" data-t="arc">Archivo Excel o CSV</button><button type="button" role="tab" aria-selected="false" data-t="gs">Google Sheets</button><button type="button" role="tab" aria-selected="false" data-t="crm">CRM o base de datos de Vivaldi</button><button type="button" role="tab" aria-selected="false" data-t="api">Formularios y otros sistemas</button></div>
     <div data-p="arc"><div class="cn-card"><label class="cn-drop" id="cnDrop" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
       <b>Arrastra aquí tu archivo o haz clic para elegirlo</b><span>Excel (.xlsx) o CSV exportado de tu CRM, de Google Sheets o de cualquier sistema</span><input type="file" id="cnFile" accept=".xlsx,.csv,.txt,.tsv" hidden></label>
       <p class="cn-note">No hace falta ordenar el archivo: se reconocen columnas como «Nombres y apellidos», «Teléfono», «Status», «Vendedor», «Mz», «Lt» o «Precio de lista», en cualquier orden.</p></div></div>
@@ -177,6 +188,7 @@
       <p class="cn-note">En la hoja: <b>Archivo → Compartir → Publicar en la Web</b>, elige la pestaña y el formato <b>CSV</b>, y pega aquí el enlace. También sirve el enlace normal si la hoja está compartida con «cualquier persona con el enlace».</p>
       <div class="cn-row" style="margin-top:12px"><label>Enlace de la hoja<input type="url" id="cnGsUrl" placeholder="https://docs.google.com/spreadsheets/d/…" inputmode="url"></label><button type="button" class="cn-b pri" id="cnGsGo">Leer la hoja</button></div>
       <div class="cn-conns" id="cnConns"></div></div></div>
+    <div data-p="crm" hidden><div id="cnCrm"></div></div>
     <div data-p="api" hidden><div class="cn-card"><h3>Que los clientes lleguen solos desde cualquier sistema</h3>
       <p class="cn-note">Formularios de Facebook e Instagram, Google Ads, TikTok, otra página web o el sistema que usen hoy pueden enviar cada interesado directo a la base de datos de Vivaldi. Entra como «Nuevo» en Mis clientes, con su origen, y recibe el mensaje de bienvenida automático.</p>
       <ol class="cn-steps"><li>En Zapier, Make o n8n crea un flujo con el disparador de tu sistema (por ejemplo, «Nuevo lead de Facebook»).</li><li>Agrega la acción <b>Webhook / HTTP POST</b> con la dirección y los encabezados de abajo.</li><li>Une los campos: nombre, celular y proyecto. Listo: cada nuevo interesado aparece en la herramienta.</li></ol>
@@ -185,7 +197,7 @@
   const before = document.getElementById("datos") || document.getElementById("web"); (before ? before.parentNode : document.querySelector("main")).insertBefore(sec, before || null);
   const $c = s => sec.querySelector(s), P = t => sec.querySelector(`[data-p="${t}"]`);
   sec.querySelector(".cn-tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (!b) return;
-    sec.querySelectorAll(".cn-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b))); ["arc", "gs", "api"].forEach(t => P(t).hidden = t !== b.dataset.t); if (b.dataset.t === "api") api(); if (b.dataset.t === "gs") listConns(); });
+    sec.querySelectorAll(".cn-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b))); ["arc", "gs", "crm", "api"].forEach(t => P(t).hidden = t !== b.dataset.t); if (b.dataset.t === "api") api(); if (b.dataset.t === "crm") crm(); if (b.dataset.t === "gs") listConns(); });
   // enlace en el menú
   const navAdd = () => { const m = document.getElementById("navMenu"); if (!m || m.querySelector('a[href="#conectar"]')) return; const a = document.createElement("a"); a.href = "#conectar"; a.innerHTML = 'Conectar datos<small>Excel, Sheets y otros sistemas</small>';
     const d = m.querySelector('a[href="#datos"]'); d ? d.before(a) : m.appendChild(a); };
@@ -264,7 +276,65 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
       <div class="cn-acts"><button type="button" class="cn-b" id="cnCopy">Copiar datos de conexión</button></div>`;
     $c("#cnCopy").onclick = () => { const t = `POST ${url}/rest/v1/solicitudes\napikey: ${key}\nAuthorization: Bearer ${key}\nContent-Type: application/json\nPrefer: return=minimal\n\n${JSON.stringify(body, null, 2)}`;
       (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => say("Datos de conexión copiados")).catch(() => { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (x) {} ta.remove(); say("Datos de conexión copiados"); }); }; }
-  window.vivaldiConectar = {parseCSV, autoMap, detect, build: st => build(st), syncConn};
+  // ---------- CRM o base de datos de Vivaldi: conector automático en el servidor ----------
+  const TIPOS = {hubspot: "HubSpot", pipedrive: "Pipedrive", kommo: "Kommo", zoho: "Zoho CRM", api: "Otro CRM o sistema con API", postgres: "Base de datos PostgreSQL", mysql: "Base de datos MySQL"};
+  const nube = () => window.vivaldiNube && window.vivaldiNube.sesion, jefe = () => (nube() || {}).rol === "jefatura";
+  const API = (path, body) => window.vivaldiNube.api(path, {method: "POST", body: JSON.stringify(body || {})});
+  const val = j => { if (Array.isArray(j) && j.length === 1) j = j[0]; if (j && typeof j === "object" && !Array.isArray(j) && Object.keys(j).length === 1) j = Object.values(j)[0]; return j; };
+  const hace = t => { if (!t) return "aún no se sincroniza"; const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "hace un momento" : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : new Date(t).toLocaleDateString("es-PE"); };
+  const ICO = {hubspot: "HS", pipedrive: "PD", kommo: "KO", zoho: "ZO", api: "API", postgres: "PG", mysql: "SQL"};
+  const fila = (c, demo) => `<div class="cn-c"><span class="ic" aria-hidden="true">${ICO[c.tipo] || "·"}</span><div><b>${E(c.nombre)}${demo ? '<span class="cn-ej">Ejemplo</span>' : ""}</b>
+    <small>${E(TIPOS[c.tipo] || c.tipo)} → ${c.coleccion === "lotes" ? "Lotes (precio y disponibilidad)" : "Mis clientes"} · cada ${c.cada_min} min${c.activo ? "" : " · <b>en pausa</b>"}</small>
+    ${c.error ? `<small class="err">Error ${E(hace(c.ultimo))}: ${E(c.error)}</small>` : `<small class="okk">${E(hace(c.ultimo))}${c.resultado ? " · " + E(c.resultado) : ""}</small>`}</div>
+    <div class="bt">${demo ? "" : `<button type="button" class="cn-b" data-cs="${c.id}">Sincronizar ahora</button><button type="button" class="cn-b" data-cp="${c.id}" data-on="${c.activo ? 1 : 0}">${c.activo ? "Pausar" : "Activar"}</button><button type="button" class="cn-b" data-cx="${c.id}">Quitar</button>`}</div></div>`;
+  const intro = `<div class="cn-card"><h3>El sistema de Vivaldi conectado, sin exportar archivos</h3><p class="cn-note">Un conector en el servidor lee cada 15 minutos el CRM o la base de datos que Vivaldi ya usa y trae los clientes (asignados a su asesor) o el inventario de lotes (precio y disponibilidad). No duplica, completa lo que falta, avanza las etapas y no envía mensajes a los contactos antiguos. El portal y el explorador 3D muestran al instante la disponibilidad real.</p>
+    <div class="cn-src" aria-label="Fuentes compatibles">${Object.values(TIPOS).map(t => `<span>${E(t)}</span>`).join("")}</div>
+    <p class="cn-note">Las claves del CRM o de la base de datos nunca se guardan en la herramienta: quedan como secretos del servidor, y la base de datos rechaza guardarlas por error. Las consultas a una base de datos solo pueden ser de lectura.</p></div>`;
+  async function crm() { const box = $c("#cnCrm");
+    if (!jefe()) { const demo = (() => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } })(), ago = m => new Date(Date.now() - m * 60000).toISOString();
+      box.innerHTML = intro + `<div class="cn-card"><h3>${demo ? "Así se ve funcionando" : "Cómo se activa"}</h3>${demo ? fila({nombre: "CRM de Vivaldi", tipo: "hubspot", coleccion: "clientes", cada_min: 15, activo: true, ultimo: ago(6), resultado: "1,240 leídos · 3 nuevos · 5 actualizados · 2.1 s"}, 1) + fila({nombre: "Inventario de Vivaldi", tipo: "postgres", coleccion: "lotes", cada_min: 15, activo: true, ultimo: ago(4), resultado: "86 leídos · 0 nuevos · 2 actualizados · 0.4 s"}, 1) : ""}
+        <ol class="cn-steps"><li>Activar la base de datos de Vivaldi y la función «conector» (ver base-de-datos/LEEME).</li><li>Guardar la clave del CRM o de la base de datos como secreto del servidor.</li><li>Entrar con un usuario de jefatura: aquí aparece el formulario para elegir el sistema, probarlo con vista previa y dejarlo sincronizando solo.</li></ol>
+        <p class="cn-note">${nube() ? "Tu usuario es de asesor: el conector lo configura la jefatura." : "Para configurarlo, entra con tu usuario de jefatura (botón «Sin conectar», abajo a la izquierda)."}</p></div>`; return; }
+    box.innerHTML = intro + `<div class="cn-card"><h3>Conectores</h3><div id="cnCL"><p class="cn-note">Cargando…</p></div></div><div class="cn-card" id="cnNew"></div>`;
+    listar(); nuevo(); }
+  async function listar() { const b = $c("#cnCL"); if (!b) return; try { const l = await API("/rest/v1/rpc/conectores_lista"); b.innerHTML = (Array.isArray(l) && l.length) ? l.map(c => fila(c)).join("") : '<p class="cn-note">Aún no hay conectores. Crea el primero abajo.</p>'; } catch (e) { b.innerHTML = `<p class="cn-note" style="color:var(--bad)">${E(e.message)}</p>`; } }
+  let CN = null;
+  async function nuevo() { const b = $c("#cnNew"); let ases = []; try { ases = await window.vivaldiNube.api("/rest/v1/perfiles?select=id,nombre,rol&activo=eq.true", {method: "GET"}); } catch (e) {}
+    b.innerHTML = `<h3>Nuevo conector</h3><div class="cn-f"><label>Sistema<select id="cnTipo">${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}">${E(v)}</option>`).join("")}</select></label>
+      <label>Qué trae<select id="cnK"><option value="clientes">Clientes</option><option value="lotes">Lotes (inventario)</option></select></label><label>Nombre<input id="cnNm" value="CRM de Vivaldi" maxlength="80"></label>
+      <label>Cada cuánto<select id="cnMin"><option>5</option><option selected>15</option><option>30</option><option>60</option></select></label>
+      <label>Asesor para los que no tengan uno<select id="cnAs">${(ases || []).map(a => `<option value="${E(a.id)}"${a.rol === "jefatura" ? " selected" : ""}>${E(a.nombre)}${a.rol === "jefatura" ? " (jefatura)" : ""}</option>`).join("")}</select></label>
+      <div id="cnTf" style="display:contents"></div></div><div class="cn-acts"><button type="button" class="cn-b pri" id="cnProbar">Probar conexión</button></div><div id="cnPr"></div>`;
+    campos(); }
+  const CAMPOS = {hubspot: [["secreto", "Nombre del secreto con el token", "HUBSPOT_TOKEN", "Token de una app privada de HubSpot (permiso de lectura de contactos)"]], pipedrive: [["secreto", "Nombre del secreto con el token", "PIPEDRIVE_TOKEN", "Token personal de la API de Pipedrive"]],
+    kommo: [["subdominio", "Subdominio de Kommo", "vivaldi", "Lo que va antes de .kommo.com"], ["secreto", "Nombre del secreto con el token", "KOMMO_TOKEN", "Token de larga duración de una integración privada"]],
+    zoho: [["objeto", "Módulo", "Leads", "Leads o Contacts"], ["dominio", "Región de Zoho", "com", "com, eu, in, com.au…"], ["secreto", "Nombre del secreto con el token", "ZOHO_TOKEN", "Con ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID y ZOHO_CLIENT_SECRET se renueva solo"]],
+    api: [["url", "Dirección de la API", "https://", "La lista de clientes o lotes en JSON", 1], ["lista", "Ruta de la lista en la respuesta", "data", "Por ejemplo data o results"], ["secreto", "Nombre del secreto con la clave", "CRM_TOKEN", "Opcional"], ["encabezado", "Encabezado de la clave", "Authorization", ""], ["prefijo", "Antes de la clave", "Bearer ", ""], ["siguiente", "Ruta de la página siguiente", "", "Opcional, por ejemplo paging.next.link"]],
+    postgres: [["secreto", "Nombre del secreto con la conexión", "BD_VIVALDI", "postgres://usuario_lectura:clave@servidor:5432/base"], ["consulta", "Consulta (solo lectura)", "select * from clientes", "Un SELECT; conviene un usuario de solo lectura", 1, 1]],
+    mysql: [["secreto", "Nombre del secreto con la conexión", "BD_VIVALDI", "mysql://usuario_lectura:clave@servidor:3306/base"], ["consulta", "Consulta (solo lectura)", "select * from lotes", "Un SELECT; conviene un usuario de solo lectura", 1, 1]]};
+  function campos() { const t = $c("#cnTipo").value; $c("#cnTf").innerHTML = CAMPOS[t].map(([k, l, ph, h, w, ta]) => `<label${w ? ' class="w"' : ""}>${E(l)}${ta ? `<textarea data-k="${k}" spellcheck="false">${E(ph)}</textarea>` : `<input data-k="${k}" value="${E(k === "secreto" || k === "encabezado" || k === "prefijo" || k === "objeto" || k === "dominio" || k === "lista" ? ph : "")}" placeholder="${E(ph)}" spellcheck="false">`}${h ? `<small>${E(h)}</small>` : ""}</label>`).join(""); $c("#cnPr").innerHTML = ""; CN = null; }
+  const cfgActual = () => { const c = {}; sec.querySelectorAll("#cnTf [data-k]").forEach(i => { if (i.value.trim()) c[i.dataset.k] = i.dataset.k === "prefijo" ? i.value.trim() + " " : i.value.trim(); }); c.asesor_defecto = $c("#cnAs").value || undefined; return c; };
+  const CF = {clientes: [["ext", "Identificador en el CRM"], ...F.clientes.map(([k, l]) => [k, l])], lotes: F.lotes.map(([k, l]) => [k, l])};
+  function verPrueba() { const r = CN.r, k = CN.k, fields = CF[k];
+    $c("#cnPr").innerHTML = `<div class="cn-ok" role="status"><span>Conexión correcta: ${r.leidos} registros leídos en la prueba.</span></div>
+      <h3 style="margin-top:16px">Cómo se entiende cada campo</h3><div class="cn-map">${fields.map(([f, l]) => `<div class="cn-col${CN.mapa[f] ? " on" : ""}"><b>${E(l)}</b><small>${CN.mapa[f] ? "desde «" + E(CN.mapa[f]) + "»" : "sin columna"}</small>
+        <select data-cm="${f}" aria-label="Columna para ${E(l)}"><option value="">—</option>${r.columnas.map(c => `<option value="${E(c)}"${CN.mapa[f] === c ? " selected" : ""}>${E(c)}</option>`).join("")}</select></div>`).join("")}</div>
+      <div class="cn-prev" tabindex="0" role="region" aria-label="Vista previa del conector"><table><thead><tr>${fields.filter(([f]) => f !== "last" && f !== "ext").map(([, l]) => `<th>${E(l)}</th>`).join("")}</tr></thead><tbody>${(r.filas || []).map(x => `<tr>${fields.filter(([f]) => f !== "last" && f !== "ext").map(([f]) => `<td>${E(x[f] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <div class="cn-acts"><button type="button" class="cn-b gold" id="cnGuardarC">Guardar y sincronizar cada ${E($c("#cnMin").value)} min</button></div>`; }
+  sec.addEventListener("change", e => { if (e.target.id === "cnTipo") campos(); if (e.target.dataset && e.target.dataset.cm && CN) { CN.mapa[e.target.dataset.cm] = e.target.value || undefined; } });
+  sec.addEventListener("click", async e => { const b = e.target.closest("button"); if (!b || !jefe()) return;
+    try {
+      if (b.id === "cnProbar") { b.disabled = true; b.textContent = "Probando…"; const k = $c("#cnK").value, cfg = cfgActual();
+        const r = await API("/functions/v1/conector", {accion: "probar", tipo: $c("#cnTipo").value, coleccion: k, config: cfg}); CN = {r, k, mapa: Object.assign({}, r.mapa)}; verPrueba(); }
+      if (b.id === "cnGuardarC") { const cfg = Object.assign(cfgActual(), {mapa: Object.fromEntries(Object.entries(CN.mapa).filter(([, v]) => v))});
+        const id = val(await API("/rest/v1/rpc/guardar_conector", {p: {nombre: $c("#cnNm").value.trim() || "Conector", tipo: $c("#cnTipo").value, coleccion: CN.k, cada_min: +$c("#cnMin").value, config: cfg}}));
+        say("Conector guardado: sincronizando por primera vez…"); await API("/functions/v1/conector", {accion: "sincronizar", id}).catch(() => {}); await listar(); nuevo(); window.vivaldiNube.sync && window.vivaldiNube.sync(); }
+      if (b.dataset.cs) { b.disabled = true; b.textContent = "Sincronizando…"; const r = await API("/functions/v1/conector", {accion: "sincronizar", id: +b.dataset.cs}); say(r.ok ? `Listo: ${r.nuevos} nuevos y ${r.actualizados} actualizados` : "Error: " + r.error); await listar(); window.vivaldiNube.sync && window.vivaldiNube.sync(); }
+      if (b.dataset.cp) { await API("/rest/v1/rpc/guardar_conector", {p: {id: +b.dataset.cp, activo: b.dataset.on !== "1"}}); listar(); }
+      if (b.dataset.cx && confirm("¿Quitar este conector? Los clientes y lotes ya traídos se quedan.")) { await API("/rest/v1/rpc/borrar_conector", {p_id: +b.dataset.cx}); listar(); }
+    } catch (err) { alert(err.message || String(err)); } finally { if (b.id === "cnProbar") { b.disabled = false; b.textContent = "Probar conexión"; } } });
+
+  window.vivaldiConectar = {parseCSV, autoMap, detect, build: st => build(st), syncConn, crm};
 })();
 </script>
 <!--conectar-end-->

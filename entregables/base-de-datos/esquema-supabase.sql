@@ -566,3 +566,135 @@ language sql stable security definer set search_path = public as $$
 $$;
 revoke execute on function public.mis_compras() from public, anon;
 grant execute on function public.mis_compras() to authenticated;
+
+-- 9. Conector: el CRM o la base de datos de Vivaldi alimentan la herramienta solos
+--    La función "conector" (funciones/conector) lee la fuente cada cierto tiempo y guarda aquí clientes y lotes, sin duplicar.
+--    Las claves de acceso NUNCA se guardan en esta tabla: van como secretos de la función (Edge Functions → Secrets).
+create table if not exists public.conectores (
+  id         bigserial primary key,
+  nombre     text not null check (char_length(nombre) between 2 and 80),
+  tipo       text not null check (tipo in ('api', 'hubspot', 'pipedrive', 'kommo', 'zoho', 'postgres', 'mysql')),
+  coleccion  text not null check (coleccion in ('clientes', 'lotes')),
+  config     jsonb not null default '{}'::jsonb check (not (config ?| array['token', 'clave', 'password', 'contrasena', 'secret_value'])),
+  activo     boolean not null default true,
+  cada_min   int not null default 15 check (cada_min between 5 and 1440),
+  ultimo     timestamptz,
+  resultado  text,
+  error      text,
+  creado     timestamptz not null default now()
+);
+alter table public.conectores enable row level security;
+drop policy if exists "jefatura conectores" on public.conectores;
+create policy "jefatura conectores" on public.conectores for all to authenticated using (public.es_jefatura()) with check (public.es_jefatura());
+
+-- a) para la herramienta (solo jefatura)
+create or replace function public.conectores_lista() returns setof public.conectores
+language sql stable security definer set search_path = public as $$
+  select * from public.conectores where public.es_jefatura() order by id
+$$;
+create or replace function public.guardar_conector(p jsonb) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare v_id bigint;
+begin
+  if not public.es_jefatura() then raise exception 'Solo la jefatura configura conectores'; end if;
+  if coalesce(p->>'id', '') ~ '^[0-9]+$' then
+    update public.conectores set nombre = coalesce(p->>'nombre', nombre), tipo = coalesce(p->>'tipo', tipo), coleccion = coalesce(p->>'coleccion', coleccion),
+      config = coalesce(p->'config', config), activo = coalesce((p->>'activo')::boolean, activo), cada_min = coalesce((p->>'cada_min')::int, cada_min)
+    where id = (p->>'id')::bigint returning id into v_id;
+  else
+    insert into public.conectores (nombre, tipo, coleccion, config, activo, cada_min)
+    values (p->>'nombre', p->>'tipo', p->>'coleccion', coalesce(p->'config', '{}'::jsonb), coalesce((p->>'activo')::boolean, true), coalesce((p->>'cada_min')::int, 15))
+    returning id into v_id;
+  end if;
+  return v_id;
+end $$;
+create or replace function public.borrar_conector(p_id bigint) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.es_jefatura() then raise exception 'Solo la jefatura configura conectores'; end if;
+  delete from public.conectores where id = p_id; return found;
+end $$;
+revoke execute on function public.conectores_lista(), public.guardar_conector(jsonb), public.borrar_conector(bigint) from public, anon;
+grant execute on function public.conectores_lista(), public.guardar_conector(jsonb), public.borrar_conector(bigint) to authenticated;
+
+-- b) para la función del servidor (solo con la clave de servicio)
+create or replace function public.conectores_pendientes(p_id bigint default null) returns setof public.conectores
+language sql stable security definer set search_path = public as $$
+  select * from public.conectores
+  where (p_id is not null and id = p_id) or (p_id is null and activo and (ultimo is null or ultimo < now() - make_interval(mins => cada_min - 1)))
+  order by id
+$$;
+create or replace function public.conector_resultado(p_id bigint, p_resultado text, p_error text) returns void
+language sql security definer set search_path = public as $$
+  update public.conectores set ultimo = now(), resultado = left(p_resultado, 300), error = left(p_error, 500) where id = p_id
+$$;
+
+-- guarda lo leído: completa a los clientes que ya existen (mismo contacto del CRM o mismo celular) y crea los nuevos;
+-- los lotes se identifican por proyecto, manzana y lote. No dispara mensajes de WhatsApp.
+create or replace function public.conector_guardar(p_id bigint, p_filas jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  c public.conectores; f jsonb; r public.registros; nuevo jsonb; k text; ext text; tel text; v_asesor uuid; v_def uuid; cid text;
+  nuevos int := 0; actualizados int := 0; omitidos int := 0;
+  rk constant jsonb := '{"Descartado":-1,"Nuevo":0,"Contactado":1,"Visita agendada":2,"Separado":3,"Vendido":4}';
+begin
+  select * into c from public.conectores where id = p_id; if not found then raise exception 'Conector % no existe', p_id; end if;
+  v_def := case when coalesce(c.config->>'asesor_defecto', '') ~ '^[0-9a-f-]{36}$' then (c.config->>'asesor_defecto')::uuid end;
+  if v_def is null or not exists (select 1 from public.perfiles where id = v_def and activo) then
+    select id into v_def from public.perfiles where rol = 'jefatura' and activo order by creado limit 1;
+  end if;
+  if v_def is null then raise exception 'No hay un usuario de jefatura activo para asignar los registros'; end if;
+  for f in select * from jsonb_array_elements(coalesce(p_filas, '[]'::jsonb)) loop
+    if c.coleccion = 'clientes' then
+      tel := right(regexp_replace(coalesce(f->>'phone', ''), '\D', '', 'g'), 9);
+      if coalesce(f->>'name', '') = '' and length(tel) < 9 then omitidos := omitidos + 1; continue; end if;
+      ext := coalesce(nullif(f->>'ext', ''), nullif(tel, ''), md5(lower(f->>'name')));
+      select * into r from public.registros x
+       where x.coleccion = 'clientes' and not x.eliminado
+         and (x.contenido->>'ext_conector' = c.id || ':' || ext or (length(tel) = 9 and right(regexp_replace(coalesce(x.contenido->>'phone', ''), '\D', '', 'g'), 9) = tel))
+       order by (x.contenido->>'ext_conector' = c.id || ':' || ext) desc nulls last limit 1;
+      if found then
+        nuevo := r.contenido;
+        foreach k in array array['phone', 'dni', 'email', 'proj', 'src', 'adv', 'next', 'budget'] loop
+          if coalesce(nuevo->>k, '') in ('', '0') and coalesce(f->>k, '') not in ('', '0') then nuevo := jsonb_set(nuevo, array[k], f->k); end if;
+        end loop;
+        if coalesce((rk->>(f->>'stage'))::int, -9) > coalesce((rk->>(nuevo->>'stage'))::int, 0) then
+          nuevo := nuevo || jsonb_build_object('stage', f->>'stage', 'stageAt', to_char(current_date, 'YYYY-MM-DD'));
+        end if;
+        nuevo := nuevo || jsonb_build_object('ext_conector', c.id || ':' || ext);
+        if nuevo <> r.contenido then update public.registros set contenido = nuevo where id = r.id; actualizados := actualizados + 1; end if;
+      else
+        select id into v_asesor from public.perfiles p where p.activo and coalesce(f->>'adv', '') <> ''
+          and (lower(p.nombre) = lower(f->>'adv') or lower(coalesce(p.codigo, '')) = lower(f->>'adv')) limit 1;
+        v_asesor := coalesce(v_asesor, v_def);
+        cid := 'crm' || c.id || '-' || left(regexp_replace(ext, '[^A-Za-z0-9_-]', '', 'g'), 60);
+        insert into public.registros (id, coleccion, asesor, contenido) values ('clientes:' || v_asesor || ':' || cid, 'clientes', v_asesor,
+          jsonb_strip_nulls(jsonb_build_object('id', cid, 'created', coalesce(nullif(f->>'created', ''), to_char(current_date, 'YYYY-MM-DD')), 'stageAt', to_char(current_date, 'YYYY-MM-DD'),
+            'ts', (extract(epoch from now()) * 1000)::bigint, 'name', coalesce(nullif(f->>'name', ''), 'Sin nombre'), 'phone', nullif(coalesce(nullif(tel, ''), f->>'phone'), ''),
+            'dni', nullif(f->>'dni', ''), 'email', nullif(f->>'email', ''), 'proj', nullif(f->>'proj', ''), 'stage', coalesce(nullif(f->>'stage', ''), 'Nuevo'),
+            'src', coalesce(nullif(f->>'src', ''), c.nombre), 'adv', nullif(f->>'adv', ''), 'next', nullif(f->>'next', ''), 'budget', f->'budget', 'notes', nullif(f->>'notes', ''),
+            'ext_conector', c.id || ':' || ext, 'hist', jsonb_build_array(jsonb_build_object('d', to_char(current_date, 'YYYY-MM-DD'), 't', 'Llegó desde ' || c.nombre)))))
+        on conflict (id) do nothing;
+        if found then nuevos := nuevos + 1; else omitidos := omitidos + 1; end if;
+      end if;
+    else
+      if coalesce(f->>'proj', '') = '' or coalesce(f->>'mz', '') = '' or coalesce(f->>'lt', '') = '' then omitidos := omitidos + 1; continue; end if;
+      select * into r from public.registros x
+       where x.coleccion = 'lotes' and not x.eliminado and x.contenido->>'proj' = f->>'proj' and upper(x.contenido->>'mz') = upper(f->>'mz') and lower(x.contenido->>'lt') = lower(f->>'lt')
+       limit 1;
+      if found then
+        nuevo := r.contenido || jsonb_strip_nulls(jsonb_build_object('area', f->'area', 'price', f->'price', 'st', f->'st', 'loc', f->'loc', 'client', f->'client'));
+        if nuevo <> r.contenido then update public.registros set contenido = nuevo where id = r.id; actualizados := actualizados + 1; end if;
+      else
+        cid := 'crm' || c.id || '-' || md5((f->>'proj') || '|' || upper(f->>'mz') || '|' || lower(f->>'lt'));
+        insert into public.registros (id, coleccion, asesor, contenido) values ('lotes:' || cid, 'lotes', v_def,
+          jsonb_strip_nulls(jsonb_build_object('id', cid, 'proj', f->>'proj', 'mz', upper(f->>'mz'), 'lt', f->>'lt', 'area', coalesce(f->'area', '0'::jsonb), 'price', coalesce(f->'price', '0'::jsonb),
+            'st', coalesce(nullif(f->>'st', ''), 'Disponible'), 'loc', coalesce(nullif(f->>'loc', ''), 'Interior'), 'client', coalesce(f->>'client', ''))))
+        on conflict (id) do nothing;
+        if found then nuevos := nuevos + 1; else omitidos := omitidos + 1; end if;
+      end if;
+    end if;
+  end loop;
+  return jsonb_build_object('nuevos', nuevos, 'actualizados', actualizados, 'omitidos', omitidos);
+end $$;
+revoke execute on function public.conectores_pendientes(bigint), public.conector_resultado(bigint, text, text), public.conector_guardar(bigint, jsonb) from public, anon, authenticated;

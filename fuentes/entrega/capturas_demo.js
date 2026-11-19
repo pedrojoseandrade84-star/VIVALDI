@@ -9,7 +9,7 @@ const SHOTS = [
   ['portal', 'web/portal.html#lotes', async p => { await p.click('#plano button >> nth=0').catch(() => {}); }, 1800],
   ['herramienta', 'software/planicie-herramienta-final.html?demo=1#direccion', async p => { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('direccion').scrollIntoView(); }); }, 3200],
   ['buscador', 'software/planicie-herramienta-final.html?demo=1', async p => { await p.keyboard.press('Control+k'); await p.keyboard.type('lu'); }, 3200],
-  ['conectar', 'software/planicie-herramienta-final.html?demo=1#conectar', async p => { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('conectar').scrollIntoView(); }); }, 3200],
+  ['conectar', 'software/planicie-herramienta-final.html?demo=1#conectar', async p => { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('conectar').scrollIntoView(); }); await p.click('#conectar [data-t="crm"]'); await p.waitForTimeout(400); await p.evaluate(() => document.querySelector('#cnCrm .cn-card:nth-child(2)').scrollIntoView({block: 'center'})); }, 3200],
   ['simulador', 'simulador/Simulador-3D-Lotes-Vivaldi.html', null, 7000]
 ];
 (async () => { const b = await chromium.launch(); const errs = [];
