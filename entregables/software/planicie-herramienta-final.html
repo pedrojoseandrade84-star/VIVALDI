@@ -3627,7 +3627,10 @@ const VIV = [
   {name:"Las Terrazas de Cerro Azul", km:117.5, m2:200, pen:25000},
   {name:"La Portada del Sol", km:115.2, m2:90, pen:37900},
   {name:"Lirios del Mar de Asia", km:100.05, m2:90, pen:60000},
+  {name:"La Esmeralda de Cerro Azul", km:null, m2:250, pen:38000, ubi:"Cerro Azul, Cañete"},
 ];
+// ubicación para documentos: kilómetro si está confirmado; si no, la zona
+const vUbi = v => v.km ? `Km ${v.km} Panamericana Sur` : (v.ubi || "Panamericana Sur");
 const STORE = "vivaldi-planicie-datos-v1";
 const clone = o => JSON.parse(JSON.stringify(o));
 let STATE;
@@ -3781,7 +3784,7 @@ const dNum = d => d.toLocaleDateString("es-PE", {day:"2-digit", month:"2-digit",
 // same day each month; a 31st falls back to the last day of shorter months
 const addMonths = (d, n) => { const r = new Date(d.getFullYear(), d.getMonth() + n, 1, 12); r.setDate(Math.min(d.getDate(), new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate())); return r; };
 const PF_VALID = 7;
-pf("Proj").innerHTML = VIV.map((v,i) => `<option value="${i}">${v.name} · km ${v.km}</option>`).join("");
+pf("Proj").innerHTML = VIV.map((v,i) => `<option value="${i}">${v.name} · ${v.km ? "km " + v.km : v.ubi}</option>`).join("");
 function pfProjSet(){ const v = VIV[+pf("Proj").value]; const live = DATA.find(d => d.name === v.name); pf("Area").value = (live?.m2 ?? v.m2); pf("Price").value = Math.round(live?.total ?? v.pen); }
 pf("Proj").addEventListener("change", () => { pfProjSet(); pfDirty(); });
 pf("Start").value = iso(addMonths(today, 1));
@@ -3879,7 +3882,7 @@ function renderPf(){
     </div>
     <div><h4>Inmueble</h4><div class="doc-lot">
       <div><span>Proyecto</span><b>${esc(c.v.name)}</b></div>
-      <div><span>Ubicación</span><b>Km ${c.v.km} Panamericana Sur</b></div>
+      <div><span>Ubicación</span><b>${esc(vUbi(c.v))}</b></div>
       <div><span>Manzana / Lote</span><b>${esc(c.lot) || "Por asignar"}</b></div>
       <div><span>Área</span><b>${c.area.toLocaleString("es-PE")} m²${c.area ? ` · ${fmt(c.net / c.area)}/m²` : ""}</b></div></div></div>
     <div><h4>Precio y forma de pago</h4><table><thead><tr><th>Concepto</th><th class="r">Importe</th></tr></thead><tbody>
@@ -3904,7 +3907,7 @@ function renderPf(){
 function pfText(){
   const c = pfCalc();
   return `*VIVALDI INMOBILIARIA*\n*Proforma N° ${c.no}*${c.name ? `\nCliente: ${c.name}` : ""}\n\n` +
-    `*LOTE*\nProyecto: ${c.v.name} (km ${c.v.km} Panamericana Sur)${c.lot ? `\nUbicación: ${c.lot}` : ""}\nÁrea: ${c.area.toLocaleString("es-PE")} m²\n\n` +
+    `*LOTE*\nProyecto: ${c.v.name} (${vUbi(c.v)})${c.lot ? `\nUbicación: ${c.lot}` : ""}\nÁrea: ${c.area.toLocaleString("es-PE")} m²\n\n` +
     `*PRECIO*\nPrecio de lista: ${fmt(c.price)}${c.disc ? `\nDescuento: - ${fmt(c.disc)}` : ""}\n*Precio final: ${fmt(c.net)}*\n\n` +
     (c.term ? `*FORMA DE PAGO*\nInicial (${c.iniP}%): ${fmt(c.down)}\n*${c.term} cuotas de ${fmt(c.q)}*${c.last !== c.q ? ` (la última de ${fmt(c.last)})` : ""}\nIntereses: S/ 0\nPrimera cuota: ${dLong(c.sched[0].d)}`
             : `*FORMA DE PAGO*\nAl contado: ${fmt(c.net)}`) +
@@ -3944,7 +3947,7 @@ async function pfImage(){
   // property
   y += 166; T("INMUEBLE", P, y, {s: 17, w: 800, col: BL}); y += 16;
   x.strokeStyle = LN; x.lineWidth = 2; x.beginPath(); x.roundRect(P, y, W - 2 * P, 104, 14); x.stroke();
-  const cols = [["PROYECTO", c.v.name], ["UBICACIÓN", `Km ${c.v.km}`], ["MZ / LOTE", c.lot || "Por asignar"], ["ÁREA", `${c.area} m²`]], cw = (W - 2 * P) / 4;
+  const cols = [["PROYECTO", c.v.name], ["UBICACIÓN", c.v.km ? `Km ${c.v.km}` : c.v.ubi], ["MZ / LOTE", c.lot || "Por asignar"], ["ÁREA", `${c.area} m²`]], cw = (W - 2 * P) / 4;
   cols.forEach(([k, v], i) => { const cx = P + i * cw + 20; if (i){ x.fillStyle = LN; x.fillRect(P + i * cw, y + 14, 2, 76); }
     T(k, cx, y + 38, {s: 16, w: 700, col: MU}); T(v, cx, y + 76, {s: i ? 24 : 22, w: 800, col: NV, max: cw - 32}); });
   // price table
@@ -4074,7 +4077,7 @@ async function xlsxProforma(c){
   const kvh = (...a) => { kv.hl = true; kv(...a); };
   const sec = t => { const row = ws.getRow(r); r += 1; ws.mergeCells(row.number, 1, row.number, 5); row.height = 24; xs(row.getCell(1), {font:{name:XL.font, size:10, bold:true, color:{argb:XL.bl}}, alignment:{vertical:"bottom"}, border:{bottom:{style:"medium", color:{argb:XL.bl}}}}).value = t; };
   sec("CLIENTE"); kv("Nombre", c.name || "—"); if (c.dni) kv("DNI / CE", c.dni); if (c.phone) kv("Celular", c.phone);
-  sec("INMUEBLE"); kv("Proyecto", c.v.name); kv("Ubicación", `Km ${c.v.km} Panamericana Sur`); kv("Manzana / Lote", c.lot || "Por asignar"); kv("Área", `${c.area} m²`);
+  sec("INMUEBLE"); kv("Proyecto", c.v.name); kv("Ubicación", vUbi(c.v)); kv("Manzana / Lote", c.lot || "Por asignar"); kv("Área", `${c.area} m²`);
   sec("PRECIO Y FORMA DE PAGO"); kv("Precio de lista", c.price, XL.money); if (c.disc) kv("Descuento", -c.disc, XL.money); kvh("Precio final", c.net, XL.money);
   if (c.term){ kv(`Cuota inicial (${c.iniP}%)`, c.down, XL.money); kv("Saldo a financiar", c.fin, XL.money); kv("Plazo", `${c.term} cuotas mensuales sin intereses`); kvh("Cuota mensual", c.q, XL.money); if (c.last !== c.q) kv("Última cuota", c.last, XL.money); kv("Intereses", 0, XL.money); }
   else kv("Forma de pago", "Al contado");
@@ -4268,7 +4271,7 @@ pf("Save").addEventListener("click", () => {
 /* ---------- WhatsApp templates ---------- */
 const TPL = [
   ["Primer contacto", c => `Hola ${c.first}, soy ${c.adv || "tu asesor"} de Vivaldi Inmobiliaria. Gracias por tu interés en ${c.proj}. Tenemos lotes de ${c.m2} m² desde ${c.price} en soles, con título independizado y financiamiento directo sin intereses. ¿Te envío la proforma o prefieres agendar una visita?`],
-  ["Confirmar visita", c => `Hola ${c.first}, te confirmo la visita guiada a ${c.proj} (km ${c.km} de la Panamericana Sur). Te comparto la ubicación y nos vemos allí. Si cambias de horario, avísame por aquí. ¡Te esperamos!`],
+  ["Confirmar visita", c => `Hola ${c.first}, te confirmo la visita guiada a ${c.proj} (${c.ubi}). Te comparto la ubicación y nos vemos allí. Si cambias de horario, avísame por aquí. ¡Te esperamos!`],
   ["Seguimiento", c => `Hola ${c.first}, ¿cómo estás? Te escribo para saber si pudiste revisar la información de ${c.proj}. Si tienes alguna duda sobre el financiamiento sin intereses o el título, con gusto te ayudo.`],
   ["Recordatorio de cuota", c => `Hola ${c.first}, te recordamos que tu cuota de ${c.proj} vence pronto. Puedes pagar en soles por transferencia; si necesitas los datos de la cuenta, me avisas. ¡Gracias por confiar en Vivaldi!`],
   ["Gracias por tu compra", c => `${c.first}, ¡bienvenido a la familia Vivaldi! Gracias por confiar en nosotros para tu lote en ${c.proj}. Cualquier consulta sobre tu contrato o tus cuotas, escríbeme por aquí.`],
@@ -4282,7 +4285,7 @@ function fillTplClients(){
 }
 function tplCtx(){
   const c = CLIENTS.find(x => x.id === $("tplClient").value), projName = c?.proj || ME.name, v = VIV.find(x => x.name === projName) || VIV[0], live = DATA.find(d => d.name === v.name);
-  return {c, first: c ? c.name.split(" ")[0] : "[Nombre]", proj: v.name, km: v.km, m2: live?.m2 ?? v.m2, price: fmt(live?.total ?? v.pen), adv: pf("Adv").value.trim()};
+  return {c, first: c ? c.name.split(" ")[0] : "[Nombre]", proj: v.name, km: v.km, ubi: vUbi(v), m2: live?.m2 ?? v.m2, price: fmt(live?.total ?? v.pen), adv: pf("Adv").value.trim()};
 }
 function renderTpl(){
   const x = tplCtx();
@@ -6121,6 +6124,276 @@ section[id]{scroll-margin-top:76px}
 })();
 </script>
 <!--gestion-end-->
+<!--conectar-start-->
+<style>
+#conectar .cn-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+#conectar .cn-tabs button{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
+#conectar .cn-tabs button[aria-selected="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+#conectar .cn-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:16px}
+#conectar .cn-card h3{margin:0 0 4px;font-size:1.08rem}#conectar .cn-note{font-size:.85rem;color:var(--muted);margin:6px 0 0;line-height:1.5}
+#conectar .cn-drop{display:grid;place-items:center;text-align:center;gap:6px;border:2px dashed var(--line);border-radius:var(--r);padding:34px 18px;background:var(--bg);cursor:pointer;transition:border-color .2s,background .2s}
+#conectar .cn-drop:hover,#conectar .cn-drop.over{border-color:var(--sea);background:var(--sea-soft)}
+#conectar .cn-drop b{font-size:1.05rem}#conectar .cn-drop span{font-size:.86rem;color:var(--muted)}
+#conectar .cn-drop svg{width:34px;height:34px;color:var(--sea)}
+#conectar .cn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+#conectar .cn-row label{display:grid;gap:6px;font-weight:700;font-size:.88rem;flex:1 1 260px}
+#conectar input[type=url],#conectar select{font:inherit;font-size:16px;min-height:46px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+#conectar .cn-b{min-height:46px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+#conectar .cn-b.pri{background:var(--deep);border-color:var(--deep);color:#fff}#conectar .cn-b.gold{background:var(--sun);border-color:var(--sun);color:#1A1306}
+#conectar .cn-b:disabled{opacity:.5;cursor:not-allowed}
+#conectar .cn-sum{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+#conectar .cn-sum span{color:var(--ink);padding:6px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:.84rem;font-weight:700}
+#conectar .cn-sum span.ok{background:var(--sea-soft);border-color:transparent}#conectar .cn-sum span.wa{background:var(--sun-soft);border-color:transparent}
+#conectar .cn-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:12px 0}
+#conectar .cn-col{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+#conectar .cn-col.on{border-color:var(--sea);background:var(--surface)}
+#conectar .cn-col b{display:block;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#conectar .cn-col small{display:block;color:var(--muted);font-size:.76rem;margin:2px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#conectar .cn-col select{width:100%;min-height:40px;font-size:14px}
+#conectar .cn-prev{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:12px}
+#conectar .cn-prev table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:620px}
+#conectar .cn-prev th{background:var(--deep);color:#fff;text-align:left;padding:8px 10px;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+#conectar .cn-prev td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}
+#conectar .cn-prev td i{font-style:normal;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:999px}
+#conectar .cn-prev td i.n{background:var(--sea-soft);color:var(--ink)}#conectar .cn-prev td i.u{background:var(--sun-soft);color:var(--ink)}#conectar .cn-prev td i.x{background:#F6D9D4;color:#7A1F14}
+#conectar .cn-type{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px}
+#conectar .cn-type button{min-height:38px;padding:0 14px;border:0;border-radius:999px;background:none;font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
+#conectar .cn-type button[aria-pressed="true"]{background:var(--deep);color:#fff}
+#conectar .cn-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+#conectar .cn-ok{background:var(--sea-soft);border-radius:12px;padding:14px 16px;margin-top:14px;font-weight:600;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#conectar .cn-conns{display:grid;gap:8px;margin-top:14px}
+#conectar .cn-conn{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+#conectar .cn-conn b{display:block;font-size:.9rem}#conectar .cn-conn small{display:block;color:var(--muted);font-size:.78rem;word-break:break-all}
+#conectar pre{background:#0B1720;color:#D7E6F2;border-radius:12px;padding:14px 16px;overflow-x:auto;font-size:.8rem;line-height:1.55;margin:10px 0 0}
+#conectar .cn-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0 0;padding:0;list-style:none;counter-reset:s}
+#conectar .cn-steps li{counter-increment:s;background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.86rem;line-height:1.45}
+#conectar .cn-steps li::before{content:counter(s);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--deep);color:#fff;font-weight:800;font-size:.8rem;margin-bottom:8px}
+@media (max-width:640px){#conectar .cn-conn{grid-template-columns:1fr}#conectar .cn-acts .cn-b{flex:1 1 100%}}
+</style>
+<script>
+/* Conectar datos: trae clientes y lotes de cualquier Excel, CSV, Google Sheets u otro sistema.
+   Reconoce las columnas solo, muestra la vista previa, no duplica y se puede deshacer. Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  if (typeof CLIENTS === "undefined" || typeof INV === "undefined") return;
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const N = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const say = t => (typeof toast === "function" ? toast(t) : alert(t));
+  const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const CK = "vivaldi-conexiones-v1";
+  const conns = () => { try { return JSON.parse(localStorage.getItem(CK) || "[]"); } catch (e) { return []; } };
+  const saveConns = a => { try { localStorage.setItem(CK, JSON.stringify(a)); } catch (e) {} };
+
+  // ---------- campos que la herramienta entiende y cómo suelen llamarse en otros sistemas ----------
+  const F = {
+    clientes: [
+      ["name", "Nombre", ["nombre", "nombres", "nombre completo", "nombres y apellidos", "cliente", "contacto", "prospecto", "lead", "full name", "name", "razon social", "interesado"]],
+      ["last", "Apellidos", ["apellido", "apellidos", "apellido paterno", "last name", "surname"]],
+      ["phone", "Celular", ["celular", "telefono", "tel", "movil", "whatsapp", "phone", "mobile", "cel", "numero", "telefono celular", "nro celular", "contacto telefonico"]],
+      ["dni", "DNI / CE", ["dni", "documento", "doc", "nro documento", "numero documento", "ce", "carnet", "ruc", "documento identidad"]],
+      ["email", "Correo", ["correo", "email", "e mail", "mail", "correo electronico"]],
+      ["proj", "Proyecto", ["proyecto", "condominio", "project", "producto", "inmueble", "proyecto interes", "interes"]],
+      ["stage", "Etapa", ["etapa", "estado", "status", "fase", "stage", "pipeline", "estado lead", "situacion"]],
+      ["src", "Origen", ["origen", "fuente", "canal", "source", "medio", "campana", "utm source", "como nos conocio", "lead source"]],
+      ["adv", "Asesor", ["asesor", "vendedor", "agente", "ejecutivo", "responsable", "owner", "asesor asignado", "ejecutivo comercial"]],
+      ["next", "Próximo contacto", ["proximo contacto", "seguimiento", "fecha seguimiento", "proxima llamada", "recordatorio", "next", "fecha proximo contacto"]],
+      ["created", "Fecha de registro", ["fecha", "fecha registro", "fecha de registro", "creado", "created", "fecha ingreso", "alta", "fecha creacion", "created at", "registro"]],
+      ["budget", "Presupuesto", ["presupuesto", "monto", "budget", "inversion", "monto estimado"]],
+      ["notes", "Notas", ["notas", "nota", "observaciones", "observacion", "comentario", "comentarios", "detalle", "mensaje"]]
+    ],
+    lotes: [
+      ["proj", "Proyecto", ["proyecto", "condominio", "project", "etapa proyecto"]],
+      ["mz", "Manzana", ["manzana", "mz", "mza", "bloque", "mz."]],
+      ["lt", "Lote", ["lote", "lt", "nro lote", "numero lote", "n lote", "unidad", "lote n"]],
+      ["area", "Área m²", ["area", "area m2", "m2", "metraje", "superficie", "tamano", "area total", "medida m2"]],
+      ["price", "Precio", ["precio", "precio lista", "precio de lista", "precio venta", "valor", "price", "precio s"]],
+      ["st", "Estado", ["estado", "status", "disponibilidad", "situacion"]],
+      ["loc", "Ubicación", ["ubicacion", "tipo", "frente", "posicion", "ubicacion lote", "vista"]],
+      ["client", "Cliente", ["cliente", "propietario", "comprador", "titular"]]
+    ]
+  };
+  const ETAPA = [[/descart|perdid|no interes|baja|lost|cancel/, "Descartado"], [/vendid|cerrad|ganad|won|compr|firm|contrato/, "Vendido"], [/separ|reserv|apart/, "Separado"],
+    [/visit|cita|agend/, "Visita agendada"], [/contact|llamad|seguim|calif|negoci|propuest|cotiz/, "Contactado"], [/nuev|lead|prospect|new|ingres|pendient|interesad/, "Nuevo"]];
+  const ESTADO = [[/vendid|sold|cerrad/, "Vendido"], [/separ|reserv|apart|hold/, "Separado"], [/bloque|no disp|retir|block/, "Bloqueado"], [/dispon|libre|avail|venta|activo/, "Disponible"]];
+  const RANK = {Nuevo: 0, Contactado: 1, "Visita agendada": 2, Separado: 3, Vendido: 4, Descartado: -1};
+  const pick = (v, T) => { const n = N(v); if (!n) return ""; const r = T.find(([re]) => re.test(n)); return r ? r[1] : ""; };
+  const digits = v => String(v ?? "").replace(/\D/g, "");
+  const phoneKey = v => { const d = digits(v); return d.length >= 9 ? d.slice(-9) : ""; };
+  const num = v => { if (typeof v === "number") return v; let s = String(v ?? "").replace(/[^\d.,-]/g, ""); if (/,\d{1,2}$/.test(s) && !/\.\d{1,2}$/.test(s)) s = s.replace(/\./g, "").replace(",", "."); else s = s.replace(/,/g, ""); return +s || 0; };
+  const fecha = v => { if (!v) return ""; if (v instanceof Date && !isNaN(v)) return v.toISOString().slice(0, 10); if (typeof v === "number" && v > 20000 && v < 80000) return new Date(Math.round((v - 25569) * 864e5)).toISOString().slice(0, 10);
+    const s = String(v).trim(); let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+    m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/); if (m) { const y = m[3].length === 2 ? "20" + m[3] : m[3]; return `${y}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`; } return ""; };
+  const projOf = v => { const n = N(v); if (!n) return ""; const strip = x => N(x).replace(/^(la|las|el|los) /, "");
+    const hit = VIV.find(p => N(p.name) === n) || VIV.find(p => n.includes(strip(p.name)) || strip(p.name).includes(n)) || VIV.find(p => strip(p.name).split(" ")[0] === n.split(" ").filter(w => !["la", "las", "el", "los"].includes(w))[0]);
+    return hit ? hit.name : ""; };
+
+  // ---------- lectura de archivos: CSV (cualquier separador y codificación) y Excel ----------
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, ""); const first = text.split(/\r?\n/).find(l => l.trim()) || "";
+    const sep = [";", "\t", ",", "|"].map(c => [c, first.split(c).length]).sort((a, b) => b[1] - a[1])[0][0];
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) { const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+      else if (ch === '"') q = true; else if (ch === sep) { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += ch; }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(c => String(c).trim())); }
+  async function readFile(f) {
+    const buf = await f.arrayBuffer();
+    if (/\.xlsx$/i.test(f.name)) { const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf);
+      const ws = wb.worksheets.find(w => w.actualRowCount > 1) || wb.worksheets[0], rows = [];
+      ws.eachRow({includeEmpty: false}, r => { const a = []; r.eachCell({includeEmpty: true}, (c, i) => { let v = c.value; if (v && typeof v === "object" && !(v instanceof Date)) v = v.result ?? v.text ?? (v.richText ? v.richText.map(x => x.text).join("") : c.text); a[i - 1] = v ?? ""; }); rows.push(Array.from(a, x => x ?? "")); });
+      return rows; }
+    if (/\.xls$/i.test(f.name)) throw new Error("El formato .xls antiguo no se puede leer: ábrelo en Excel y guárdalo como .xlsx o .csv");
+    let t = new TextDecoder("utf-8").decode(buf); if (t.includes("�")) t = new TextDecoder("windows-1252").decode(buf);
+    return parseCSV(t); }
+
+  // ---------- reconocer columnas ----------
+  function headerRow(rows) { for (let i = 0; i < Math.min(rows.length, 10); i++) { const r = rows[i]; if (r.filter(c => String(c).trim() && isNaN(+c)).length >= 2) return i; } return 0; }
+  function autoMap(heads, type) { const used = new Set(), map = heads.map(() => ""), hn = heads.map(N);
+    for (const pass of [0, 1]) F[type].forEach(([k, , syn]) => { if (used.has(k)) return;
+      const i = hn.findIndex((h, j) => !map[j] && h && (pass === 0 ? syn.includes(h) : syn.some(s => s.length > 2 && (h.startsWith(s + " ") || h.endsWith(" " + s) || h === s)))); if (i >= 0) { map[i] = k; used.add(k); } });
+    return map; }
+  const detect = heads => { const c = autoMap(heads, "clientes").filter(Boolean), l = autoMap(heads, "lotes").filter(Boolean);
+    return l.includes("mz") && l.includes("lt") ? "lotes" : c.length >= l.length ? "clientes" : "lotes"; };
+
+  // ---------- convertir filas y comparar con lo que ya hay ----------
+  function build(st) { const {rows, map, type} = st, out = [];
+    rows.forEach(r => { const g = k => { const i = map.indexOf(k); return i < 0 ? "" : r[i]; }, t = k => String(g(k) ?? "").trim();
+      if (type === "clientes") { const name = [t("name"), t("last")].filter(Boolean).join(" ").replace(/\s+/g, " "), phone = t("phone"), pk = phoneKey(phone), dni = digits(t("dni")).length >= 8 ? t("dni").toUpperCase().replace(/\s/g, "") : "";
+        const pd = digits(phone), o = {name, phone: /^9\d{8}$/.test(pd) ? pd : /^519\d{8}$/.test(pd) ? pd.slice(2) : phone, dni, email: /@/.test(t("email")) ? t("email").toLowerCase() : "", proj: projOf(t("proj")) || t("proj"), stage: pick(t("stage"), ETAPA) || "", src: t("src"), adv: t("adv"), next: fecha(g("next")), created: fecha(g("created")), budget: num(g("budget")), notes: t("notes")};
+        let why = !name && !pk ? "Sin nombre ni celular" : !name ? "Sin nombre" : "";
+        const ex = why ? null : CLIENTS.find(c => (pk && phoneKey(c.phone) === pk) || (dni && c.dni && c.dni === dni)) || null;
+        const dupIn = !why && out.some(x => x.o && x.ok && ((pk && phoneKey(x.o.phone) === pk) || (dni && x.o.dni === dni)));
+        if (dupIn) why = "Repetido en el archivo";
+        out.push({o, ok: !why, why, ex: why ? null : ex}); }
+      else { const proj = t("proj") ? projOf(t("proj")) : st.proj, mz = String(t("mz")).replace(/^(mz|manzana)\.?\s*/i, "").toUpperCase(), lt = String(t("lt")).replace(/^(lt|lote)\.?\s*/i, "");
+        const o = {proj, mz, lt, area: num(g("area")) || undefined, price: num(g("price")) || undefined, st: pick(t("st"), ESTADO) || undefined, loc: t("loc") || undefined, client: t("client") || undefined};
+        let why = !mz || !lt ? "Sin manzana o lote" : !proj ? "Proyecto no reconocido" : "";
+        const dupIn = !why && out.some(x => x.ok && x.o.proj === proj && x.o.mz === mz && N(x.o.lt) === N(lt)); if (dupIn) why = "Repetido en el archivo";
+        out.push({o, ok: !why, why, ex: why ? null : findLot(proj, mz, lt)}); } });
+    return out; }
+
+  function apply(st, list) {
+    const snap = {CLIENTS: JSON.stringify(CLIENTS), INV: JSON.stringify(INV)}; let add = 0, upd = 0;
+    list.filter(x => x.ok).forEach(({o, ex}) => {
+      if (st.type === "clientes") { const extra = [o.dni && "DNI " + o.dni, o.email].filter(Boolean).join(" · ");
+        if (ex) { let ch = 0; ["phone", "dni", "email", "proj", "src", "adv", "next", "budget"].forEach(k => { if (o[k] && !ex[k]) { ex[k] = o[k]; ch++; } });
+          if (o.stage && (RANK[o.stage] ?? 0) > (RANK[ex.stage] ?? 0)) { ex.stage = o.stage; ex.stageAt = today(); ch++; }
+          if (o.notes && !String(ex.notes || "").includes(o.notes)) { ex.notes = [ex.notes, o.notes].filter(Boolean).join("\n"); ch++; }
+          if (ch) { ex.hist = (ex.hist || []).concat([{d: today(), t: "Datos completados desde " + st.from}]).slice(-200); upd++; } }
+        else { const d = o.created || today();
+          CLIENTS.unshift({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), created: d, stageAt: d, ts: Date.parse(d + "T12:00") || Date.now(), name: o.name, phone: o.phone, dni: o.dni || undefined, email: o.email || undefined,
+            proj: o.proj || (VIV[0] || {}).name || "", stage: o.stage || "Nuevo", next: o.next || "", budget: o.budget || 0, src: o.src || st.from, adv: o.adv || undefined,
+            notes: [o.notes, extra].filter(Boolean).join("\n"), hist: [{d: today(), t: "Importado desde " + st.from}]}); add++; } }
+      else { const clean = Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)), ex2 = findLot(o.proj, o.mz, o.lt);
+        if (ex2 && Object.entries(clean).every(([k, v]) => String(ex2[k] ?? "") === String(v))) return; upsertLot(clean) ? add++ : upd++; } });
+    if (st.type === "clientes") { crmSave(); typeof renderCrm === "function" && renderCrm(); } else { invSave(); typeof renderInv === "function" && renderInv(); }
+    document.dispatchEvent(new CustomEvent("vivaldi:datos")); return {add, upd, snap}; }
+
+  // ---------- pantalla ----------
+  const sec = document.createElement("section"); sec.id = "conectar"; sec.setAttribute("aria-labelledby", "cnT");
+  sec.innerHTML = `<div class="sec-head"><div class="eyebrow">Administración · Integraciones</div><h2 id="cnT">Conectar datos</h2>
+    <p class="lead">Trae lo que Vivaldi ya tiene: clientes y lotes de cualquier Excel, CSV, Google Sheets u otro sistema. La herramienta reconoce las columnas sola, te muestra cómo quedará, no duplica a nadie y puedes deshacer.</p></div>
+    <div class="cn-tabs" role="tablist" aria-label="Formas de conectar"><button type="button" role="tab" aria-selected="true" data-t="arc">Archivo Excel o CSV</button><button type="button" role="tab" aria-selected="false" data-t="gs">Google Sheets</button><button type="button" role="tab" aria-selected="false" data-t="api">Desde otro sistema</button></div>
+    <div data-p="arc"><div class="cn-card"><label class="cn-drop" id="cnDrop" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+      <b>Arrastra aquí tu archivo o haz clic para elegirlo</b><span>Excel (.xlsx) o CSV exportado de tu CRM, de Google Sheets o de cualquier sistema</span><input type="file" id="cnFile" accept=".xlsx,.csv,.txt,.tsv" hidden></label>
+      <p class="cn-note">No hace falta ordenar el archivo: se reconocen columnas como «Nombres y apellidos», «Teléfono», «Status», «Vendedor», «Mz», «Lt» o «Precio de lista», en cualquier orden.</p></div></div>
+    <div data-p="gs" hidden><div class="cn-card"><h3>Hoja de Google Sheets que se sincroniza sola</h3>
+      <p class="cn-note">En la hoja: <b>Archivo → Compartir → Publicar en la Web</b>, elige la pestaña y el formato <b>CSV</b>, y pega aquí el enlace. También sirve el enlace normal si la hoja está compartida con «cualquier persona con el enlace».</p>
+      <div class="cn-row" style="margin-top:12px"><label>Enlace de la hoja<input type="url" id="cnGsUrl" placeholder="https://docs.google.com/spreadsheets/d/…" inputmode="url"></label><button type="button" class="cn-b pri" id="cnGsGo">Leer la hoja</button></div>
+      <div class="cn-conns" id="cnConns"></div></div></div>
+    <div data-p="api" hidden><div class="cn-card"><h3>Que los clientes lleguen solos desde cualquier sistema</h3>
+      <p class="cn-note">Formularios de Facebook e Instagram, Google Ads, TikTok, otra página web o el sistema que usen hoy pueden enviar cada interesado directo a la base de datos de Vivaldi. Entra como «Nuevo» en Mis clientes, con su origen, y recibe el mensaje de bienvenida automático.</p>
+      <ol class="cn-steps"><li>En Zapier, Make o n8n crea un flujo con el disparador de tu sistema (por ejemplo, «Nuevo lead de Facebook»).</li><li>Agrega la acción <b>Webhook / HTTP POST</b> con la dirección y los encabezados de abajo.</li><li>Une los campos: nombre, celular y proyecto. Listo: cada nuevo interesado aparece en la herramienta.</li></ol>
+      <div id="cnApi"></div></div></div>
+    <div class="cn-card" id="cnPrev" hidden></div>`;
+  const before = document.getElementById("datos") || document.getElementById("web"); (before ? before.parentNode : document.querySelector("main")).insertBefore(sec, before || null);
+  const $c = s => sec.querySelector(s), P = t => sec.querySelector(`[data-p="${t}"]`);
+  sec.querySelector(".cn-tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (!b) return;
+    sec.querySelectorAll(".cn-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b))); ["arc", "gs", "api"].forEach(t => P(t).hidden = t !== b.dataset.t); if (b.dataset.t === "api") api(); if (b.dataset.t === "gs") listConns(); });
+  // enlace en el menú
+  const navAdd = () => { const m = document.getElementById("navMenu"); if (!m || m.querySelector('a[href="#conectar"]')) return; const a = document.createElement("a"); a.href = "#conectar"; a.innerHTML = 'Conectar datos<small>Excel, Sheets y otros sistemas</small>';
+    const d = m.querySelector('a[href="#datos"]'); d ? d.before(a) : m.appendChild(a); };
+  navAdd(); setTimeout(navAdd, 0);
+
+  let ST = null, LAST = null;
+  function load(rows, from, conn) {
+    if (!rows || rows.length < 2) { say("El archivo no tiene filas con datos"); return; }
+    const h = headerRow(rows), heads = rows[h].map(x => String(x ?? "").trim()), body = rows.slice(h + 1).filter(r => r.some(c => String(c ?? "").trim()));
+    const type = detect(heads); ST = {heads, rows: body, type, map: autoMap(heads, type), from, conn, proj: (document.getElementById("invProj") || {}).value || (VIV[0] || {}).name};
+    render(); $c("#cnPrev").hidden = false; $c("#cnPrev").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"}); }
+  function render() { const st = ST, list = build(st), nOk = list.filter(x => x.ok), nNew = nOk.filter(x => !x.ex).length, nUpd = nOk.length - nNew, nBad = list.length - nOk.length;
+    const needed = st.type === "clientes" ? st.map.includes("name") || st.map.includes("phone") : st.map.includes("mz") && st.map.includes("lt");
+    const opts = F[st.type].map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
+    const cols = F[st.type].filter(([k]) => st.map.includes(k)).map(([k, l]) => [k, l]);
+    const shown = list.slice(0, 8);
+    $c("#cnPrev").innerHTML = `<div class="cn-row" style="justify-content:space-between;align-items:center"><div><h3>${E(st.from)}</h3><p class="cn-note" style="margin:2px 0 0">${st.rows.length} filas leídas · revisa cómo se entendió cada columna</p></div>
+      <div class="cn-type" role="group" aria-label="Qué contiene el archivo"><button type="button" data-ty="clientes" aria-pressed="${st.type === "clientes"}">Clientes</button><button type="button" data-ty="lotes" aria-pressed="${st.type === "lotes"}">Lotes</button></div></div>
+      ${st.type === "lotes" ? `<div class="cn-row" style="margin-top:12px"><label>Proyecto para las filas que no lo indican<select id="cnProj">${VIV.map(v => `<option${v.name === st.proj ? " selected" : ""}>${E(v.name)}</option>`).join("")}</select></label></div>` : ""}
+      <div class="cn-map">${st.heads.map((h, i) => `<div class="cn-col${st.map[i] ? " on" : ""}"><b title="${E(h)}">${E(h || "Columna " + (i + 1))}</b><small>${E(st.rows.slice(0, 3).map(r => r[i] instanceof Date ? r[i].toISOString().slice(0, 10) : r[i]).filter(v => String(v ?? "").trim()).join(" · ") || "vacía")}</small>
+        <select data-i="${i}" aria-label="Qué es la columna ${E(h || i + 1)}"><option value="">No importar</option>${opts}</select></div>`).join("")}</div>
+      <div class="cn-sum" aria-live="polite"><span class="ok">${nNew} nuevos</span><span class="wa">${nUpd} ya existen${nUpd ? " (solo se completa lo que falte)" : ""}</span>${nBad ? `<span>${nBad} se omiten</span>` : ""}</div>
+      ${needed && cols.length ? `<div class="cn-prev" tabindex="0" role="region" aria-label="Vista previa"><table><thead><tr><th>Resultado</th>${cols.map(([, l]) => `<th>${l}</th>`).join("")}</tr></thead><tbody>${shown.map(x => `<tr><td>${x.ok ? (x.ex ? '<i class="u">Completa</i>' : '<i class="n">Nuevo</i>') : `<i class="x">${E(x.why)}</i>`}</td>${cols.map(([k]) => `<td>${E(k === "name" ? x.o.name : k === "last" ? "" : k === "price" || k === "budget" ? (x.o[k] ? "S/ " + Math.round(x.o[k]).toLocaleString("es-PE") : "") : x.o[k] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>${list.length > 8 ? `<p class="cn-note">Y ${list.length - 8} filas más.</p>` : ""}`
+        : `<p class="cn-note" style="color:var(--bad)">${st.type === "clientes" ? "Indica qué columna es el nombre o el celular." : "Indica qué columnas son la manzana y el lote."}</p>`}
+      <div class="cn-acts"><button type="button" class="cn-b pri" id="cnGo"${needed && nOk.length ? "" : " disabled"}>Importar ${nOk.length} ${st.type === "clientes" ? (nOk.length === 1 ? "cliente" : "clientes") : (nOk.length === 1 ? "lote" : "lotes")}</button>
+        ${st.conn ? `<button type="button" class="cn-b" id="cnSaveConn">${conns().some(c => c.url === st.conn) ? "Actualizar conexión" : "Guardar y sincronizar sola"}</button>` : ""}<button type="button" class="cn-b" id="cnCancel">Cancelar</button></div><div id="cnRes"></div>`;
+    $c("#cnPrev").querySelectorAll("select[data-i]").forEach(s => s.value = st.map[+s.dataset.i] || ""); }
+  sec.addEventListener("change", e => { const s = e.target;
+    if (s.matches("select[data-i]")) { const i = +s.dataset.i; if (s.value) ST.map = ST.map.map((k, j) => k === s.value && j !== i ? "" : k); ST.map[i] = s.value; render(); }
+    if (s.id === "cnProj") { ST.proj = s.value; render(); }
+    if (s.id === "cnFile" && s.files[0]) { const f = s.files[0]; s.value = ""; readFile(f).then(r => load(r, f.name)).catch(err => alert("No se pudo leer el archivo: " + (err.message || "formato no reconocido"))); } });
+  sec.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.ty) { ST.type = b.dataset.ty; ST.map = autoMap(ST.heads, ST.type); render(); }
+    if (b.id === "cnCancel") { ST = null; $c("#cnPrev").hidden = true; }
+    if (b.id === "cnGo") { const r = apply(ST, build(ST)); LAST = {snap: r.snap, type: ST.type};
+      $c("#cnRes").innerHTML = `<div class="cn-ok" role="status"><span>Listo: ${r.add} ${ST.type === "clientes" ? "clientes nuevos" : "lotes nuevos"} y ${r.upd} actualizados. ${ST.type === "clientes" ? "Ya están en Mis clientes." : "Ya están en Lotes."}</span><button type="button" class="cn-b" id="cnUndo">Deshacer</button></div>`;
+      b.disabled = true; say(`Importados: ${r.add} nuevos, ${r.upd} actualizados`); }
+    if (b.id === "cnUndo" && LAST) { CLIENTS.length = 0; JSON.parse(LAST.snap.CLIENTS).forEach(x => CLIENTS.push(x)); INV.length = 0; JSON.parse(LAST.snap.INV).forEach(x => INV.push(x));
+      crmSave(); invSave(); typeof renderCrm === "function" && renderCrm(); typeof renderInv === "function" && renderInv(); LAST = null; $c("#cnRes").innerHTML = '<div class="cn-ok" role="status">Importación deshecha: todo quedó como antes.</div>'; say("Importación deshecha"); }
+    if (b.id === "cnSaveConn") { const a = conns().filter(c => c.url !== ST.conn); a.push({url: ST.conn, type: ST.type, map: ST.map, heads: ST.heads, proj: ST.proj, name: ST.from, last: Date.now()}); saveConns(a); listConns(); say("Conexión guardada: se sincroniza al abrir la herramienta y cada 10 minutos"); }
+    if (b.id === "cnGsGo") { const u = $c("#cnGsUrl").value.trim(); if (!u) return $c("#cnGsUrl").focus(); gsRead(u).then(r => load(r, "Google Sheets", u)).catch(err => alert(err.message)); }
+    if (b.dataset.sync) syncConn(conns()[+b.dataset.sync], true);
+    if (b.dataset.del) { const a = conns(); a.splice(+b.dataset.del, 1); saveConns(a); listConns(); } });
+  const drop = $c("#cnDrop");
+  drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $c("#cnFile").click(); } });
+  ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) readFile(f).then(r => load(r, f.name)).catch(err => alert("No se pudo leer el archivo: " + (err.message || "formato no reconocido"))); });
+
+  // ---------- Google Sheets ----------
+  const gsUrl = u => { const m = u.match(/docs\.google\.com\/spreadsheets\/d\/(e\/)?([\w-]+)/); if (!m) throw new Error("Ese enlace no es de una hoja de Google Sheets");
+    if (m[1] || /output=csv|format=csv/.test(u)) return u.includes("output=") || u.includes("format=") ? u : u.replace(/\/pubhtml.*$|\/pub.*$/, "/pub") + "?output=csv";
+    const gid = (u.match(/[#&?]gid=(\d+)/) || [])[1]; return `https://docs.google.com/spreadsheets/d/${m[2]}/export?format=csv${gid ? "&gid=" + gid : ""}`; };
+  async function gsRead(u) { let r; try { r = await fetch(gsUrl(u), {cache: "no-store"}); } catch (e) { throw new Error("No se pudo leer la hoja. Revisa tu conexión a internet y que la hoja esté publicada en la web como CSV."); }
+    if (!r.ok) throw new Error("La hoja no está disponible (" + r.status + "). Publícala en la web como CSV o compártela con «cualquier persona con el enlace».");
+    const t = await r.text(); if (/^\s*<!doctype|<html/i.test(t)) throw new Error("La hoja pide iniciar sesión. Publícala en la web como CSV."); return parseCSV(t); }
+  async function syncConn(c, manual) { if (!c) return; try { const rows = await gsRead(c.url), h = headerRow(rows), heads = rows[h].map(x => String(x ?? "").trim());
+      const map = heads.map(x => { const i = (c.heads || []).indexOf(x); return i >= 0 ? c.map[i] : ""; }); const st = {heads, rows: rows.slice(h + 1), type: c.type, map: map.some(Boolean) ? map : autoMap(heads, c.type), from: c.name || "Google Sheets", proj: c.proj};
+      const r = apply(st, build(st)); const a = conns(), k = a.findIndex(x => x.url === c.url); if (k >= 0) { a[k].last = Date.now(); a[k].res = `${r.add} nuevos, ${r.upd} actualizados`; saveConns(a); }
+      listConns(); if (manual || r.add) say(`Google Sheets: ${r.add} nuevos, ${r.upd} actualizados`); }
+    catch (e) { if (manual) alert(e.message); } }
+  function listConns() { const a = conns(), box = $c("#cnConns"); if (!box) return;
+    box.innerHTML = a.length ? a.map((c, i) => `<div class="cn-conn"><div><b>${c.type === "lotes" ? "Lotes" : "Clientes"} · ${E(c.name || "Google Sheets")}</b><small>${E(c.url)}</small><small>Última sincronización: ${c.last ? new Date(c.last).toLocaleString("es-PE") : "—"}${c.res ? " · " + E(c.res) : ""}</small></div><button type="button" class="cn-b" data-sync="${i}">Sincronizar ahora</button><button type="button" class="cn-b" data-del="${i}" aria-label="Quitar conexión">Quitar</button></div>`).join("") : ""; }
+  const auto = () => { if (navigator.onLine === false) return; conns().forEach(c => syncConn(c)); };
+  setTimeout(auto, 4000); setInterval(auto, 10 * 60 * 1000);
+
+  // ---------- desde otro sistema (Zapier, Make, n8n, formularios) ----------
+  function api() { let c = {}; try { c = JSON.parse(localStorage.getItem("nube-config") || "{}"); } catch (e) {} const base = window.VV_BASE || {}, url = (c.url || base.url || "https://TU-PROYECTO.supabase.co").replace(/\/$/, ""), key = c.key || base.key || "TU-CLAVE-PUBLICA";
+    const body = {nombre: "Ana Torres", celular: "987654321", proyecto: "La Planicie de Asia", origen: "Facebook", campana: "Preventa noviembre", mensaje: "Quiero información"};
+    $c("#cnApi").innerHTML = `<h3 style="margin-top:16px">Dirección y encabezados</h3><pre>POST ${E(url)}/rest/v1/solicitudes
+apikey: ${E(key)}
+Authorization: Bearer ${E(key)}
+Content-Type: application/json
+Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>${E(JSON.stringify(body, null, 2))}</pre>
+      <p class="cn-note">Obligatorios: <b>nombre</b> y <b>celular</b> (9 dígitos, empieza con 9). Opcionales: proyecto, origen, campana, mensaje, plazo, pago, visita, dni, correo y asesor_codigo (el código de su enlace de venta, para asignarlo directo). La clave pública solo permite registrar interesados: no deja leer ni cambiar datos.${c.url || base.url ? "" : " <b>Se completa con los datos reales cuando la base de datos está activa.</b>"}</p>
+      <div class="cn-acts"><button type="button" class="cn-b" id="cnCopy">Copiar datos de conexión</button></div>`;
+    $c("#cnCopy").onclick = () => { const t = `POST ${url}/rest/v1/solicitudes\napikey: ${key}\nAuthorization: Bearer ${key}\nContent-Type: application/json\nPrefer: return=minimal\n\n${JSON.stringify(body, null, 2)}`;
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => say("Datos de conexión copiados")).catch(() => { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (x) {} ta.remove(); say("Datos de conexión copiados"); }); }; }
+  window.vivaldiConectar = {parseCSV, autoMap, detect, build: st => build(st), syncConn};
+})();
+</script>
+<!--conectar-end-->
 <!--growth-demo-start-->
 <style id="demo-css">
 #demoBtn{font:inherit;font-weight:700;font-size:.82rem;border:1px solid #1F6EAB;color:#1F6EAB;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
