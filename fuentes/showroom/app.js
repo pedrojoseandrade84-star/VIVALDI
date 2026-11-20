@@ -442,7 +442,7 @@ function fotoRealista() {
   ptOn = true; vuelo = null; ctl.enabled = false; clearTimeout(tourT); tourOn = false; $('cap').classList.remove('on'); $('mira').classList.remove('on');
   document.body.classList.add('foto'); $('foto').classList.add('on'); $('fotoT').textContent = 'Preparando la escena…'; $('fotoBar').style.width = '0%'; $('bHD').setAttribute('aria-pressed', 'true');
   setTimeout(() => {
-    for (const [a, b] of PT_AGUA) scene.traverse(o => { if (o.material === a) { o.userData.mat = a; o.material = b; } });
+    scene.environment = CIELOS[luzActual].tex; for (const [a, b] of PT_AGUA) scene.traverse(o => { if (o.material === a) { o.userData.mat = a; o.material = b; } });
     scene.traverse(o => { if ((o.isLine || o.userData.rotulo || o === marca || o === destello || (o.material && o.material.isShaderMaterial && !PT_AGUA.has(o.material))) && o.visible) { o.visible = false; ocultos.push(o); } });
     if (!PT) { PT = new WebGLPathTracer(renderer); PT.renderDelay = 0; PT.minSamples = 1; PT.fadeDuration = 0; PT.bounces = 6; PT.transmissiveBounces = 6; PT.filterGlossyFactor = .5; PT.tiles.set(coarse ? 3 : 2, coarse ? 3 : 2); PT.dynamicLowRes = false; }
     PT.renderScale = Math.min(1, 1.5 / DPR); ptMeta = coarse ? 96 : 256;
@@ -450,15 +450,15 @@ function fotoRealista() {
     $('fotoT').textContent = 'Calculando la luz real…';
   }, 60);
 }
-function salirFoto() { ptOn = false; if (RTX) { rtxListo = false; } document.body.classList.remove('foto'); $('foto').classList.remove('on'); $('bHD').setAttribute('aria-pressed', 'false');
+function salirFoto() { ptOn = false; if (CIELOS[luzActual]) scene.environment = CIELOS[luzActual].env; if (RTX) { rtxListo = false; } document.body.classList.remove('foto'); $('foto').classList.remove('on'); $('bHD').setAttribute('aria-pressed', 'false');
   scene.traverse(o => { if (o.userData.mat) { o.material = o.userData.mat; delete o.userData.mat; } }); ocultos.splice(0).forEach(o => o.visible = true);
   ctl.enabled = modo === 'orbit' || modo === 'aerial'; if (modo === 'walk') $('mira').classList.add('on'); }
 let RTX = false, rtxListo = false; const camPrev = new THREE.Matrix4(); let quieto = 0;
 function rtx(on) { RTX = on; $('bRTX').setAttribute('aria-pressed', on); document.body.classList.toggle('rtx', on); rtxListo = false; quieto = 0;
   if (on) { if (!PT) { PT = new WebGLPathTracer(renderer); PT.renderDelay = 0; PT.minSamples = 1; PT.fadeDuration = 250; PT.bounces = 5; PT.transmissiveBounces = 4; PT.filterGlossyFactor = .5; PT.tiles.set(1, 1); PT.dynamicLowRes = true; PT.lowResScale = .3; }
     toast('Modo RTX: trazado de rayos en vivo. Al detener la cámara, la luz y los reflejos se calculan como en la realidad.'); } else { aguaReal(false); } }
-function aguaReal(pt) { if (pt) { for (const [a, b] of PT_AGUA) scene.traverse(o => { if (o.material === a) { o.userData.mat = a; o.material = b; } }); scene.traverse(o => { if ((o.isLine || o.userData.rotulo || o === marca || o === destello || (o.material && o.material.isShaderMaterial && !PT_AGUA.has(o.material))) && o.visible) { o.visible = false; ocultos.push(o); } }); }
-  else { scene.traverse(o => { if (o.userData.mat) { o.material = o.userData.mat; delete o.userData.mat; } }); ocultos.splice(0).forEach(o => o.visible = true); } }
+function aguaReal(pt) { if (pt) { scene.environment = CIELOS[luzActual].tex; for (const [a, b] of PT_AGUA) scene.traverse(o => { if (o.material === a) { o.userData.mat = a; o.material = b; } }); scene.traverse(o => { if ((o.isLine || o.userData.rotulo || o === marca || o === destello || (o.material && o.material.isShaderMaterial && !PT_AGUA.has(o.material))) && o.visible) { o.visible = false; ocultos.push(o); } }); }
+  else { if (CIELOS[luzActual]) scene.environment = CIELOS[luzActual].env; scene.traverse(o => { if (o.userData.mat) { o.material = o.userData.mat; delete o.userData.mat; } }); ocultos.splice(0).forEach(o => o.visible = true); } }
 $('bRTX').addEventListener('click', () => rtx(!RTX));
 $('bHD').addEventListener('click', fotoRealista); $('fotoX').addEventListener('click', salirFoto); $('fotoG').addEventListener('click', () => { ptGuardar = true; });
 
