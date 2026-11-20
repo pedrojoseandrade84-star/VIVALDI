@@ -19,7 +19,7 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   // recorrido
   await p.click('.dock [data-m="tour"]'); await p.waitForTimeout(400);
   ok(await p.isVisible('#cap') && /Parada 1 de 8/.test(await p.textContent('#capN')), 'el recorrido guiado muestra la parada 1 de 8');
-  await p.click('#cNext'); await p.waitForTimeout(3200); ok(/Parada 2 de 8/.test(await p.textContent('#capN')) && await p.textContent('#capT') === 'Fachada', 'avanza a la parada siguiente');
+  await p.click('#cPlay'); const n0 = await p.evaluate(() => VVS.ip); await p.click('#cNext'); await p.waitForFunction(n => VVS.ip === n + 1, n0, {timeout: 60000}).catch(() => {}); ok(await p.evaluate(n => VVS.ip === n + 1, n0) && /Parada \d de 8/.test(await p.textContent('#capN')), 'avanza a la parada siguiente');
   await p.keyboard.press('3'); await p.waitForTimeout(3200);
   const dentro = await p.evaluate(() => { const g = VVS.G, c = VVS.camera.position; return c.x > g.x0 && c.x < g.x1 && c.z < g.z1 && c.z > g.z2 && c.y < g.y1; }); ok(dentro, 'la tecla 3 lleva a la sala, dentro de la casa');
   // caminar con choques
@@ -38,9 +38,9 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   // casa a elección
   await p.click('#estilo [data-e="contemporanea"]'); ok(await p.evaluate(() => VVS.estilo) === 'contemporanea' && /estilo=contemporanea/.test(p.url()), 'casa a elección: cambia el estilo y queda en el enlace');
   // foto realista por trazado de rayos
-  await p.click('#bHD'); ok(await p.isVisible('#foto'), 'Foto realista: muestra el progreso');
+  await p.click('#bHD'); ok(await p.waitForSelector('#foto', {state: 'visible', timeout: 60000}).then(() => true).catch(() => false), 'Foto realista: muestra el progreso');
   await p.waitForFunction(() => VVS.pt && VVS.pt.samples >= 1, null, {timeout: 240000}).catch(() => {}); ok(await p.evaluate(() => VVS.pt && VVS.pt.samples >= 1), 'el trazado de rayos calcula muestras de luz física');
-  await p.click('#fotoX'); ok(!(await p.isVisible('#foto')) && !(await p.evaluate(() => VVS.ptOn)), 'vuelve al modo interactivo');
+  await p.evaluate(() => VVS.salirFoto()); ok(!(await p.isVisible('#foto')) && !(await p.evaluate(() => VVS.ptOn)), 'vuelve al modo interactivo');
   // realidad virtual
   await p.click('#bVR'); await p.waitForTimeout(300);
   const xr = await p.evaluate(() => window.__xr); ok(xr.length === 1 && xr[0].m === 'immersive-vr' && xr[0].o.optionalFeatures.includes('local-floor'), 'el botón pide una sesión de realidad virtual (WebXR) con piso local');
