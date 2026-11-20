@@ -2,7 +2,7 @@
 // realidad virtual (WebXR simulado: pide la sesión correcta y mueve al visitante) y accesibilidad de la interfaz.
 const {chromium} = require('playwright'); const fs = require('fs');
 const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
-const F = 'file:///home/user/VIVALDI/entregables/experiencia/showroom.html';
+const F = 'file:///home/user/VIVALDI/entregables/experiencia/showroom.html?ligero';
 const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf55e/scratchpad/npmdl/axe/package/axe.min.js';
 (async () => { const b = await chromium.launch({args: ['--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']}); const errs = [];
   const c = await b.newContext({viewport: {width: 1280, height: 800}}); await c.route(/^https?:/, r => r.abort());
@@ -35,6 +35,8 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   const e0 = await p.evaluate(() => VVS.renderer.toneMappingExposure); await p.click('#luz [data-l="noche"]'); await p.waitForTimeout(300);
   ok(await p.getAttribute('#luz [data-l="noche"]', 'aria-pressed') === 'true' && await p.evaluate(() => VVS.renderer.toneMappingExposure) > e0, 'luz de noche: cambia el cielo, la exposición y se encienden las luces');
   await p.click('#luz [data-l="tarde"]');
+  // casa a elección
+  await p.click('#estilo [data-e="contemporanea"]'); ok(await p.evaluate(() => VVS.estilo) === 'contemporanea' && /estilo=contemporanea/.test(p.url()), 'casa a elección: cambia el estilo y queda en el enlace');
   // foto realista por trazado de rayos
   await p.click('#bHD'); ok(await p.isVisible('#foto'), 'Foto realista: muestra el progreso');
   await p.waitForFunction(() => VVS.pt && VVS.pt.samples >= 1, null, {timeout: 240000}).catch(() => {}); ok(await p.evaluate(() => VVS.pt && VVS.pt.samples >= 1), 'el trazado de rayos calcula muestras de luz física');

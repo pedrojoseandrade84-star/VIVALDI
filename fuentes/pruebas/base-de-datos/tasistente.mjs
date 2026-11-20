@@ -45,6 +45,7 @@ ok(s === 200 && r.respuesta === 'En La Planicie quedan 2 lotes, desde S/ 35,000.
 ok(P0.model === 'claude-opus-5-5' && P0.betas.includes('server-side-fallback-2026-07-01') && P0.fallbacks === 'default' && P0.output_config.effort === 'low' && P0.cache_control.type === 'ephemeral' && !('tool_choice' in P0),
   'pedido: modelo Opus 5.5, reintento con otro modelo activado, esfuerzo bajo, caché y sin forzar herramientas');
 ok(P0.messages[0].role === 'user' && P0.messages.some(m => m.role === 'system' && /canal web/.test(m.content)) && /Planicie de Asia/.test(P0.system) && !/Vendido 100%/.test(JSON.stringify(P0.tools)), 'contexto: el cliente habla primero, el canal va en un mensaje de sistema y los proyectos en las instrucciones');
+ok(/idioma en que te escribe el cliente/.test(P0.system), 'bilingüe: responde en el idioma del cliente (español o inglés)');
 const P1 = PEDIDOS[1];
 ok(P1.messages.at(-2).role === 'assistant' && P1.messages.at(-2).content[0].type === 'tool_use' && P1.messages.at(-1).content[0].type === 'tool_result' && P1.messages.at(-1).content[0].tool_use_id === P1.messages.at(-2).content[0].id,
   'bucle: devuelve el resultado de la herramienta con el mismo id y la respuesta anterior sin cambios');

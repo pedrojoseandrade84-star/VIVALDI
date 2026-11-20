@@ -386,5 +386,18 @@
       ],
       "vida": "Así quedó"
     }
-  ]
+  ],
+  "precios_zona": {
+    "_nota": "Precios PEDIDOS en avisos públicos (Urbania y Adondevivir), noviembre 2026, calculados a S/ 3.36 por dólar. No son precios de venta cerrados. Revisar y actualizar cada 3 meses.",
+    "Asia": {
+      "preventa": 700,
+      "condominio": 1000,
+      "muestras": "8 avisos de lotes en Asia (km 100–112)"
+    },
+    "Cerro Azul": {
+      "preventa": 480,
+      "condominio": 845,
+      "muestras": "6 avisos de lotes en Cerro Azul (km 127–134)"
+    }
+  }
 }

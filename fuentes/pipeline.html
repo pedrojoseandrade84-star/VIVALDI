@@ -86,6 +86,17 @@
 #conversaciones .b.pri{background:var(--deep);border-color:var(--deep);color:#fff}
 #conversaciones .cv-none{padding:28px;color:var(--muted);text-align:center;font-size:.92rem;line-height:1.55}
 #conversaciones .cv-ej{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--sun-soft);padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+#pipeline .pl-seg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+#pipeline .pl-seg h3{margin:0 0 2px;font-size:1.05rem}#pipeline .pl-seg>p{margin:0 0 10px;color:var(--muted);font-size:.85rem}
+#pipeline .pl-seg ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#pipeline .pl-seg li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg)}
+#pipeline .pl-seg li b{font-size:.92rem}#pipeline .pl-seg li small{display:block;color:var(--muted);font-size:.8rem;margin-top:2px}
+#pipeline .pl-seg li .why{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#FBE9E6;color:#8A2A1B;margin-right:6px}
+#pipeline .pl-seg li .acts{display:flex;gap:6px;flex-wrap:wrap}
+#pipeline .pl-seg button{min-height:40px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:.82rem;cursor:pointer}
+#pipeline .pl-seg button.wa{background:#17733F;border-color:#17733F;color:#fff}
+#pipeline .pl-seg .ok{color:var(--muted);font-size:.88rem;margin:0}
+@media (max-width:900px){#pipeline .pl-seg li{grid-template-columns:1fr}}
 @media (max-width:900px){#pipeline .pl-kpis{grid-template-columns:1fr 1fr}#conversaciones .cv-wrap{grid-template-columns:1fr}#conversaciones .cv-list{max-height:300px}}
 @media print{#pipeline .pl-tools,#conversaciones{display:none}#pipeline .pl-board{grid-auto-flow:row;grid-template-columns:repeat(5,1fr)}}
 </style>
@@ -113,6 +124,7 @@
   sec.innerHTML = `<div class="sec-head"><div class="eyebrow">CRM · Ventas</div><h2 id="plT">Tablero de ventas</h2>
     <p class="lead">Todas las oportunidades por etapa. Arrastra una tarjeta a otra columna (o selecciónala y usa las flechas ← →) para moverla; ábrela para ver la ficha 360 del cliente.</p></div>
     <div class="pl-kpis" id="plK"></div>
+    <div class="pl-seg" id="plSeg" aria-labelledby="plSegT"></div>
     <div class="pl-tools"><label class="pl-sr" for="plQ">Buscar en el tablero</label><input id="plQ" type="search" placeholder="Buscar por nombre, celular o proyecto" autocomplete="off">
       <label class="pl-sr" for="plP">Proyecto</label><select id="plP"></select><label class="pl-sr" for="plA">Asesor</label><select id="plA"></select>
       <label class="chk"><input type="checkbox" id="plD"> Ver descartados</label></div>
@@ -129,7 +141,26 @@
     keep($p("plA"), `<option value="">Todo el equipo</option>` + ad.map(p => `<option>${E(p)}</option>`).join(""));
   }
   const convDe = c => CONV.find(v => (c.phone && tel9(v.celular) === tel9(c.phone) && tel9(c.phone).length === 9) || (v.solicitud && c.sol && +v.solicitud === +c.sol));
-  function render() {
+  // ---------- seguimiento automático: quién se está enfriando y qué escribirle ----------
+  const PLAZO = {"Nuevo": 1, "Contactado": 3, "Visita agendada": 2, "Separado": 5};
+  function motivo(c) { const t = hoy(), d = dias(c.stageAt || c.created), lim = PLAZO[c.stage];
+    if (!lim) return null; if (c.next && c.next < t) return ["Contacto atrasado", 3]; if (c.next === t) return ["Contactar hoy", 2];
+    if (d > lim * 3) return [`${d} días sin avanzar`, 1]; return null; }
+  function sugerido(c) { const n = (c.name || "").split(" ")[0], p = c.proj || "el proyecto";
+    return {"Nuevo": `Hola ${n}, soy tu asesor de Vivaldi Inmobiliaria. Vi tu interés en ${p}: ¿te envío los lotes disponibles y una cuota de ejemplo sin intereses?`,
+      "Contactado": `Hola ${n}, ¿pudiste revisar la información de ${p}? Este fin de semana tenemos visitas guiadas sin compromiso: ¿te reservo un horario?`,
+      "Visita agendada": `Hola ${n}, te confirmo tu visita a ${p}. Te comparto la ubicación por aquí; si cambias de horario, avísame. ¡Te esperamos!`,
+      "Separado": `Hola ${n}, ¿cómo estás? Te escribo para coordinar la firma de tu lote en ${p}. ¿Qué día te acomoda?`}[c.stage] || `Hola ${n}, te saluda tu asesor de Vivaldi.`; }
+  function seguimiento() { const box = $p("plSeg"); const lista = CLIENTS.filter(c => !c.demo || true).map(c => [c, motivo(c)]).filter(x => x[1]).sort((a, b) => b[1][1] - a[1][1]).slice(0, 8);
+    box.innerHTML = `<h3 id="plSegT">A quién escribir hoy</h3><p>El sistema detecta a los clientes que se están enfriando y te deja el mensaje listo según su etapa.</p>` +
+      (lista.length ? `<ul>${lista.map(([c, m]) => `<li data-id="${E(c.id)}"><div><b>${E(c.name)}</b><small><span class="why">${E(m[0])}</span>${E(c.stage)} · ${E(c.proj || "")}</small></div>
+        <div class="acts">${tel9(c.phone).length === 9 ? `<button type="button" class="wa" data-s="wa">Escribir</button>` : ""}<button type="button" data-s="ok">Hecho</button><button type="button" data-s="ver">Ficha</button></div></li>`).join("")}</ul>`
+        : `<p class="ok">Todos tus clientes están al día. 👌</p>`); }
+  sec.addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (!b) return; const c = porId(b.closest("[data-id]").dataset.id); if (!c) return; e.stopPropagation();
+    if (b.dataset.s === "wa" && typeof sendWa === "function") { sendWa(sugerido(c), c.phone); c.hist = (c.hist || []).concat([{d: new Date().toISOString(), t: "Seguimiento por WhatsApp (mensaje sugerido)"}]); }
+    if (b.dataset.s === "wa" || b.dataset.s === "ok") { const n = new Date(hoy() + "T12:00"); n.setDate(n.getDate() + (PLAZO[c.stage] || 3)); c.next = n.toISOString().slice(0, 10); if (typeof crmSave === "function") crmSave(); if (typeof renderCrm === "function") renderCrm(); else render(); say(`Próximo contacto con ${c.name.split(" ")[0]}: ${c.next}`); }
+    if (b.dataset.s === "ver") abrir360(c, b); }, true);
+  function render() { try { seguimiento(); } catch (e) {}
     opciones(); const f = filtros(), t = hoy();
     const lista = CLIENTS.filter(c => (!f.p || c.proj === f.p) && (!f.a || c.adv === f.a) && (!f.q || `${c.name} ${c.phone} ${c.proj}`.toLowerCase().includes(f.q)));
     const act = lista.filter(c => COLS.slice(0, 4).includes(c.stage)), cart = act.reduce((s, c) => s + valor(c), 0), pron = act.reduce((s, c) => s + valor(c) * prob(c.stage), 0);

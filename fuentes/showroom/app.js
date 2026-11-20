@@ -461,6 +461,19 @@ function aguaReal(pt) { if (pt) { for (const [a, b] of PT_AGUA) scene.traverse(o
 $('bRTX').addEventListener('click', () => rtx(!RTX));
 $('bHD').addEventListener('click', fotoRealista); $('fotoX').addEventListener('click', salirFoto); $('fotoG').addEventListener('click', () => { ptGuardar = true; });
 
+// ---------- tu casa a elección: estilo de fachada y acabados ----------
+const ESTILOS = {
+  mediterranea: {n: 'Mediterránea', muro: 0xffffff, revest: 0xd6b08a, alu: 0x23262a, piso: 0xffffff},
+  contemporanea: {n: 'Contemporánea', muro: 0xb9b6b0, revest: 0x5b4636, alu: 0x101113, piso: 0xd9d4cc},
+  tropical: {n: 'Tropical', muro: 0xf1e3cc, revest: 0xb78559, alu: 0x6a4a32, piso: 0xf0dcc0}};
+let estilo = ESTILOS[Q.get('estilo')] ? Q.get('estilo') : 'mediterranea';
+function aplicarEstilo(k) { estilo = k; const e = ESTILOS[k]; mat.muro.color.setHex(e.muro); mat.revest.color.setHex(e.revest); mat.alu.color.setHex(e.alu); mat.piso.color.setHex(e.piso);
+  document.querySelectorAll('#estilo button').forEach(b => b.setAttribute('aria-pressed', b.dataset.e === k)); if (PT && (ptOn || RTX)) { try { PT.updateMaterials(); } catch (x) {} } }
+$('estilo').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (!b) return; aplicarEstilo(b.dataset.e); toast(`Estilo ${ESTILOS[b.dataset.e].n}`);
+  const u = new URL(location.href); u.searchParams.set('estilo', b.dataset.e); history.replaceState(null, '', u); });
+$('miCasa').addEventListener('click', () => { const txt = `Hola Vivaldi, armé mi casa en el showroom virtual: ${P.nombre}, lote de ${P.m2} m², estilo ${ESTILOS[estilo].n}. Quiero que un asesor me cuente cómo hacerla realidad y agendar una visita. ${location.href.startsWith('http') ? location.href : ''}`.trim();
+  window.open(`https://wa.me/${DATA.empresa.whatsapp}?text=${encodeURIComponent(txt)}`, '_blank', 'noopener'); });
+
 // ---------- interfaz ----------
 function ficha() {
   $('pZona').textContent = `${P.zona}${P.km ? ' · km ' + P.km + ' Panamericana Sur' : ''}`; $('pName').textContent = P.nombre; $('pFrase').textContent = P.frase || P.lema || '';
@@ -499,10 +512,10 @@ renderer.setAnimationLoop(() => {
 (async () => {
   progreso('Cargando cielos reales…'); await cargarCielos();
   progreso('Cargando muebles 3D…'); await cargarMuebles();
-  progreso('Construyendo la casa…'); ficha(); construir(); tamano();
+  progreso('Construyendo la casa…'); ficha(); construir(); aplicarEstilo(estilo); tamano();
   const inicio = Q.get('parada');
   if (inicio) { setModo('tour'); tourPlay(false); parada(Math.max(0, +inicio - 1)); } else { camera.position.set(G.W * 1.3 + 8, 9, G.calleZ + 12); ctl.target.set(0, 2.5, (G.z1 + G.z2) / 2); camera.lookAt(ctl.target); }
   if (Q.has('foto')) fotoRealista();
   requestAnimationFrame(() => requestAnimationFrame(() => { $('load').classList.add('out'); document.body.dataset.listo = '1'; }));
 })().catch(e => { console.error(e); progreso('No se pudo iniciar el showroom en este equipo: ' + e.message); });
-window.VVS = {rtx, get RTX() { return RTX; }, CIELOS, setModo, parada, aplicarLuz, get G() { return G; }, get modo() { return modo; }, get ip() { return ip; }, renderer, camera, teleport, vrParada, dolly, get vrOk() { return vrOk; }, get pt() { return PT; }, fotoRealista, salirFoto, get ptOn() { return ptOn; }, pAO};
+window.VVS = {aplicarEstilo, get estilo() { return estilo; }, rtx, get RTX() { return RTX; }, CIELOS, setModo, parada, aplicarLuz, get G() { return G; }, get modo() { return modo; }, get ip() { return ip; }, renderer, camera, teleport, vrParada, dolly, get vrOk() { return vrOk; }, get pt() { return PT; }, fotoRealista, salirFoto, get ptOn() { return ptOn; }, pAO};

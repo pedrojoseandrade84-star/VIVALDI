@@ -11,7 +11,7 @@ for p in data['proyectos']:
     proy.append({'nombre': p['nombre'], 'zona': p.get('zona', ''), 'km': p.get('km'), 'm2': p.get('m2'), 'precio': p.get('precio'), 'estado': p.get('estado', ''),
                  'resumen': p.get('resumen', ''), 'beneficios': p.get('beneficios', []), 'etapas': p.get('etapas', []), 'pagina': SITIO + p['id'] + '.html',
                  'explorador': SITIO + 'explorar-' + p['id'] + '.html' if os.path.exists(os.path.join(ROOT, 'entregables', 'experiencia', 'explorar-' + p['id'] + '.html')) else ''})
-K = json.dumps({'empresa': emp, 'proyectos': proy}, ensure_ascii=False)
+K = json.dumps({'empresa': emp, 'proyectos': proy, 'precios_zona': data.get('precios_zona', {})}, ensure_ascii=False)
 f = os.path.join(ROOT, 'entregables', 'base-de-datos', 'funciones', 'asistente', 'index.ts'); s = open(f, encoding='utf-8').read()
 s2 = re.sub(r'/\*CONOCIMIENTO\*/.*?/\*FIN-CONOCIMIENTO\*/', lambda m: '/*CONOCIMIENTO*/' + K + '/*FIN-CONOCIMIENTO*/', s, count=1, flags=re.S)
 assert '/*CONOCIMIENTO*/' + K in s2

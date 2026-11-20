@@ -35,6 +35,10 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   await p.fill('#p3Nota', 'Pidió plano de la manzana B'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
   ok(/Pidió plano de la manzana B/.test(await p.textContent('.p360 ol')), 'la nota entra al historial');
   await p.keyboard.press('Escape'); await p.waitForTimeout(150); ok(!(await p.isVisible('.p360')) && await p.evaluate(i => document.activeElement.dataset.id === i, id), 'Escape cierra y devuelve el foco a la tarjeta');
+  // seguimiento automático
+  const seg = await p.$$eval('#plSeg li', a => a.length); ok(seg > 0 && /A quién escribir hoy/.test(await p.textContent('#plSeg')), 'seguimiento: lista a quién escribir hoy (' + seg + ')');
+  const sid = await p.$eval('#plSeg li', e => e.dataset.id); await p.click(`#plSeg li[data-id="${sid}"] [data-s="ok"]`); await p.waitForTimeout(200);
+  ok(await p.evaluate(i => { const c = CLIENTS.find(x => x.id === i); return c.next > new Date().toISOString().slice(0, 10); }, sid), '«Hecho» reprograma el próximo contacto');
   // filtros
   await p.fill('#plQ', 'zzzz-no-existe'); await p.waitForTimeout(100); ok(await p.$$eval('#plB .pl-card', a => a.length) === 0, 'la búsqueda filtra el tablero'); await p.fill('#plQ', '');
   // lista de clientes → ficha 360

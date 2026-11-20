@@ -90,6 +90,9 @@ header.top nav a:hover{border-color:#fff}
 .ets small{display:block;font-size:.85rem;font-weight:700;color:var(--mu)}.ets li.curso small{color:var(--ac)}
 .ets b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:1.65rem;line-height:1.15;margin-top:6px}.ets em{display:block;font-style:normal;color:var(--mu);font-size:.88rem;margin-top:6px}
 .shot{border-radius:4px;overflow:hidden;position:relative}.shot img{width:100%%;aspect-ratio:4/3;object-fit:cover}.shot+p{font-size:.9rem;color:var(--mu);margin:9px 0 0}
+.cmp{display:grid;gap:14px;margin-top:26px;max-width:760px}.cmp-r{display:grid;grid-template-columns:minmax(150px,1.1fr) 2fr auto;gap:14px;align-items:center;font-size:.95rem}
+.cmp-b{height:14px;border-radius:7px;background:rgba(0,0,0,.06);overflow:hidden}.cmp-b i{display:block;height:100%%;border-radius:7px}.cmp-b i.v{background:var(--ac,#1F6FAE)}.cmp-b i.z{background:#B9B1A4}
+.cmp-r b{font-variant-numeric:tabular-nums;white-space:nowrap}@media(max-width:640px){.cmp-r{grid-template-columns:1fr auto}.cmp-r .cmp-b{grid-column:1/-1;order:3}}
 .calc{display:grid;grid-template-columns:1fr 1fr;gap:40px;border-top:1px solid var(--ln);padding-top:34px;margin-top:30px}
 .calc label{display:block;font-weight:700;margin:0 0 10px}.calc input[type=range]{width:100%%;accent-color:var(--ink)}.seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{min-height:46px;padding:0 18px;border-radius:6px;border:1px solid var(--ln);background:#fff;font:inherit;font-weight:700;cursor:pointer}.seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -302,6 +305,18 @@ def landing(p):
 <label style="margin-top:28px">Plazo</label><div class="seg" id="plazo">{''.join(f'<button type="button" data-n="{m}" aria-pressed="{str(m == 36).lower()}">{m} meses</button>' for m in (12, 24, 36))}</div></div>
 <div class="res" aria-live="polite"><p>Tu cuota mensual</p><b id="cuotaV">—</b><div class="row"><span>Precio del lote</span><span>{soles(price)}</span></div><div class="row"><span>Inicial</span><span id="iniS">—</span></div><div class="row"><span>Intereses</span><span>S/ 0</span></div>
 <button class="btn b-deep" type="button" id="quiero" style="margin-top:20px;width:100%">Quiero esta cuota</button></div></div><p style="font-size:.85rem;color:var(--mu);margin-top:14px">*Cuota referencial. El plan final lo confirma tu asesor.</p></div></section>'''
+    # comparador honesto: precio por m² de Vivaldi frente a lo que piden por lotes en la misma zona (avisos públicos)
+    zp = (DATA.get('precios_zona') or {}).get(p.get('zona') or '')
+    comp = ''
+    if zp and price and p.get('m2') and not sold:
+        pm = price / p['m2']; ref = zp['preventa']; cond = zp['condominio']
+        if pm <= ref * .85:
+            veces = ref / pm; ahorro = (ref - pm) * p['m2']
+            barra = lambda v, t, cls: f'<div class="cmp-r"><span>{t}</span><div class="cmp-b"><i class="{cls}" style="width:{min(100, v / cond * 100):.1f}%"></i></div><b>{soles(v)}/m²</b></div>'
+            comp = f'''<section class="sec" id="comparar"><div class="wrap reveal"><h2>Tu m² cuesta {veces:.1f} veces menos</h2>
+<p class="lead">En {E(p['nombre'])} el m² sale a {soles(pm)}. Por lotes en preventa o tierra adentro en {E(p['zona'])} se piden alrededor de {soles(ref)} por m²: en un lote de {p['m2']} m² son unos <b>{soles(ahorro)}</b> de diferencia.</p>
+<div class="cmp">{barra(pm, E(p['nombre']), 'v')}{barra(ref, 'Lotes en preventa en ' + E(p['zona']), 'z')}{barra(cond, 'Condominios de playa en ' + E(p['zona']), 'z')}</div>
+<p style="font-size:.82rem;color:var(--mu);margin-top:14px">Referencial: mediana de precios pedidos en avisos públicos de Urbania y Adondevivir ({E(zp['muestras'])}), noviembre 2026. No son precios de venta cerrados; cada lote es distinto en ubicación y servicios.</p></div></section>'''
     form = f'''<section class="sec contact" id="contacto"><div class="wrap g2"><div class="reveal">
 <h2>{'Ven a conocerlo un fin de semana' if not sold else '¿Quieres el próximo proyecto?'}</h2>
 <p class="lead">{'Elige un día, deja tus datos y un asesor te confirma la hora por WhatsApp. La visita es guiada y sin compromiso.' if not sold else 'Zafiro ya se entregó a sus propietarios. Déjanos tus datos y te avisamos del próximo proyecto, o mira los que están en venta.'}</p>
@@ -349,7 +364,7 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
 <div class="inc reveal"><p class="lbl">{'Incluye' if not sold else 'Tiene'}</p><ul>{inc}</ul>{'' if sold else '<p style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn b-deep" href="/portal.html?p=' + p['id'] + '#lotes" data-portal="?p=' + p['id'] + '#lotes">Ver qué lotes quedan</a>' + ('<a class="btn" style="box-shadow:inset 0 0 0 1px #CFC7B8" href="/proyectos/explorar-' + p['id'] + '.html" data-local="../experiencia/explorar-' + p['id'] + '.html">Elige tu lote en 3D</a>' if p['id'] in RECORRIDOS else '') + ('<a class="btn" style="box-shadow:inset 0 0 0 1px #CFC7B8" href="/proyectos/showroom.html?proyecto=' + p['id'] + '" data-local="../experiencia/showroom.html?proyecto=' + p['id'] + '">Recorre la casa modelo · VR</a>' if p.get('m2') in (90, 200, 250) else '') + '</p>'}</div></div></section>
 <section class="sec" id="fotos" style="padding-top:0"><div class="wrap reveal"><h2>{E(p['vida'])}</h2><div class="gal">{gal}</div></div></section>
 <section class="sec" id="etapas" style="background:var(--bg)"><div class="wrap reveal"><h2>{'En qué etapa está' if not sold else 'Cómo se hizo'}</h2><p class="lead">{'Cada etapa con su estado de hoy. Las fechas te las confirma tu asesor.' if not sold else 'Todas las etapas están terminadas.'}</p><ol class="ets" style="--n:{n}">{ets}</ol></div></section>
-{ubic}{tst}{calc}{faq}{form}
+{ubic}{tst}{comp}{calc}{faq}{form}
 <section class="sec" id="otros" style="background:var(--bg)"><div class="wrap reveal"><h2>Otros proyectos de Vivaldi</h2><div class="others">{oth}</div></div></section></main>
 <div class="lb" role="dialog" aria-modal="true" aria-label="Galería de fotos"><button type="button" class="lx" aria-label="Cerrar">×</button><button type="button" class="la lp" aria-label="Foto anterior">‹</button><figure><img alt=""><figcaption><span class="lc"></span><span class="ln"></span></figcaption></figure><button type="button" class="la lnx" aria-label="Foto siguiente">›</button></div>
 {foot('<nav class="sticky" aria-label="Contacto rápido"><a class="btn b-wa" href="' + wa('Hola, me interesa ' + p['nombre']) + '" data-wa>WhatsApp</a><a class="btn b-deep" href="#contacto">' + ('Agendar visita' if not sold else 'Contacto') + '</a></nav>')}

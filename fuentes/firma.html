@@ -1,0 +1,45 @@
+<!--firma-start-->
+<style>
+.fm-bk{position:fixed;inset:0;z-index:98;background:rgba(6,25,40,.55);display:none;align-items:center;justify-content:center;padding:16px}.fm-bk.on{display:flex}
+.fm{background:var(--surface,#fff);color:var(--ink,#0B2236);border-radius:18px;max-width:620px;width:100%;padding:20px 22px;box-shadow:0 30px 70px rgba(0,0,0,.3)}
+.fm h3{margin:0 0 4px;font-size:1.2rem}.fm p{margin:0 0 12px;color:var(--muted,#4E6478);font-size:.88rem;line-height:1.5}
+.fm canvas{display:block;width:100%;height:220px;border:1.5px dashed var(--line,#CBD5DD);border-radius:14px;background:#fff;touch-action:none;cursor:crosshair}
+.fm .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.firma-cli{margin-top:18px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}.firma-cli img{height:70px;max-width:260px;border-bottom:1px solid #333}.firma-cli small{color:#555;font-size:.75rem;line-height:1.4}
+</style>
+<script id="firma-js">
+/* Firma digital de la constancia de separación: el cliente firma con el dedo en el celular o la tablet del asesor.
+   La firma queda en la constancia (PDF) con fecha y hora. Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  const doc = document.getElementById("sepDoc"), acts = document.querySelector("#sepPrint") && document.querySelector("#sepPrint").parentNode; if (!doc || !acts) return;
+  const KEY = "vivaldi-firmas-v1", leer = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } };
+  const guardar = o => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
+  const clave = () => (document.getElementById("sepPf") || {}).value || "";
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "btn ghost"; btn.id = "sepFirma"; btn.textContent = "Firma del cliente"; acts.insertBefore(btn, acts.children[1] || null);
+  const bk = document.createElement("div"); bk.className = "fm-bk"; bk.innerHTML = `<div class="fm" role="dialog" aria-modal="true" aria-labelledby="fmT"><h3 id="fmT">Firma del cliente</h3>
+    <p>Pide al cliente que firme con el dedo dentro del recuadro. La firma queda en la constancia con la fecha y la hora.</p><canvas id="fmC" aria-label="Recuadro para firmar"></canvas>
+    <div class="acts"><button class="btn pri" type="button" id="fmOk">Guardar firma</button><button class="btn ghost" type="button" id="fmBorrar">Borrar</button><button class="btn ghost" type="button" id="fmX">Cancelar</button></div></div>`;
+  document.body.appendChild(bk);
+  const cv = bk.querySelector("#fmC"); let ctx, trazo = false, hay = false, ult = null;
+  function preparar() { const r = cv.getBoundingClientRect(), k = Math.min(3, devicePixelRatio || 1); cv.width = r.width * k; cv.height = r.height * k; ctx = cv.getContext("2d"); ctx.scale(k, k);
+    ctx.lineCap = ctx.lineJoin = "round"; ctx.strokeStyle = "#0B2236"; ctx.lineWidth = 2.4; hay = false; }
+  const pt = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener("pointerdown", e => { trazo = true; ult = pt(e); cv.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.arc(ult[0], ult[1], 1.1, 0, 7); ctx.fillStyle = "#0B2236"; ctx.fill(); hay = true; });
+  cv.addEventListener("pointermove", e => { if (!trazo) return; const p = pt(e), m = [(ult[0] + p[0]) / 2, (ult[1] + p[1]) / 2]; ctx.beginPath(); ctx.moveTo(ult[0], ult[1]); ctx.quadraticCurveTo(ult[0], ult[1], m[0], m[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); ult = p; hay = true; });
+  addEventListener("pointerup", () => { trazo = false; });
+  const abrir = () => { if (!clave()) { (typeof toast === "function" ? toast : alert)("Primero elige la proforma"); return; } bk.classList.add("on"); preparar(); bk.querySelector("#fmOk").focus(); };
+  const cerrar = () => { bk.classList.remove("on"); btn.focus(); };
+  btn.addEventListener("click", abrir); bk.querySelector("#fmX").addEventListener("click", cerrar); bk.querySelector("#fmBorrar").addEventListener("click", preparar);
+  bk.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+  bk.querySelector("#fmOk").addEventListener("click", () => { if (!hay) { (typeof toast === "function" ? toast : alert)("Falta la firma"); return; }
+    const o = leer(); o[clave()] = {img: cv.toDataURL("image/png"), at: new Date().toISOString()}; guardar(o); cerrar(); poner(); (typeof toast === "function" ? toast : alert)("Firma guardada en la constancia"); });
+  function poner() { const f = leer()[clave()], ya = doc.querySelector(".firma-cli"); if (ya) ya.remove(); if (!f) { btn.textContent = "Firma del cliente"; return; }
+    const d = new Date(f.at), el = document.createElement("div"); el.className = "firma-cli";
+    el.innerHTML = `<img src="${f.img}" alt="Firma del cliente"><small>Firma del cliente<br>Firmado digitalmente el ${d.toLocaleDateString("es-PE", {day: "numeric", month: "long", year: "numeric"})} a las ${d.toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"})}</small>`;
+    doc.appendChild(el); btn.textContent = "Volver a firmar"; }
+  new MutationObserver(() => { if (!doc.querySelector(".firma-cli") && leer()[clave()]) poner(); }).observe(doc, {childList: true});
+  document.getElementById("sepPf") && document.getElementById("sepPf").addEventListener("change", () => setTimeout(poner, 0)); setTimeout(poner, 0);
+  window.vvFirma = {abrir, poner};
+})();
+</script>
+<!--firma-end-->
