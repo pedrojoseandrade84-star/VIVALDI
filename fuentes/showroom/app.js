@@ -475,6 +475,21 @@ $('estilo').addEventListener('click', e => { const b = e.target.closest('[data-e
 $('miCasa').addEventListener('click', () => { const txt = `Hola Vivaldi, armé mi casa en el showroom virtual: ${P.nombre}, lote de ${P.m2} m², estilo ${ESTILOS[estilo].n}. Quiero que un asesor me cuente cómo hacerla realidad y agendar una visita. ${location.href.startsWith('http') ? location.href : ''}`.trim();
   window.open(`https://wa.me/${DATA.empresa.whatsapp}?text=${encodeURIComponent(txt)}`, '_blank', 'noopener'); });
 
+// ---------- video del recorrido para redes (graba la pantalla del showroom) ----------
+let grab = null;
+function grabarVideo() {
+  if (grab) { grab.rec.stop(); return; }
+  if (!canvas.captureStream || typeof MediaRecorder === 'undefined') { toast('Este navegador no puede grabar video; prueba con Chrome o Edge'); return; }
+  const tipo = ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  const rec = new MediaRecorder(canvas.captureStream(30), tipo ? {mimeType: tipo, videoBitsPerSecond: 12e6} : {}); const partes = [];
+  rec.ondataavailable = e => { if (e.data.size) partes.push(e.data); };
+  rec.onstop = () => { const t = rec.mimeType || 'video/webm', b = new Blob(partes, {type: t}), a = document.createElement('a'); a.href = URL.createObjectURL(b);
+    a.download = `Vivaldi-${P.id}-recorrido.${/mp4/.test(t) ? 'mp4' : 'webm'}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); grab = null; $('bVid').setAttribute('aria-pressed', 'false'); toast('Video listo: se descargó el recorrido'); };
+  grab = {rec}; $('bVid').setAttribute('aria-pressed', 'true'); rec.start(1000); setModo('tour'); tourPlay(true); parada(0);
+  toast('Grabando el recorrido completo… toca el botón otra vez para terminar antes');
+  const fin = () => { if (grab && ip === PARADAS.length - 1 && !vuelo) setTimeout(() => grab && grab.rec.state === 'recording' && grab.rec.stop(), 3500); else if (grab) setTimeout(fin, 500); }; setTimeout(fin, 3000); }
+$('bVid').addEventListener('click', grabarVideo);
+
 // ---------- interfaz ----------
 function ficha() {
   $('pZona').textContent = `${P.zona}${P.km ? ' · km ' + P.km + ' Panamericana Sur' : ''}`; $('pName').textContent = P.nombre; $('pFrase').textContent = P.frase || P.lema || '';
@@ -519,4 +534,4 @@ renderer.setAnimationLoop(() => {
   if (Q.has('foto')) fotoRealista();
   requestAnimationFrame(() => requestAnimationFrame(() => { $('load').classList.add('out'); document.body.dataset.listo = '1'; }));
 })().catch(e => { console.error(e); progreso('No se pudo iniciar el showroom en este equipo: ' + e.message); });
-window.VVS = {aplicarEstilo, get estilo() { return estilo; }, rtx, get RTX() { return RTX; }, CIELOS, setModo, parada, aplicarLuz, get G() { return G; }, get modo() { return modo; }, get ip() { return ip; }, renderer, camera, teleport, vrParada, dolly, get vrOk() { return vrOk; }, get pt() { return PT; }, fotoRealista, salirFoto, get ptOn() { return ptOn; }, pAO};
+window.VVS = {grabarVideo, aplicarEstilo, get estilo() { return estilo; }, rtx, get RTX() { return RTX; }, CIELOS, setModo, parada, aplicarLuz, get G() { return G; }, get modo() { return modo; }, get ip() { return ip; }, renderer, camera, teleport, vrParada, dolly, get vrOk() { return vrOk; }, get pt() { return PT; }, fotoRealista, salirFoto, get ptOn() { return ptOn; }, pAO};
