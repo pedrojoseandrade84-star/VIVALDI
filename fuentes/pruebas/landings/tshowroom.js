@@ -5,7 +5,7 @@ const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); if (!c) process
 const F = 'file:///home/user/VIVALDI/entregables/experiencia/showroom.html?ligero';
 const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf55e/scratchpad/npmdl/axe/package/axe.min.js';
 (async () => { const b = await chromium.launch({args: ['--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']}); const errs = [];
-  const c = await b.newContext({viewport: {width: 1280, height: 800}}); await c.route(/^https?:/, r => r.abort());
+  const c = await b.newContext({viewport: {width: 1000, height: 640}}); await c.route(/^https?:/, r => r.abort());
   // WebXR simulado: el navegador dice que soporta VR y registra el pedido de sesión
   await c.addInitScript(() => { window.__xr = []; Object.defineProperty(navigator, 'xr', {value: {isSessionSupported: async m => m === 'immersive-vr', requestSession: async (m, o) => { window.__xr.push({m, o}); throw new Error('simulado'); }, addEventListener() {}}}); });
   const p = await c.newPage(); p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/GPU stall/.test(m.text())) errs.push(m.text().slice(0, 160)); });

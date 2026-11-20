@@ -29,7 +29,7 @@ const progreso = t => { const e = $('loadT'); if (e) e.textContent = t; };
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({canvas, antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: CAPTURA});
 let DPR = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2);
-let ALTA = !coarse && !Q.has('ligero');
+let ALTA = !coarse && !Q.has('ligero'); const LIGERO = Q.has('ligero'); if (LIGERO) DPR = 1;
 renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight, false);
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -46,7 +46,7 @@ const composer = new EffectComposer(renderer, rt);
 const pRender = new RenderPass(scene, camera); composer.addPass(pRender);
 const pAO = new GTAOPass(scene, camera, innerWidth, innerHeight); pAO.blendIntensity = .9; pAO.updateGtaoMaterial({radius: .6, distanceExponent: 1.2, thickness: 1.2, scale: 1, samples: 16});
 pAO.enabled = ALTA; composer.addPass(pAO);
-const pBloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .12, .4, 2.5); composer.addPass(pBloom);
+const pBloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .12, .4, 2.5); pBloom.enabled = !LIGERO; composer.addPass(pBloom);
 composer.addPass(new OutputPass());
 // corrección de color de cine: contraste suave, saturación, viñeta y grano fino (como un juego moderno)
 const pGrade = new ShaderPass({uniforms: {tDiffuse: {value: null}, t: {value: 0}, sat: {value: 1.1}, vig: {value: .28}},
@@ -193,7 +193,7 @@ function luz(x, y, z, int = 25, col = 0xffd6a0, dist = 9) { const l = new THREE.
   const b = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 8), mat.foco); b.position.set(x, y, z); raiz.add(b); return l; }
 
 // ---------- sol, entorno y mar ----------
-const sol = new THREE.DirectionalLight(0xfff1dc, 3); sol.castShadow = true; const SM = ALTA ? 4096 : 2048; sol.shadow.mapSize.set(SM, SM); sol.shadow.bias = -.0002; sol.shadow.normalBias = .025; sol.shadow.radius = 3;
+const sol = new THREE.DirectionalLight(0xfff1dc, 3); sol.castShadow = true; const SM = ALTA ? 4096 : LIGERO ? 1024 : 2048; sol.shadow.mapSize.set(SM, SM); sol.shadow.bias = -.0002; sol.shadow.normalBias = .025; sol.shadow.radius = 3;
 scene.add(sol, sol.target);
 const destello = (() => { const mk = (n, f) => { const c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); f(g, n); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
   const halo = mk(256, (g, n) => { const r = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2); r.addColorStop(0, 'rgba(255,250,235,1)'); r.addColorStop(.12, 'rgba(255,230,190,.8)'); r.addColorStop(.4, 'rgba(255,190,120,.12)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, n, n); });
@@ -323,7 +323,7 @@ function construir() {
   luz(cx, y1 - .45, sz - .3, 45); luz(cx, y1 - .45, dz, 35); luz(x1 - 1.6, y1 - .45, kz - 1.2, 35); luz(cx, y1 + H2 - .2, bz, 30); luz(cx, y1 + H2 - .2, (za + zc) / 2 + 2, 20);
   luz(0, 2.6, z1 + .5, 14); luz(0, .25, zb + .8, 6, 0xffc98a, 5);
   for (const k of [-1, 1]) { const lx = k * W * 1.2; cil(.1, .16, 8, mat.concreto, lx, 0, zf + 1.6); caja(1.4, .1, .22, mat.alu, lx - .6 * k, 7.6, zf + 1.6); luz(lx - 1.2 * k, 7.5, zf + 1.6, 90, 0xffcf96, 26); }
-  const dens = ALTA ? 260 : 90; pasto3D(-W / 2 + .2, W / 2 - .2, z1 + .4, zf - .25, dens); if (!angosto) { pasto3D(-W / 2 + .2, x0 - .3, zb + 1.2, z1, dens * .7); pasto3D(x1 + .3, W / 2 - .2, zb + 1.2, z1, dens * .7); }
+  const dens = ALTA ? 260 : LIGERO ? 20 : 90; pasto3D(-W / 2 + .2, W / 2 - .2, z1 + .4, zf - .25, dens); if (!angosto) { pasto3D(-W / 2 + .2, x0 - .3, zb + 1.2, z1, dens * .7); pasto3D(x1 + .3, W / 2 - .2, zb + 1.2, z1, dens * .7); }
   if (parque) pasto3D(-30, 30, calleZ + 6.2, calleZ + 14, ALTA ? 70 : 25);
   // espuma de las olas en la orilla
   const espuma = new THREE.Mesh(new THREE.PlaneGeometry(900, 26, 1, 1), new THREE.ShaderMaterial({transparent: true, depthWrite: false, uniforms: {t: VIENTO},
