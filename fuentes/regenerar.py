@@ -13,6 +13,8 @@ data = json.load(open(D + '/landings/proyectos.json', encoding='utf-8')); data.p
 MODS = {'growth-sync': open(D + '/sync.html', encoding='utf-8').read().strip(),
         'direccion': open(D + '/direccion.html', encoding='utf-8').read().strip(),
         'conectar': open(D + '/conectar.html', encoding='utf-8').read().strip(),
+        'marketing': open(D + '/marketing.html', encoding='utf-8').read().strip(),
+        'growth-demo': open(D + '/demo.html', encoding='utf-8').read().strip(),
         'interfaz': open(D + '/interfaz.html', encoding='utf-8').read().strip(),
         'gestion': open(D + '/gestion.html', encoding='utf-8').read().strip().replace('/*PROYECTOS*/null', json.dumps(data, ensure_ascii=False).replace('</', '<\\/'))}
 for f in ['planicie-herramienta-final.html', 'planicie-herramienta-whatsapp.html']:

@@ -1,0 +1,126 @@
+<!--marketing-start-->
+<style>
+#marketing .mk-band{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#marketing .mk-band select{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+#marketing .mk-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+#marketing .mk-card h3{margin:0 0 4px;font-size:1.08rem}#marketing .mk-note{font-size:.85rem;color:var(--muted);margin:4px 0 0;line-height:1.5}
+#marketing .mk-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+#marketing .mk-k{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+#marketing .mk-k span{display:block;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#marketing .mk-k b{display:block;font-family:var(--f-display);font-weight:400;font-size:1.9rem;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+#marketing .mk-k small{color:var(--muted);font-size:.8rem}
+#marketing .mk-inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+#marketing .mk-inv label{display:grid;gap:6px;font-weight:700;font-size:.84rem}
+#marketing .mk-inv input{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
+#marketing .mk-tw{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
+#marketing table{border-collapse:collapse;width:100%;min-width:720px;font-size:.88rem}
+#marketing th{background:var(--deep);color:#fff;text-align:left;padding:9px 12px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+#marketing th.r,#marketing td.r{text-align:right}#marketing td{padding:9px 12px;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+#marketing tr.best td{background:var(--sea-soft)}#marketing td .tag{display:inline-block;margin-left:6px;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--sun-soft);padding:2px 7px;border-radius:999px}
+#marketing .mk-bar{height:8px;border-radius:4px;background:var(--bg);overflow:hidden;min-width:80px}#marketing .mk-bar i{display:block;height:100%;background:var(--sea);border-radius:4px}
+#marketing .mk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#marketing .mk-ej{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--sun-soft);padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+#marketing .mk-link{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;margin-top:12px}
+#marketing .mk-f{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+#marketing .mk-f label{display:grid;gap:6px;font-weight:700;font-size:.84rem}
+#marketing .mk-f select,#marketing .mk-f input{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+#marketing .mk-url{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--bg);font-family:var(--f-mono,monospace);font-size:.82rem;word-break:break-all}
+#marketing .mk-qr{width:180px;height:180px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;place-items:center}
+#marketing .mk-qr svg{width:100%;height:100%}
+#marketing .mk-b{min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+#marketing .mk-b.pri{background:var(--deep);border-color:var(--deep);color:#fff}
+#marketing .mk-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#marketing .mk-ins{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+#marketing .mk-ins li{padding:12px 14px;border-radius:12px;background:var(--bg);font-size:.92rem;line-height:1.5}#marketing .mk-ins li b{color:var(--ink)}
+@media (max-width:900px){#marketing .mk-kpis{grid-template-columns:1fr 1fr}#marketing .mk-link{grid-template-columns:1fr}}
+@media print{#marketing .mk-link,#marketing .mk-acts{display:none}}
+</style>
+<script>
+/* Marketing y campañas: cuánto cuesta cada interesado, cada visita y cada cierre por canal y por campaña, y enlaces de campaña con QR.
+   Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  if (typeof CLIENTS === "undefined") return;
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const S = n => "S/ " + Math.round(n || 0).toLocaleString("es-PE"), P = (a, b) => b ? Math.round(a / b * 100) + "%" : "—";
+  const say = t => (typeof toast === "function" ? toast(t) : alert(t));
+  const MK = "vivaldi-marketing-v1", MESL = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const CANALES = [["meta", "Meta (Facebook e Instagram)", /face|fb|insta|meta|ig\b/], ["google", "Google", /google|gclid|adwords|youtube/], ["tiktok", "TikTok", /tiktok|ttclid/],
+    ["portales", "Portales inmobiliarios", /urbania|adondevivir|nexo|properati|olx|mercado|portal/], ["impreso", "Volantes, paneles y autos", /volante|panel|auto|rotul|impres|valla|flyer/],
+    ["referidos", "Referidos", /refer|recomend/], ["whatsapp", "WhatsApp", /whats/], ["web", "Web (orgánico)", /web|landing|organ|seo|directo/], ["otros", "Otros", /.*/]];
+  const canal = src => { const s = String(src || "").toLowerCase(); return (CANALES.find(c => c[2].test(s)) || CANALES[CANALES.length - 1])[0]; };
+  const rk = s => ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"].indexOf(s);
+  const leer = () => { try { return JSON.parse(localStorage.getItem(MK) || "{}"); } catch (e) { return {}; } };
+  const demo = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
+  const meses = () => { const d = new Date(), out = []; for (let i = 0; i < 6; i++) { const x = new Date(d.getFullYear(), d.getMonth() - i, 1); out.push([`${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}`, `${MESL[x.getMonth()]} ${x.getFullYear()}`]); } return out; };
+  let MES = meses()[0][0];
+  const EJEMPLO = {meta: 3200, google: 1800, tiktok: 900, portales: 600, impreso: 400};
+
+  const sec = document.createElement("section"); sec.id = "marketing"; sec.setAttribute("aria-labelledby", "mkT");
+  sec.innerHTML = `<div class="sec-head"><div class="eyebrow">Gerencia · Marketing</div><h2 id="mkT">Marketing y campañas</h2>
+    <p class="lead">Cuánto cuesta cada interesado, cada visita y cada cierre, por canal y por campaña. Los interesados llegan con su origen desde la web, el CRM o los enlaces de campaña; aquí solo se anota cuánto se invirtió.</p></div>
+    <div class="mk-band"><label style="display:grid;gap:6px;font-weight:700;font-size:.86rem">Mes<select id="mkMes">${meses().map(([k, l]) => `<option value="${k}">${E(l)}</option>`).join("")}</select></label><p class="mk-note" id="mkNota"></p></div>
+    <div class="mk-kpis" id="mkK"></div>
+    <div class="mk-card"><h3>Lo que dicen los números</h3><ul class="mk-ins" id="mkIns"></ul></div>
+    <div class="mk-card"><h3>Resultados por canal</h3><p class="mk-note">Interesados que entraron en el mes y hasta dónde llegaron. El canal resaltado es el que consigue cierres al menor costo.</p><div class="mk-tw" tabindex="0" role="region" aria-label="Resultados por canal"><table id="mkTb"></table></div></div>
+    <div class="mk-card"><h3>Campañas</h3><p class="mk-note">Según el nombre de campaña de los enlaces (utm_campaign) o del CRM.</p><div class="mk-tw" tabindex="0" role="region" aria-label="Campañas"><table id="mkCp"></table></div></div>
+    <div class="mk-card"><h3>Inversión del mes por canal</h3><p class="mk-note">En soles. Se guarda por mes; con la base de datos activa se comparte con la gerencia en el respaldo.</p><div class="mk-inv" id="mkInv"></div></div>
+    <div class="mk-card"><h3>Enlace de campaña con QR</h3><p class="mk-note">Cada anuncio, volante o auto rotulado con su propio enlace: así se sabe exactamente qué trajo a cada cliente. El QR sirve para impresos y para los vehículos.</p>
+      <div class="mk-link"><div><div class="mk-f"><label>Destino<select id="mkDest"></select></label><label>Dónde se publica<select id="mkCan">${[["facebook", "Facebook"], ["instagram", "Instagram"], ["tiktok", "TikTok"], ["google", "Google"], ["whatsapp", "WhatsApp"], ["volante", "Volante o panel"], ["auto", "Auto rotulado"], ["portal", "Portal inmobiliario"]].map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select></label>
+        <label>Nombre de la campaña<input id="mkCamp" value="preventa-${MESL[new Date().getMonth()]}" maxlength="60" spellcheck="false"></label></div>
+        <div class="mk-url" id="mkUrl" aria-live="polite"></div><div class="mk-acts"><button type="button" class="mk-b pri" id="mkCopy">Copiar enlace</button><button type="button" class="mk-b" id="mkSvg">Descargar QR</button></div></div>
+        <div class="mk-qr" id="mkQr" role="img" aria-label="Código QR del enlace de campaña"></div></div></div>`;
+  const dx = document.getElementById("direccion"), main = document.querySelector("main");
+  if (dx && dx.parentNode) dx.parentNode.insertBefore(sec, dx.nextSibling); else if (main) main.prepend(sec); else return;
+  const $m = s => sec.querySelector(s);
+  // destinos: páginas de cada proyecto, exploradores 3D, Mi Vivaldi y la web
+  const PR = (window.VIVALDI_PROYECTOS || []).length ? window.VIVALDI_PROYECTOS : [["planicie", "La Planicie de Asia"], ["terrazas", "Las Terrazas de Cerro Azul"], ["portada", "La Portada del Sol"], ["lirios", "Lirios del Mar de Asia"], ["esmeralda", "La Esmeralda de Cerro Azul"]];
+  const SITIO = "https://vivaldiinmobiliaria.com";
+  $m("#mkDest").innerHTML = `<optgroup label="Página del proyecto">${PR.map(([id, n]) => `<option value="/proyectos/${id}.html">${E(n)}</option>`).join("")}</optgroup>
+    <optgroup label="Explorador 3D">${PR.map(([id, n]) => `<option value="/proyectos/explorar-${id}.html">${E(n)} en 3D</option>`).join("")}</optgroup>
+    <optgroup label="Otros"><option value="/portal.html#lotes">Mi Vivaldi: lotes en línea</option><option value="/">Web de Vivaldi</option><option value="/proyectos/extranjeros.html">Clientes del extranjero</option></optgroup>`;
+  const slug = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+  function enlace() { const can = $m("#mkCan").value, med = {facebook: "pagado", instagram: "pagado", tiktok: "pagado", google: "pagado", whatsapp: "mensajeria", volante: "impreso", auto: "impreso", portal: "portal"}[can];
+    const [path, hash] = $m("#mkDest").value.split("#"), q = new URLSearchParams({utm_source: can, utm_medium: med, utm_campaign: slug($m("#mkCamp").value) || "general"});
+    const url = SITIO + path + "?" + q + (hash ? "#" + hash : ""); $m("#mkUrl").textContent = url;
+    try { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); $m("#mkQr").innerHTML = qr.createSvgTag({cellSize: 4, margin: 2, scalable: true}); } catch (e) { $m("#mkQr").textContent = "QR no disponible"; }
+    return url; }
+  ["#mkDest", "#mkCan"].forEach(s => $m(s).addEventListener("change", enlace)); $m("#mkCamp").addEventListener("input", enlace);
+  $m("#mkCopy").addEventListener("click", () => { const u = enlace(); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => say("Enlace copiado")).catch(() => { const ta = document.createElement("textarea"); ta.value = u; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (x) {} ta.remove(); say("Enlace copiado"); }); });
+  $m("#mkSvg").addEventListener("click", () => { enlace(); const svg = $m("#mkQr svg"); if (!svg) return; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([svg.outerHTML], {type: "image/svg+xml"}));
+    a.download = `qr-${slug($m("#mkCamp").value) || "campana"}-${$m("#mkCan").value}.svg`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); });
+
+  function render() {
+    const all = leer(), guardado = all[MES], ej = !guardado && demo(), inv = guardado || (ej ? EJEMPLO : {});
+    const del = CLIENTS.filter(c => String(c.created || "").slice(0, 7) === MES);
+    const G = {}; CANALES.forEach(([k, l]) => G[k] = {k, l, n: 0, v: 0, c: 0, inv: +inv[k] || 0});
+    del.forEach(c => { const g = G[canal(c.src || c.camp)]; g.n++; if (rk(c.stage) >= 2) g.v++; if (rk(c.stage) >= 3) g.c++; });
+    const rows = Object.values(G).filter(g => g.n || g.inv), tot = rows.reduce((a, g) => ({n: a.n + g.n, v: a.v + g.v, c: a.c + g.c, inv: a.inv + g.inv}), {n: 0, v: 0, c: 0, inv: 0});
+    const best = rows.filter(g => g.inv && g.c).sort((a, b) => a.inv / a.c - b.inv / b.c)[0];
+    $m("#mkNota").innerHTML = ej ? 'Inversión de ejemplo<span class="mk-ej">Ejemplo</span>' : guardado ? "" : "Anota la inversión del mes abajo para ver los costos.";
+    $m("#mkK").innerHTML = [["Inversión", S(tot.inv), `${rows.filter(g => g.inv).length} canales`], ["Costo por interesado", tot.n && tot.inv ? S(tot.inv / tot.n) : "—", `${tot.n} interesados`],
+      ["Costo por visita", tot.v && tot.inv ? S(tot.inv / tot.v) : "—", `${tot.v} visitas · ${P(tot.v, tot.n)} de los interesados`], ["Costo por cierre", tot.c && tot.inv ? S(tot.inv / tot.c) : "—", `${tot.c} separaciones o ventas · ${P(tot.c, tot.n)}`]]
+      .map(([l, v, s]) => `<div class="mk-k"><span>${l}</span><b>${v}</b><small>${E(s)}</small></div>`).join("");
+    const mx = Math.max(1, ...rows.map(g => g.n));
+    $m("#mkTb").innerHTML = `<thead><tr><th>Canal</th><th class="r">Interesados</th><th><span class="mk-sr">Proporción de interesados</span></th><th class="r">Visitas</th><th class="r">Cierres</th><th class="r">% cierre</th><th class="r">Inversión</th><th class="r">Por interesado</th><th class="r">Por cierre</th></tr></thead><tbody>${rows.length ? rows.sort((a, b) => b.n - a.n).map(g => `<tr${best && g.k === best.k ? ' class="best"' : ""}><td><b>${E(g.l)}</b>${best && g.k === best.k ? '<span class="tag">Mejor costo</span>' : ""}</td><td class="r">${g.n}</td><td><div class="mk-bar"><i style="width:${Math.round(g.n / mx * 100)}%"></i></div></td><td class="r">${g.v}</td><td class="r">${g.c}</td><td class="r">${P(g.c, g.n)}</td><td class="r">${g.inv ? S(g.inv) : "—"}</td><td class="r">${g.inv && g.n ? S(g.inv / g.n) : "—"}</td><td class="r">${g.inv && g.c ? S(g.inv / g.c) : "—"}</td></tr>`).join("") : '<tr><td colspan="9">Aún no hay interesados registrados en este mes.</td></tr>'}</tbody>`;
+    const C = {}; del.forEach(c => { const camp = c.camp || (String(c.src || "").includes(" / ") ? String(c.src).split(" / ").slice(1).join(" / ") : ""); if (!camp) return; const k = camp.trim().toLowerCase(); C[k] = C[k] || {t: camp.trim(), canal: (CANALES.find(x => x[0] === canal(c.src)) || [])[1], n: 0, v: 0, c: 0}; C[k].n++; if (rk(c.stage) >= 2) C[k].v++; if (rk(c.stage) >= 3) C[k].c++; });
+    const cps = Object.values(C).sort((a, b) => b.c - a.c || b.n - a.n);
+    $m("#mkCp").innerHTML = `<thead><tr><th>Campaña</th><th>Canal</th><th class="r">Interesados</th><th class="r">Visitas</th><th class="r">Cierres</th><th class="r">% cierre</th></tr></thead><tbody>${cps.length ? cps.map(x => `<tr><td><b>${E(x.t)}</b></td><td>${E(x.canal || "")}</td><td class="r">${x.n}</td><td class="r">${x.v}</td><td class="r">${x.c}</td><td class="r">${P(x.c, x.n)}</td></tr>`).join("") : '<tr><td colspan="6">Sin campañas con nombre en este mes. Usa los enlaces de campaña de abajo en cada anuncio.</td></tr>'}</tbody>`;
+    // lectura en palabras
+    const ins = [], top = rows.slice().sort((a, b) => b.n - a.n)[0], conv = rows.filter(g => g.n >= 2).sort((a, b) => b.c / b.n - a.c / a.n)[0], caro = rows.filter(g => g.inv && !g.c && g.n).sort((a, b) => b.inv - a.inv)[0];
+    if (top) ins.push(`<b>${E(top.l)}</b> trae más interesados (${top.n} de ${tot.n}).`);
+    if (best) ins.push(`El cierre más barato viene de <b>${E(best.l)}</b>: ${S(best.inv / best.c)} por separación o venta${tot.c && tot.inv ? `, frente a ${S(tot.inv / tot.c)} en promedio` : ""}.`);
+    if (conv && conv.c) ins.push(`<b>${E(conv.l)}</b> es el que mejor convierte: ${P(conv.c, conv.n)} de sus interesados separa o compra.`);
+    if (caro) ins.push(`<b>${E(caro.l)}</b> recibió ${S(caro.inv)} y aún no tiene cierres: conviene revisar el anuncio o el seguimiento de esos interesados.`);
+    if (!ins.length) ins.push("Cuando haya interesados con origen registrado y la inversión del mes, aquí aparece qué canal conviene reforzar.");
+    $m("#mkIns").innerHTML = ins.map(x => `<li>${x}</li>`).join("");
+    $m("#mkInv").innerHTML = CANALES.filter(c => c[0] !== "otros" && c[0] !== "referidos" && c[0] !== "web" && c[0] !== "whatsapp").map(([k, l]) => `<label>${E(l)}<input type="number" inputmode="decimal" min="0" step="50" data-inv="${k}" value="${guardado && guardado[k] ? guardado[k] : ""}" placeholder="${ej ? EJEMPLO[k] || 0 : 0}"></label>`).join("");
+  }
+  $m("#mkMes").addEventListener("change", e => { MES = e.target.value; render(); });
+  sec.addEventListener("change", e => { const i = e.target.closest("[data-inv]"); if (!i) return; const all = leer(); all[MES] = all[MES] || {}; const v = Math.max(0, +i.value || 0); if (v) all[MES][i.dataset.inv] = v; else delete all[MES][i.dataset.inv];
+    if (!Object.keys(all[MES]).length) delete all[MES]; try { localStorage.setItem(MK, JSON.stringify(all)); } catch (x) {} render(); });
+  render(); enlace();
+  document.addEventListener("vivaldi:datos", render); addEventListener("storage", e => { if (!e.key || e.key === MK || e.key === "vivaldi-clientes-v1") render(); });
+  window.vivaldiMarketing = {render, canal};
+})();
+</script>
+<!--marketing-end-->

@@ -193,7 +193,8 @@ header.top nav a.on{border-color:#fff}
  header.top nav{display:none}.sticky{display:flex}.sec{padding:68px 0}.hero .wrap{padding-bottom:48px}}
 @media (max-width:520px){form.card .two{grid-template-columns:1fr}.hero .cta{flex-direction:column}.hero .cta .btn{width:100%}.res b{font-size:3.4rem}.hero h1{font-size:3rem}}
 </style></head><body><script>const BASE = {url: "", key: ""};
-window.VV_BASE = BASE;</script>
+window.VV_BASE = BASE;
+window.VV_MKT = Object.assign({}, window.VV_MKT_PRUEBA || {});</script>
 <style>.langsw{display:flex;gap:4px;background:rgba(255,255,255,.14);border-radius:999px;padding:4px}.langsw button{min-height:36px;padding:0 14px;border-radius:999px;border:0;background:none;color:#fff;font:inherit;font-weight:800;cursor:pointer}.langsw button[aria-pressed=true]{background:#fff;color:#0A3856}
 .why{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-top:34px}.why div{border-top:1px solid var(--ink);padding-top:16px}.why b{display:block;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:2rem;color:var(--ink);line-height:1.1;margin-bottom:8px}.why span{color:var(--mu)}.hero h1{font-size:clamp(2.8rem,6vw,5.2rem)}
 .steps5{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:34px}.steps5 .st{display:block}.steps5 .st b{display:block;margin-top:14px;font-size:1.05rem}.steps5 .sd{margin:6px 0 0;color:var(--mu);font-size:.95rem}
@@ -224,7 +225,26 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const SRC = (() => { try { const q = new URLSearchParams(location.search), u = q.get("utm_source"), c = q.get("utm_campaign"); let v = u ? u + (c ? " / " + c : "") : q.get("fbclid") ? "Facebook" : q.get("gclid") ? "Google Ads" : q.get("ttclid") ? "TikTok" : ""; const k = "vv-origen"; if (v) localStorage.setItem(k, v); return v || localStorage.getItem(k) || ""; } catch (e) { return ""; } })();
 const wa = (t, num) => `https://wa.me/${num || EMP.whatsapp}?text=${encodeURIComponent(t + (SRC ? "\n\n(Vengo de: " + SRC + ")" : ""))}`;
 // sin "noopener" en window.open: con él el navegador devuelve null y la página se iría a WhatsApp
-const openWa = t => { const u = wa(t), w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) {} } else location.href = u; };
+// medición de anuncios (Meta, Google, TikTok): solo si Vivaldi configuró sus identificadores y el visitante acepta (Ley 29733)
+const MKT = window.VV_MKT || {}, MK_ON = !!(MKT.meta_pixel || MKT.ga4 || MKT.google_ads || MKT.tiktok_pixel);
+const track = ev => { try { const lead = ev === "lead"; if (window.fbq) fbq("track", lead ? "Lead" : "Contact"); if (window.gtag) gtag("event", lead ? "generate_lead" : "contact", {page_title: document.title});
+  if (window.ttq && ttq.track) ttq.track(lead ? "SubmitForm" : "Contact"); } catch (e) {} };
+function medir() { if (window.__vvMedir) return; window.__vvMedir = 1; const sc = src => { const x = document.createElement("script"); x.async = true; x.src = src; document.head.appendChild(x); };
+  if (MKT.meta_pixel) { const f = window.fbq = function () { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); }; if (!window._fbq) window._fbq = f; f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
+    sc("https://connect.facebook.net/en_US/fbevents.js"); fbq("init", MKT.meta_pixel); fbq("track", "PageView"); }
+  if (MKT.ga4 || MKT.google_ads) { window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments); }; sc("https://www.googletagmanager.com/gtag/js?id=" + (MKT.ga4 || MKT.google_ads));
+    gtag("js", new Date()); if (MKT.ga4) gtag("config", MKT.ga4); if (MKT.google_ads) gtag("config", MKT.google_ads); }
+  if (MKT.tiktok_pixel) { const t = window.ttq = window.ttq || []; t.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+    t.setAndDefer = (o, m) => { o[m] = function () { o.push([m].concat(Array.prototype.slice.call(arguments, 0))); }; }; t.methods.forEach(m => t.setAndDefer(t, m));
+    t.load = id => { t._i = t._i || {}; t._i[id] = []; t._t = t._t || {}; t._t[id] = +new Date; sc("https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=" + id + "&lib=ttq"); }; t.load(MKT.tiktok_pixel); t.page(); } }
+if (MK_ON) { let ok = null; try { ok = localStorage.getItem("vv-medicion"); } catch (e) {}
+  if (ok === "si") medir();
+  else if (ok !== "no") addEventListener("load", () => setTimeout(() => { const b = document.createElement("div"); b.className = "vv-cons"; b.setAttribute("role", "region"); b.setAttribute("aria-label", "Cookies de medición");
+    b.innerHTML = '<p>Usamos cookies de medición para saber qué anuncios funcionan. No compartimos tus datos de contacto.</p><div><button type="button" data-c="si">Aceptar</button><button type="button" data-c="no">No, gracias</button></div>';
+    const st = document.createElement("style"); st.textContent = ".vv-cons{position:fixed;left:16px;bottom:16px;z-index:80;max-width:380px;background:#0F1A22;color:#E8EEF2;border-radius:12px;padding:14px 16px;box-shadow:0 12px 34px rgba(0,0,0,.3);font-size:.86rem;line-height:1.45}.vv-cons p{margin:0 0 10px}.vv-cons div{display:flex;gap:8px}.vv-cons button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:none;color:#fff;font:inherit;font-weight:700;cursor:pointer}.vv-cons button[data-c=si]{background:#fff;color:#0F1A22;border-color:#fff}@media (max-width:900px){.vv-cons{left:12px;right:12px;bottom:78px;max-width:none}}";
+    document.head.appendChild(st); document.body.appendChild(b);
+    b.addEventListener("click", e => { const c = e.target.closest("[data-c]"); if (!c) return; try { localStorage.setItem("vv-medicion", c.dataset.c); } catch (x) {} b.remove(); if (c.dataset.c === "si") medir(); }); }, 1200)); }
+const openWa = t => { track("contact"); const u = wa(t), w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) {} } else location.href = u; };
 const send = (fila) => { const B = window.VV_BASE || {}; if (!B.url || !B.key) return; try { fetch(B.url.replace(/\/$/, "") + "/rest/v1/solicitudes", {method: "POST", keepalive: true, headers: {apikey: B.key, Authorization: "Bearer " + B.key, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(fila)}).catch(() => {}); } catch (e) {} };
 const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), {threshold: 0, rootMargin: "0px 0px -8% 0px"}) : null;
 $$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
@@ -269,7 +289,7 @@ $("#lead").addEventListener("submit", e => { e.preventDefault(); const n = $("#f
   if (n.length < 3) return $("#fN").focus(); if (!tel) { $("#fT").setCustomValidity(T.err_phone[L === "es" ? 0 : 1]); $("#fT").reportValidity(); $("#fT").setCustomValidity(""); return; }
   if (!$("#fOk").checked) return $("#fOk").reportValidity();
   const pais = $("#fC").value, pj = $("#fP").value, hr = $("#fH").selectedOptions[0].textContent, A = window.VV_ASESOR;
-  send({nombre: n.slice(0, 120), celular: tel, pais: pais.slice(0, 60), proyecto: pj === "-" ? "" : pj.slice(0, 120), visita: ("Videollamada · " + hr).slice(0, 80), mensaje: "Cliente del extranjero (" + (L === "es" ? "español" : "inglés") + ")", acepta_promos: false, origen: "Landing extranjeros", campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined});
+  track("lead"); send({nombre: n.slice(0, 120), celular: tel, pais: pais.slice(0, 60), proyecto: pj === "-" ? "" : pj.slice(0, 120), visita: ("Videollamada · " + hr).slice(0, 80), mensaje: "Cliente del extranjero (" + (L === "es" ? "español" : "inglés") + ")", acepta_promos: false, origen: "Landing extranjeros", campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined});
   openWa(L === "es" ? `Hola, soy ${n} y vivo en ${pais}. Me interesa ${pj === "-" ? "un lote de Vivaldi" : pj}. Quisiera una videollamada (${hr.toLowerCase()}). Mi WhatsApp: ${tel}.` : `Hello, I am ${n} and I live in ${pais}. I am interested in ${pj === "-" ? "a Vivaldi lot" : pj}. I would like a video call (${hr.toLowerCase()}). My WhatsApp: ${tel}. (Please reply in English.)`);
   $("#okMsg").classList.add("on"); });
 </script>

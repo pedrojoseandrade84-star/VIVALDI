@@ -17,7 +17,7 @@
   const active = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
   const ADV = "Rosa Quispe", P = "La Planicie de Asia", T = "Las Terrazas de Cerro Azul", L = "Lirios del Mar de Asia", PO = "La Portada del Sol";
   function data() {
-    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, adv: ADV}, extra);
+    const c = (id, name, phone, proj, stage, next, src, created, extra = {}) => Object.assign({id: "demo-" + id, demo: true, created: day(created), stageAt: day(Math.min(0, created + 2)), ts: Date.now() + created * 864e5, name, phone, proj, stage, next: next === null ? "" : day(next), budget: 0, notes: "Dato de ejemplo", src, camp: {Facebook: "preventa-noviembre", Instagram: "recorrido-3d", Google: "busqueda-lotes-asia", TikTok: "video-avance-obra"}[src] || "", adv: ADV}, extra);
     const clientes = [
       c("c1", "Lucía Torres Ramírez", "987111222", P, "Nuevo", 0, "Facebook", 0, {plazo: "Este mes", pago: "Financiado con Vivaldi"}),
       c("c2", "Jorge Ramos Quispe", "987333444", P, "Visita agendada", 1, "Referido", -5, {budget: 30000}),

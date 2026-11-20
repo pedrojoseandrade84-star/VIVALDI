@@ -96,7 +96,7 @@
       let id;
       if (ex) { ex.notes = (ex.notes ? ex.notes + "\n" : "") + note; if (r.plazo) ex.plazo = r.plazo; if (r.pago) ex.pago = r.pago; id = ex.id; }
       else { id = "w" + r.id; const d = (r.fecha || "").slice(0, 10) || todayIso();
-        CLIENTS.unshift({id, created: d, ts: Date.parse(r.fecha) || Date.now(), name: r.nombre, phone, proj: r.proyecto || (VIV[0] || {}).name || "", stage: r.visita ? "Visita agendada" : "Nuevo", stageAt: d, next: todayIso(), budget: 0, notes: note, src, plazo: r.plazo || "", pago: r.pago || "", adv: ses.nombre}); nuevos++; }
+        CLIENTS.unshift({id, created: d, ts: Date.parse(r.fecha) || Date.now(), name: r.nombre, phone, proj: r.proyecto || (VIV[0] || {}).name || "", stage: r.visita ? "Visita agendada" : "Nuevo", stageAt: d, next: todayIso(), budget: 0, notes: note, src, camp: r.campana || "", plazo: r.plazo || "", pago: r.pago || "", adv: ses.nombre}); nuevos++; }
       await api(`/rest/v1/solicitudes?id=eq.${r.id}`, {method: "PATCH", headers: {Prefer: "return=minimal"}, body: JSON.stringify({estado: "en herramienta", cliente_id: id})});
     }
     if (mias.length) { quiet(() => L.set(COLS.clientes.ls, JSON.stringify(CLIENTS))); rerender(); toast(nuevos === 1 ? "Llegó 1 cliente nuevo desde la web" : `Llegaron ${mias.length} clientes desde la web`); }

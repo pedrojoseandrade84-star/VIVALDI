@@ -63,7 +63,7 @@ $("#lead").addEventListener("submit", e => { e.preventDefault(); const n = $("#f
   if (n.length < 3) return $("#fN").focus(); if (!tel) { $("#fT").setCustomValidity(T.err_phone[L === "es" ? 0 : 1]); $("#fT").reportValidity(); $("#fT").setCustomValidity(""); return; }
   if (!$("#fOk").checked) return $("#fOk").reportValidity();
   const pais = $("#fC").value, pj = $("#fP").value, hr = $("#fH").selectedOptions[0].textContent, A = window.VV_ASESOR;
-  send({nombre: n.slice(0, 120), celular: tel, pais: pais.slice(0, 60), proyecto: pj === "-" ? "" : pj.slice(0, 120), visita: ("Videollamada · " + hr).slice(0, 80), mensaje: "Cliente del extranjero (" + (L === "es" ? "español" : "inglés") + ")", acepta_promos: false, origen: "Landing extranjeros", campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined});
+  track("lead"); send({nombre: n.slice(0, 120), celular: tel, pais: pais.slice(0, 60), proyecto: pj === "-" ? "" : pj.slice(0, 120), visita: ("Videollamada · " + hr).slice(0, 80), mensaje: "Cliente del extranjero (" + (L === "es" ? "español" : "inglés") + ")", acepta_promos: false, origen: "Landing extranjeros", campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined});
   openWa(L === "es" ? `Hola, soy ${n} y vivo en ${pais}. Me interesa ${pj === "-" ? "un lote de Vivaldi" : pj}. Quisiera una videollamada (${hr.toLowerCase()}). Mi WhatsApp: ${tel}.` : `Hello, I am ${n} and I live in ${pais}. I am interested in ${pj === "-" ? "a Vivaldi lot" : pj}. I would like a video call (${hr.toLowerCase()}). My WhatsApp: ${tel}. (Please reply in English.)`);
   $("#okMsg").classList.add("on"); });
 '''

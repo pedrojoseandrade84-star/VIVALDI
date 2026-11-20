@@ -74,11 +74,12 @@
     plantillas: '<path d="M4 5h16v11H8l-4 4z"/>', objeciones: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.8.5-1.5 1-1.5 2M12 17h.01"/>',
     gestion: '<path d="M12 3l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/>', conectar: '<path d="M9 7V3m6 4V3M7 7h10v4a5 5 0 01-10 0z"/><path d="M12 16v5"/>',
     datos: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 01-4 0v-.1a1.6 1.6 0 00-2.7-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15.3H3a2 2 0 010-4h.1A1.6 1.6 0 004.6 9l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 0010 5.1V5a2 2 0 014 0v.1a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00.3 1.8"/>',
+    marketing: '<path d="M3 11v2a2 2 0 002 2h2l5 4V5L7 9H5a2 2 0 00-2 2z"/><path d="M16 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/>',
     web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>', analisis: '<path d="M4 20h16M7 16v-4m5 4V8m5 8v-6"/>'
   };
   const icon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k] || I.analisis}</svg>`;
   const GROUPS = [
-    ["Gerencia", [["direccion", "Tablero de dirección"], ["hoy", "Agenda de hoy"]]],
+    ["Gerencia", [["direccion", "Tablero de dirección"], ["marketing", "Marketing y campañas"], ["hoy", "Agenda de hoy"]]],
     ["Vender", [["proforma", "Proforma"], ["inventario", "Lotes"], ["clientes", "Mis clientes"], ["visitas", "Visitas"], ["cobranza", "Separación y cobranza"]]],
     ["Equipo", [["panel", "Panel comercial"], ["plantillas", "Mensajes"], ["objeciones", "Objeciones"], ["gestion", "Proyectos y automatización"]]],
     ["Análisis", [["duelo", "Cara a cara"], ["precios", "Precio por m²"], ["mapa", "Por kilómetro"], ["presupuesto", "Presupuesto"], ["financiamiento", "Financiamiento"], ["plusvalia", "Plusvalía"], ["comparativa", "Por qué Vivaldi"], ["oferta", "Ficha del proyecto"]], true],
@@ -90,6 +91,8 @@
     ["Importar clientes o lotes", "Excel, CSV, Google Sheets u otro sistema", "conectar", () => go("conectar")],
     ["Presentar el tablero en pantalla", "Para la reunión de gerencia", "direccion", () => go("direccion", () => document.getElementById("dxFull")?.click())],
     ["Enviar el resumen del mes por WhatsApp", "Al directorio o al equipo", "direccion", () => document.getElementById("dxWa")?.click()],
+    ["Crear enlace de campaña con QR", "Para anuncios, volantes y autos rotulados", "marketing", () => go("marketing", () => document.getElementById("mkCamp")?.focus())],
+    ["Ver costo por cliente y por canal", "Marketing y campañas", "marketing", () => go("marketing")],
     ["Registrar una visita", "Agenda y resultado", "visitas", () => go("visitas")],
     ["Emitir constancia de separación", "Desde una proforma", "cobranza", () => go("cobranza")],
     ["Ver lotes disponibles", "Inventario por proyecto", "inventario", () => go("inventario")]

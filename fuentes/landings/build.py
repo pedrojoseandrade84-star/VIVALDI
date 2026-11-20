@@ -7,6 +7,8 @@ from PIL import Image
 D = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(D + '/../..')
 WEB = ROOT + '/entregables/web/Vivaldi-web-final.html'; OUT = ROOT + '/entregables/landings'; os.makedirs(OUT, exist_ok=True)
 DATA = json.load(open(D + '/proyectos.json', encoding='utf-8')); EMP = DATA['empresa']; PRJ = DATA['proyectos']
+# medición de anuncios: solo identificadores con formato válido
+_MK = DATA.get('marketing', {}); MKT = {k: str(_MK.get(k, '')).strip() for k, rx in (('meta_pixel', r'^\d{6,20}$'), ('ga4', r'^G-[A-Z0-9]{4,20}$'), ('google_ads', r'^AW-\d{6,20}$'), ('tiktok_pixel', r'^[A-Z0-9]{10,30}$')) if re.match(rx, str(_MK.get(k, '')).strip())}
 src = open(WEB, encoding='utf-8').read()
 FONTS = '\n'.join(re.findall(r'@font-face\s*\{[^}]*\}', src))
 i = src.find('var D={'); j = src.find('};', i); IMGMAP = src[i:j]
@@ -169,7 +171,26 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const SRC = (() => { try { const q = new URLSearchParams(location.search), u = q.get("utm_source"), c = q.get("utm_campaign"); let v = u ? u + (c ? " / " + c : "") : q.get("fbclid") ? "Facebook" : q.get("gclid") ? "Google Ads" : q.get("ttclid") ? "TikTok" : ""; const k = "vv-origen"; if (v) localStorage.setItem(k, v); return v || localStorage.getItem(k) || ""; } catch (e) { return ""; } })();
 const wa = (t, num) => `https://wa.me/${num || EMP.whatsapp}?text=${encodeURIComponent(t + (SRC ? "\n\n(Vengo de: " + SRC + ")" : ""))}`;
 // sin "noopener" en window.open: con él el navegador devuelve null y la página se iría a WhatsApp
-const openWa = t => { const u = wa(t), w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) {} } else location.href = u; };
+// medición de anuncios (Meta, Google, TikTok): solo si Vivaldi configuró sus identificadores y el visitante acepta (Ley 29733)
+const MKT = window.VV_MKT || {}, MK_ON = !!(MKT.meta_pixel || MKT.ga4 || MKT.google_ads || MKT.tiktok_pixel);
+const track = ev => { try { const lead = ev === "lead"; if (window.fbq) fbq("track", lead ? "Lead" : "Contact"); if (window.gtag) gtag("event", lead ? "generate_lead" : "contact", {page_title: document.title});
+  if (window.ttq && ttq.track) ttq.track(lead ? "SubmitForm" : "Contact"); } catch (e) {} };
+function medir() { if (window.__vvMedir) return; window.__vvMedir = 1; const sc = src => { const x = document.createElement("script"); x.async = true; x.src = src; document.head.appendChild(x); };
+  if (MKT.meta_pixel) { const f = window.fbq = function () { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); }; if (!window._fbq) window._fbq = f; f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
+    sc("https://connect.facebook.net/en_US/fbevents.js"); fbq("init", MKT.meta_pixel); fbq("track", "PageView"); }
+  if (MKT.ga4 || MKT.google_ads) { window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments); }; sc("https://www.googletagmanager.com/gtag/js?id=" + (MKT.ga4 || MKT.google_ads));
+    gtag("js", new Date()); if (MKT.ga4) gtag("config", MKT.ga4); if (MKT.google_ads) gtag("config", MKT.google_ads); }
+  if (MKT.tiktok_pixel) { const t = window.ttq = window.ttq || []; t.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+    t.setAndDefer = (o, m) => { o[m] = function () { o.push([m].concat(Array.prototype.slice.call(arguments, 0))); }; }; t.methods.forEach(m => t.setAndDefer(t, m));
+    t.load = id => { t._i = t._i || {}; t._i[id] = []; t._t = t._t || {}; t._t[id] = +new Date; sc("https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=" + id + "&lib=ttq"); }; t.load(MKT.tiktok_pixel); t.page(); } }
+if (MK_ON) { let ok = null; try { ok = localStorage.getItem("vv-medicion"); } catch (e) {}
+  if (ok === "si") medir();
+  else if (ok !== "no") addEventListener("load", () => setTimeout(() => { const b = document.createElement("div"); b.className = "vv-cons"; b.setAttribute("role", "region"); b.setAttribute("aria-label", "Cookies de medición");
+    b.innerHTML = '<p>Usamos cookies de medición para saber qué anuncios funcionan. No compartimos tus datos de contacto.</p><div><button type="button" data-c="si">Aceptar</button><button type="button" data-c="no">No, gracias</button></div>';
+    const st = document.createElement("style"); st.textContent = ".vv-cons{position:fixed;left:16px;bottom:16px;z-index:80;max-width:380px;background:#0F1A22;color:#E8EEF2;border-radius:12px;padding:14px 16px;box-shadow:0 12px 34px rgba(0,0,0,.3);font-size:.86rem;line-height:1.45}.vv-cons p{margin:0 0 10px}.vv-cons div{display:flex;gap:8px}.vv-cons button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:none;color:#fff;font:inherit;font-weight:700;cursor:pointer}.vv-cons button[data-c=si]{background:#fff;color:#0F1A22;border-color:#fff}@media (max-width:900px){.vv-cons{left:12px;right:12px;bottom:78px;max-width:none}}";
+    document.head.appendChild(st); document.body.appendChild(b);
+    b.addEventListener("click", e => { const c = e.target.closest("[data-c]"); if (!c) return; try { localStorage.setItem("vv-medicion", c.dataset.c); } catch (x) {} b.remove(); if (c.dataset.c === "si") medir(); }); }, 1200)); }
+const openWa = t => { track("contact"); const u = wa(t), w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) {} } else location.href = u; };
 const send = (fila) => { const B = window.VV_BASE || {}; if (!B.url || !B.key) return; try { fetch(B.url.replace(/\/$/, "") + "/rest/v1/solicitudes", {method: "POST", keepalive: true, headers: {apikey: B.key, Authorization: "Bearer " + B.key, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(fila)}).catch(() => {}); } catch (e) {} };
 const io = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), {threshold: 0, rootMargin: "0px 0px -8% 0px"}) : null;
 $$(".reveal").forEach(el => io ? io.observe(el) : el.classList.add("in"));
@@ -216,7 +237,7 @@ def foot(extra=''):
 <div>Precios y cuotas referenciales; la disponibilidad y el precio final se confirman al separar.<br>Las imágenes marcadas como referenciales son renders o planos.<br><a href="https://vivaldiinmobiliaria.com/" rel="noopener">Libro de Reclamaciones y web de Vivaldi</a> · Diseño y desarrollo: Pedrojose Andrade Paredes</div></div></footer>{extra}'''
 
 def base_js():
-    return '<script>const BASE = {url: "", key: ""};\nwindow.VV_BASE = BASE;</script>'
+    return '<script>const BASE = {url: "", key: ""};\nwindow.VV_BASE = BASE;\nwindow.VV_MKT = Object.assign(' + json.dumps(MKT) + ', window.VV_MKT_PRUEBA || {});</script>'
 
 # proyectos con explorador 3D de lotes (fuentes/experiencia/explorador.py): se enlazan solo si su página existe
 RECORRIDOS = {x['id'] for x in PRJ if os.path.exists(f"{ROOT}/entregables/experiencia/explorar-{x['id']}.html")}
@@ -310,7 +331,7 @@ $("#lead").addEventListener("submit", e => {{ e.preventDefault(); const n = $("#
   if (n.length < 3) return $("#fN").focus(); if (!/^9\\d{{8}}$/.test(t)) {{ $("#fT").setCustomValidity("Escribe un celular de 9 dígitos que empiece con 9"); $("#fT").reportValidity(); $("#fT").setCustomValidity(""); return; }}
   if (!$("#fOk").checked) return $("#fOk").reportValidity();
   const pl = $("#fPl").value, pg = $("#fPg").value, A = window.VV_ASESOR;
-  send({{nombre: n.slice(0, 120), celular: t, proyecto: P.nombre, plazo: pl === "Prefiero no indicar" ? "" : pl, pago: pg === "Prefiero no indicar" ? "" : pg, visita: VIS.day, mensaje: "Desde la página de " + P.nombre, acepta_promos: $("#fMk").checked, origen: ("Landing " + P.nombre).slice(0, 60), campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined}});
+  track("lead"); send({{nombre: n.slice(0, 120), celular: t, proyecto: P.nombre, plazo: pl === "Prefiero no indicar" ? "" : pl, pago: pg === "Prefiero no indicar" ? "" : pg, visita: VIS.day, mensaje: "Desde la página de " + P.nombre, acepta_promos: $("#fMk").checked, origen: ("Landing " + P.nombre).slice(0, 60), campana: SRC.slice(0, 120), asesor_codigo: (A && A.codigo) || undefined}});
   openWa(`Hola${{A && A.nombre ? " " + A.nombre.split(" ")[0] : ""}}, soy ${{n}}. Me interesa ${{P.nombre}}.${{VIS.day ? " Quisiera visitar el " + VIS.day + "." : ""}}${{pl !== "Prefiero no indicar" ? " Pienso comprar: " + pl.toLowerCase() + "." : ""}}${{pg !== "Prefiero no indicar" ? " Forma de pago: " + pg.toLowerCase() + "." : ""}} ¿Me ayudan con la información?`);
   $("#okMsg").classList.add("on"); }});
 '''
