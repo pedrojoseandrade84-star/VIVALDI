@@ -41,7 +41,8 @@ const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 const pmrem = new THREE.PMREMGenerator(renderer);
 
 // posprocesado: MSAA en HDR, oclusión ambiental, brillo suave y salida con tono de cine
-const rt = new THREE.WebGLRenderTarget(1, 1, {type: THREE.HalfFloatType, samples: 4});
+const HF = renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float');   // en equipos sin color HDR se usa 8 bits
+const rt = new THREE.WebGLRenderTarget(1, 1, {type: HF ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: coarse ? 2 : 4});
 const composer = new EffectComposer(renderer, rt);
 const pRender = new RenderPass(scene, camera); composer.addPass(pRender);
 const pAO = new GTAOPass(scene, camera, innerWidth, innerHeight); pAO.blendIntensity = .9; pAO.updateGtaoMaterial({radius: .6, distanceExponent: 1.2, thickness: 1.2, scale: 1, samples: 16});

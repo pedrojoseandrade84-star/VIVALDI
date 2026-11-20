@@ -158,14 +158,11 @@ body.xr .top,body.xr .info,body.xr .dock,body.xr .time,body.xr .cap{display:none
   <form method="dialog"><button class="btn pri" type="submit">Entendido</button></form></dialog>
 
 <script>window.VV_DATOS = /*DATOS*/null; window.VV_REC = /*REC*/null;</script>
-<script type="application/json" id="vv-mods">/*MODS*/</script>
 <script>
-/* Cargador de módulos: cada módulo (three.js, complementos y la app) se crea como URL local; todo funciona sin internet. */
-(() => { try { const M = JSON.parse(document.getElementById("vv-mods").textContent), url = {};
-  if (!document.createElement("canvas").getContext("webgl2")) throw new Error("Este navegador no tiene WebGL 2");
-  for (const id of M.orden) url[id] = URL.createObjectURL(new Blob([M.mods[id].replace(/@@VV(\d+)@@/g, (_, n) => url[n])], {type: "text/javascript"}));
-  import(url[M.entrada]).catch(e => { console.error(e); document.getElementById("loadT").textContent = "No se pudo iniciar el showroom: " + e.message; });
-} catch (e) { document.getElementById("loadT").textContent = "Este navegador no puede mostrar el showroom 3D (" + e.message + "). Prueba con Chrome, Edge o Safari actualizados."; } })();
+/* Si algo falla en un equipo, se explica en pantalla en vez de quedar cargando. */
+window.addEventListener("error", e => { const t = document.getElementById("loadT"); if (t && !document.body.dataset.listo) t.textContent = "No se pudo iniciar el showroom en este equipo (" + (e.message || "error") + "). Prueba con el navegador actualizado o agrega ?ligero a la dirección."; });
+(() => { const c = document.createElement("canvas"); if (!c.getContext("webgl2")) document.getElementById("loadT").textContent = "Este navegador no tiene WebGL 2 activado. Actualiza Safari o Chrome para ver el showroom 3D."; })();
 </script>
+<script>/*MOTOR*/</script>
 </body>
 </html>

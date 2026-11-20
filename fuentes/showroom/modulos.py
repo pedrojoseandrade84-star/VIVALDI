@@ -39,3 +39,61 @@ os.makedirs(os.path.join(D, 'vendor'), exist_ok=True)
 json.dump({'orden': orden, 'mods': fuentes, 'entrada': mid(APP), 'rutas': {v: os.path.relpath(k, NM) if not k.startswith('stub:') else k for k, v in ids.items()}},
           open(os.path.join(D, 'vendor', 'modulos.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 print('ok módulos', len(orden), round(sum(len(s) for s in fuentes.values()) / 1024), 'KB')
+
+# ---------- versión clásica (sin módulos): funciona al abrir el archivo en Safari/iPhone y en cualquier navegador ----------
+def clasico(src, deps_tok):
+    getters, pre = [], []
+    tok = lambda s: re.sub(r'@@VV(\d+)@@', r'\1', s)
+    def imp(m):
+        cl, spec = m.group(1).strip(), tok(m.group(3))
+        if not cl: return f'__r({spec});'
+        out = []; cl = cl.strip()
+        mns = re.match(r'\*\s*as\s+([\w$]+)$', cl)
+        if mns: return f'const {mns.group(1)} = __r({spec});'
+        md = re.match(r'([\w$]+)\s*(?:,\s*(.*))?$', cl, re.S)
+        if md and not cl.startswith('{'):
+            out.append(f'const {md.group(1)} = __r({spec}).default;'); cl = (md.group(2) or '').strip()
+            if cl.startswith('* as'): out.append(f'const {cl[4:].strip()} = __r({spec});'); cl = ''
+        if cl.startswith('{'):
+            items = [x.strip() for x in cl.strip('{} \n').split(',') if x.strip()]
+            for it in items:
+                a, _, b = it.partition(' as '); b = (b or a).strip(); a = a.strip()
+                out.append(f'const {b} = __r({spec}).{a};' if a != 'default' else f'const {b} = __r({spec}).default;')
+        return ' '.join(out)
+    src = re.sub(r'''^[ \t]*import\s*((?:[\w$*{}\s,]|\bas\b)*?)\s*(from\s*)?(['"])@@VV\d+@@\3\s*;?''', lambda m: imp(re.match(r'''^[ \t]*import\s*(.*?)\s*(from\s*)?['"](@@VV\d+@@)['"]''', m.group(0), re.S)), src, flags=re.M | re.S)
+    def reexp(m):
+        cl, spec = m.group(1).strip(), tok(m.group(2))
+        if cl.startswith('*'):
+            mm = re.match(r'\*\s*as\s+([\w$]+)', cl)
+            if mm: getters.append(f'"{mm.group(1)}": () => __r({spec})'); return ''
+            pre.append(f'__star(__e, {spec});'); return ''
+        for it in [x.strip() for x in cl.strip('{} \n').split(',') if x.strip()]:
+            a, _, b = it.partition(' as '); b = (b or a).strip(); a = a.strip(); getters.append(f'"{b}": () => __r({spec}).{a}')
+        return ''
+    src = re.sub(r'''^[ \t]*export\s*(\*(?:\s*as\s+[\w$]+)?|\{[^}]*\})\s*from\s*['"](@@VV\d+@@)['"]\s*;?''', reexp, src, flags=re.M)
+    def lista(m):
+        for it in [x.strip() for x in m.group(1).split(',') if x.strip()]:
+            a, _, b = it.partition(' as '); b = (b or a).strip(); a = a.strip(); getters.append(f'"{b}": () => {a}')
+        return ''
+    src = re.sub(r'^[ \t]*export\s*\{([^}]*)\}\s*;?', lista, src, flags=re.M)
+    def decl(m):
+        kw, name = m.group(1), m.group(2)
+        if kw in ('const', 'let', 'var'):
+            for n in re.findall(r'([\w$]+)\s*=', m.group(0) + m.group(3)) [:1]: getters.append(f'"{n}": () => {n}')
+        else: getters.append(f'"{name}": () => {name}')
+        return m.group(0)[m.group(0).index(kw):]
+    src = re.sub(r'^[ \t]*export\s+(const|let|var|function\*?|async\s+function|class)\s+([\w$]+)(.?)', decl, src, flags=re.M)
+    src = re.sub(r'^[ \t]*export\s+default\s+(function\*?|class)\s+([\w$]+)', lambda m: (getters.append(f'"default": () => {m.group(2)}') or '') + f'{m.group(1)} {m.group(2)}', src, flags=re.M)
+    src = re.sub(r'^[ \t]*export\s+default\s+', '__e.default = ', src, flags=re.M)
+    cab = ('__def(__e, {' + ', '.join(getters) + '});') if getters else ''
+    return cab + ' '.join(pre) + '\n' + src
+
+cl = ['(function(){"use strict"; const __m = {}, __c = {};',
+      'function __def(e, g){ for (const k in g) Object.defineProperty(e, k, {get: g[k], enumerable: true, configurable: true}); }',
+      'function __star(e, id){ const s = __r(id); for (const k of Object.keys(s)) if (k !== "default" && !(k in e)) Object.defineProperty(e, k, {get: () => s[k], enumerable: true, configurable: true}); }',
+      'function __r(id){ if (__c[id]) return __c[id]; const e = __c[id] = {}; __m[id](e); return e; }']
+for i in orden:
+    cl.append(f'__m[{i}] = function(__e){{ "use strict";\n{clasico(fuentes[i], None)}\n}};')
+cl.append(f'__r({mid(APP)}); }})();')
+open(os.path.join(D, 'vendor', 'motor.js'), 'w', encoding='utf-8').write('\n'.join(cl))
+print('ok motor clásico', round(sum(len(x) for x in cl) / 1024), 'KB')
