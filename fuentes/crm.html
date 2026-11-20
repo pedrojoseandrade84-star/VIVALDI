@@ -50,6 +50,7 @@
     if (c.notes) push(c.stageAt || c.created, "Notas del asesor", c.notes, "#5B4FC4");
     return ev.sort((a, b) => b.d.localeCompare(a.d)); }
   const fecha = d => { const x = new Date(d.length === 10 ? d + "T12:00" : d); return isNaN(x) ? d : x.toLocaleString("es-PE", {day: "2-digit", month: "short", year: "numeric", ...(d.length > 10 ? {hour: "2-digit", minute: "2-digit"} : {})}); };
+  window.vvEventos = eventos;   // la ficha 360 del tablero usa el mismo historial
   function abrir(c) { actual = c; const ev = eventos(c), pf = ev.filter(e => /^Proforma/.test(e.t)).length, pagos = ev.filter(e => /^Pago/.test(e.t)).length;
     const dias = c.created ? Math.max(0, Math.round((Date.now() - new Date(c.created + "T12:00")) / 864e5)) : "—";
     box.innerHTML = `<button type="button" class="hx-x" aria-label="Cerrar">×</button><h3 id="hxT">${esc(c.name)}</h3><p class="hx-sub">${esc(c.stage)} · ${esc(c.proj || "")}${c.phone ? " · " + esc(c.phone) : ""}</p>

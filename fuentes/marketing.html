@@ -2,7 +2,7 @@
 <style>
 #marketing .mk-band{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 #marketing .mk-band select{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
-#marketing .mk-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+#marketing{min-width:0;max-width:100%}#marketing .mk-card{min-width:0;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
 #marketing .mk-card h3{margin:0 0 4px;font-size:1.08rem}#marketing .mk-note{font-size:.85rem;color:var(--muted);margin:4px 0 0;line-height:1.5}
 #marketing .mk-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
 #marketing .mk-k{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
@@ -12,7 +12,7 @@
 #marketing .mk-inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
 #marketing .mk-inv label{display:grid;gap:6px;font-weight:700;font-size:.84rem}
 #marketing .mk-inv input{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
-#marketing .mk-tw{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
+#marketing .mk-tw{position:relative;overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
 #marketing table{border-collapse:collapse;width:100%;min-width:720px;font-size:.88rem}
 #marketing th{background:var(--deep);color:#fff;text-align:left;padding:9px 12px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 #marketing th.r,#marketing td.r{text-align:right}#marketing td{padding:9px 12px;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}

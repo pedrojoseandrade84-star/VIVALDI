@@ -1,0 +1,288 @@
+<!--pipeline-start-->
+<style>
+#pipeline .pl-head,#conversaciones .pl-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#pipeline .pl-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+#pipeline .pl-tools input,#pipeline .pl-tools select{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+#pipeline .pl-tools input{flex:1 1 220px;min-width:0}
+#pipeline .pl-tools label.chk{display:flex;gap:8px;align-items:center;font-size:.88rem;font-weight:700;min-height:44px;padding:0 6px;cursor:pointer;white-space:nowrap}
+#pipeline .pl-tools label.chk input{width:20px;height:20px;min-height:0;padding:0;flex:none;accent-color:var(--deep)}
+#pipeline .pl-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+#pipeline .pl-k{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+#pipeline .pl-k span{display:block;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#pipeline .pl-k b{display:block;font-family:var(--f-display);font-weight:400;font-size:1.8rem;line-height:1.15;margin-top:4px;font-variant-numeric:tabular-nums}
+#pipeline .pl-k small{color:var(--muted);font-size:.8rem}#pipeline .pl-k.hot b{color:var(--bad)}
+#pipeline,#conversaciones{min-width:0;max-width:100%}
+#pipeline .pl-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(205px,1fr);gap:12px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x proximity}
+#pipeline .pl-col{background:var(--bg);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:360px;scroll-snap-align:start;transition:box-shadow .15s,border-color .15s}
+#pipeline .pl-col.over{border-color:var(--sea);box-shadow:0 0 0 3px var(--sea-soft) inset}
+#pipeline .pl-ch{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:grid;gap:2px}
+#pipeline .pl-ch b{font-size:.95rem;display:flex;justify-content:space-between;gap:8px}#pipeline .pl-ch b i{font-style:normal;font-variant-numeric:tabular-nums;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:.78rem;line-height:1.6}
+#pipeline .pl-ch small{color:var(--muted);font-size:.78rem;font-variant-numeric:tabular-nums}
+#pipeline .pl-ch .bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px}#pipeline .pl-ch .bar i{display:block;height:100%;background:var(--c,var(--sea))}
+#pipeline .pl-list{list-style:none;margin:0;padding:10px;display:grid;gap:8px;align-content:start;flex:1}
+#pipeline .pl-card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c,var(--sea));border-radius:12px;padding:11px 12px;cursor:grab;display:grid;gap:5px;box-shadow:0 1px 2px rgba(10,30,50,.06);transition:transform .12s,box-shadow .12s}
+#pipeline .pl-card:hover{box-shadow:0 6px 18px rgba(10,30,50,.12);transform:translateY(-1px)}
+#pipeline .pl-card:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+#pipeline .pl-card.drag{opacity:.45}
+#pipeline .pl-card .n{font-weight:800;font-size:.94rem;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+#pipeline .pl-card .n span{font-weight:700;font-size:.8rem;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+#pipeline .pl-card .m{font-size:.8rem;color:var(--muted);line-height:1.4}
+#pipeline .pl-card .t{display:flex;gap:5px;flex-wrap:wrap}
+#pipeline .pl-tag{font-size:.68rem;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+#pipeline .pl-tag.old{background:#FBE9E6;border-color:#F0C4BC;color:#8A2A1B}#pipeline .pl-tag.hoy{background:var(--sun-soft);border-color:transparent}
+#pipeline .pl-tag.bot{background:var(--sea-soft);border-color:transparent}
+#pipeline .pl-empty{font-size:.82rem;color:var(--muted);text-align:center;padding:18px 8px;border:1.5px dashed var(--line);border-radius:12px}
+#pipeline .pl-help{font-size:.82rem;color:var(--muted);margin:8px 0 0}
+.pl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ficha 360 */
+.p360-bk{position:fixed;inset:0;z-index:97;background:rgba(6,25,40,.5);display:none}.p360-bk.on{display:block}
+.p360{position:absolute;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--surface,#fff);color:var(--ink,#0B2236);overflow:auto;box-shadow:-20px 0 60px rgba(0,0,0,.25);padding:22px 22px 40px;animation:p360in .22s ease-out}
+@keyframes p360in{from{transform:translateX(40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.p360{animation:none}#pipeline .pl-card{transition:none}}
+.p360 .x{float:right;min-width:44px;min-height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1.25rem;cursor:pointer}
+.p360 h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.7rem;line-height:1.15}
+.p360 .sub{color:var(--muted);margin:4px 0 14px;font-size:.9rem}
+.p360 .acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.p360 .b{min-height:42px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
+.p360 .b.pri{background:var(--deep);border-color:var(--deep);color:#fff}.p360 .b.wa{background:#17733F;border-color:#17733F;color:#fff}
+.p360 .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:0 0 16px}
+.p360 .steps button{min-height:44px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:.72rem;font-weight:800;border-radius:8px;cursor:pointer;padding:4px}
+.p360 .steps button[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+.p360 .steps button.done{background:var(--sea-soft);border-color:transparent}
+.p360 .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.p360 .facts div{background:var(--bg);border-radius:12px;padding:10px 12px}.p360 .facts span{display:block;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.p360 .facts b{font-size:.95rem;word-break:break-word}.p360 .facts input{font:inherit;font-size:16px;border:1px solid var(--line);border-radius:8px;min-height:38px;padding:0 8px;background:var(--surface);color:var(--ink);width:100%}
+.p360 h4{margin:18px 0 8px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.p360 ol{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}
+.p360 ol li{position:relative;padding:0 0 12px 12px;font-size:.88rem}.p360 ol li::before{content:"";position:absolute;left:-25px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--c,var(--sea))}
+.p360 ol li small{display:block;color:var(--muted);font-size:.76rem}
+.p360 .nota{display:flex;gap:8px}.p360 .nota input{flex:1;min-width:0;font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.p360 .chat{display:grid;gap:6px;max-height:280px;overflow:auto;padding:10px;background:var(--bg);border-radius:12px}
+/* bandeja */
+#conversaciones .cv-wrap{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:12px;min-height:480px}
+#conversaciones .cv-list{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:640px}
+#conversaciones .cv-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+#conversaciones .cv-tabs button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}
+#conversaciones .cv-tabs button[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+#conversaciones .cv-it{display:grid;gap:3px;width:100%;text-align:left;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;cursor:pointer;min-height:64px}
+#conversaciones .cv-it[aria-current="true"]{background:var(--sea-soft)}
+#conversaciones .cv-it b{display:flex;justify-content:space-between;gap:8px;font-size:.92rem}#conversaciones .cv-it b small{font-weight:600;color:var(--muted);font-size:.74rem;white-space:nowrap}
+#conversaciones .cv-it span{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#conversaciones .cv-st{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--bg)}
+#conversaciones .cv-st.asesor{background:#FBE9E6;color:#8A2A1B}#conversaciones .cv-st.asistente{background:var(--sea-soft)}
+#conversaciones .cv-th{background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:480px}
+#conversaciones .cv-top{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+#conversaciones .cv-top h3{margin:0;font-size:1.05rem}#conversaciones .cv-top p{margin:2px 0 0;font-size:.8rem;color:var(--muted)}
+#conversaciones .cv-msgs,.p360 .chat{display:flex;flex-direction:column;gap:8px}
+#conversaciones .cv-msgs{flex:1;overflow:auto;padding:16px;max-height:470px}
+.cv-b{max-width:80%;padding:9px 12px;border-radius:14px;font-size:.9rem;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.cv-b small{display:block;font-size:.7rem;opacity:.75;margin-top:3px}
+.cv-b.cliente{align-self:flex-start;background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.cv-b.asistente{align-self:flex-end;background:var(--sea-soft);color:var(--ink)}
+.cv-b.asesor{align-self:flex-end;background:var(--deep);color:#fff}
+#conversaciones .cv-send{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+#conversaciones .cv-send textarea{flex:1;min-width:0;font:inherit;font-size:16px;min-height:48px;max-height:140px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);resize:vertical}
+#conversaciones .b{min-height:42px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:.86rem;cursor:pointer}
+#conversaciones .b.pri{background:var(--deep);border-color:var(--deep);color:#fff}
+#conversaciones .cv-none{padding:28px;color:var(--muted);text-align:center;font-size:.92rem;line-height:1.55}
+#conversaciones .cv-ej{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--sun-soft);padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+@media (max-width:900px){#pipeline .pl-kpis{grid-template-columns:1fr 1fr}#conversaciones .cv-wrap{grid-template-columns:1fr}#conversaciones .cv-list{max-height:300px}}
+@media print{#pipeline .pl-tools,#conversaciones{display:none}#pipeline .pl-board{grid-auto-flow:row;grid-template-columns:repeat(5,1fr)}}
+</style>
+<script id="pipeline-js">
+/* CRM de Vivaldi: tablero de ventas por etapas (arrastrar y soltar o teclado), ficha 360 de cada cliente y bandeja de conversaciones
+   del asesor virtual 24/7 (WhatsApp y web), donde un asesor toma la conversación y responde. Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  if (typeof CLIENTS === "undefined" || !document.getElementById("clientes")) return;
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const S = n => "S/ " + Math.round(n || 0).toLocaleString("es-PE"), say = t => (typeof toast === "function" ? toast(t) : alert(t));
+  const hoy = () => (typeof todayIso === "function" ? todayIso() : new Date().toISOString().slice(0, 10));
+  const COLS = ["Nuevo", "Contactado", "Visita agendada", "Separado", "Vendido"], COLOR = ["#7A8B99", "#1F6FAE", "#C08A1E", "#7A4FB0", "#1E7B4C"];
+  const PROB0 = {"Nuevo": 5, "Contactado": 15, "Visita agendada": 35, "Separado": 80, "Vendido": 100};
+  const prob = st => { try { const p = Object.assign({}, PROB0, JSON.parse(localStorage.getItem("vivaldi-probabilidades") || "{}")); return (+p[st] || 0) / 100; } catch (e) { return (PROB0[st] || 0) / 100; } };
+  const valor = c => c.budget || ((typeof VIV !== "undefined" && VIV.find(v => v.name === c.proj)) || {}).pen || 0;
+  const dias = s => s ? Math.max(0, Math.round((new Date(hoy() + "T12:00") - new Date(String(s).slice(0, 10) + "T12:00")) / 864e5)) : 0;
+  const ini = n => String(n || "").trim().split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+  const demo = () => { try { return localStorage.getItem("vivaldi-demo") === "1"; } catch (e) { return false; } };
+  const nube = () => window.vivaldiNube && window.vivaldiNube.sesion ? window.vivaldiNube : null;
+  const tel9 = t => String(t || "").replace(/\D/g, "").replace(/^51(?=9\d{8}$)/, "");
+  let CONV = [];   // conversaciones del asesor virtual (servidor o ejemplo)
+
+  // ---------- tablero ----------
+  const sec = document.createElement("section"); sec.id = "pipeline"; sec.setAttribute("aria-labelledby", "plT");
+  sec.innerHTML = `<div class="sec-head"><div class="eyebrow">CRM · Ventas</div><h2 id="plT">Tablero de ventas</h2>
+    <p class="lead">Todas las oportunidades por etapa. Arrastra una tarjeta a otra columna (o selecciónala y usa las flechas ← →) para moverla; ábrela para ver la ficha 360 del cliente.</p></div>
+    <div class="pl-kpis" id="plK"></div>
+    <div class="pl-tools"><label class="pl-sr" for="plQ">Buscar en el tablero</label><input id="plQ" type="search" placeholder="Buscar por nombre, celular o proyecto" autocomplete="off">
+      <label class="pl-sr" for="plP">Proyecto</label><select id="plP"></select><label class="pl-sr" for="plA">Asesor</label><select id="plA"></select>
+      <label class="chk"><input type="checkbox" id="plD"> Ver descartados</label></div>
+    <div class="pl-board" id="plB" role="list" aria-label="Etapas de venta"></div>
+    <p class="pl-help">Atajos: <b>Enter</b> abre la ficha · <b>← →</b> cambia de etapa · los cambios quedan en el historial del cliente y se sincronizan con la base.</p>
+    <div class="pl-sr" aria-live="polite" id="plLive"></div>`;
+  const ancla = document.getElementById("clientes"); ancla.parentNode.insertBefore(sec, ancla);
+  const $p = id => document.getElementById(id);
+  const filtros = () => ({q: $p("plQ").value.trim().toLowerCase(), p: $p("plP").value, a: $p("plA").value, d: $p("plD").checked});
+  function opciones() {
+    const keep = (el, html) => { const v = el.value; el.innerHTML = html; if ([...el.options].some(o => o.value === v)) el.value = v; };
+    const pr = [...new Set(CLIENTS.map(c => c.proj).filter(Boolean))].sort(), ad = [...new Set(CLIENTS.map(c => c.adv).filter(Boolean))].sort();
+    keep($p("plP"), `<option value="">Todos los proyectos</option>` + pr.map(p => `<option>${E(p)}</option>`).join(""));
+    keep($p("plA"), `<option value="">Todo el equipo</option>` + ad.map(p => `<option>${E(p)}</option>`).join(""));
+  }
+  const convDe = c => CONV.find(v => (c.phone && tel9(v.celular) === tel9(c.phone) && tel9(c.phone).length === 9) || (v.solicitud && c.sol && +v.solicitud === +c.sol));
+  function render() {
+    opciones(); const f = filtros(), t = hoy();
+    const lista = CLIENTS.filter(c => (!f.p || c.proj === f.p) && (!f.a || c.adv === f.a) && (!f.q || `${c.name} ${c.phone} ${c.proj}`.toLowerCase().includes(f.q)));
+    const act = lista.filter(c => COLS.slice(0, 4).includes(c.stage)), cart = act.reduce((s, c) => s + valor(c), 0), pron = act.reduce((s, c) => s + valor(c) * prob(c.stage), 0);
+    const quietos = act.filter(c => dias(c.stageAt || c.created) > 7).length, espera = CONV.filter(v => v.estado === "asesor").length;
+    $p("plK").innerHTML = [["Oportunidades activas", act.length, `${lista.filter(c => c.stage === "Vendido").length} vendidas`], ["Valor en cartera", S(cart), "precio de lista de lo activo"],
+      ["Pronóstico ponderado", S(pron), "según la probabilidad de cada etapa"], [espera ? "Esperan a un asesor" : "Sin movimiento +7 días", espera ? espera : quietos, espera ? "conversaciones del asesor virtual" : "oportunidades por reactivar", espera || quietos ? "hot" : ""]]
+      .map(([l, n, s, cls]) => `<div class="pl-k ${cls || ""}"><span>${l}</span><b>${n}</b><small>${s}</small></div>`).join("");
+    const cols = f.d ? [...COLS, "Descartado"] : COLS, tot = Math.max(1, lista.filter(c => COLS.includes(c.stage)).length);
+    $p("plB").innerHTML = cols.map((st, i) => { const cs = lista.filter(c => c.stage === st).sort((a, b) => (a.next || "9999").localeCompare(b.next || "9999")), suma = cs.reduce((s, c) => s + valor(c), 0), col = COLOR[i] || "#9AA7B2";
+      return `<div class="pl-col" role="listitem" data-st="${E(st)}" style="--c:${col}"><div class="pl-ch"><b>${E(st)} <i>${cs.length}</i></b><small>${S(suma)}${st !== "Vendido" && st !== "Descartado" ? ` · ${Math.round(prob(st) * 100)} %` : ""}</small><div class="bar"><i style="width:${Math.round(cs.length / tot * 100)}%"></i></div></div>
+        <ul class="pl-list" aria-label="${E(st)}">${cs.map(c => { const d = dias(c.stageAt || c.created), late = c.next && c.next < t && st !== "Vendido", due = c.next === t, cv = convDe(c);
+          return `<li class="pl-card" tabindex="0" draggable="true" data-id="${E(c.id)}" aria-label="${E(c.name)}, ${E(st)}${c.proj ? ", " + E(c.proj) : ""}. Enter para abrir, flechas para mover.">
+            <div class="n">${E(c.name)}<span>${valor(c) ? S(valor(c)) : ""}</span></div><div class="m">${E(c.proj || "Sin proyecto")}${c.adv ? " · " + E(ini(c.adv)) : ""}${c.src ? " · " + E(c.src) : ""}</div>
+            <div class="t">${d > 7 && COLS.slice(0, 4).includes(st) ? `<span class="pl-tag old">${d} días sin avanzar</span>` : `<span class="pl-tag">${d} d en etapa</span>`}${late ? `<span class="pl-tag old">Contactar: atrasado</span>` : due ? `<span class="pl-tag hoy">Contactar hoy</span>` : ""}${cv ? `<span class="pl-tag bot">${cv.estado === "asesor" ? "Te espera en el chat" : "Habló con el asesor virtual"}</span>` : ""}${c.demo ? `<span class="pl-tag">Ejemplo</span>` : ""}</div></li>`; }).join("") || `<li class="pl-empty">Arrastra aquí</li>`}</ul></div>`; }).join("");
+  }
+  function mover(c, st, foco) {
+    if (!c || c.stage === st) return; const antes = c.stage; c.stage = st; c.stageAt = hoy(); if (typeof crmSave === "function") crmSave();
+    if (typeof renderCrm === "function") renderCrm(); else render();
+    $p("plLive").textContent = `${c.name}: ${antes} → ${st}`; say(`${c.name.split(" ")[0]} → ${st}`);
+    if (foco) setTimeout(() => { const el = sec.querySelector(`.pl-card[data-id="${CSS.escape(c.id)}"]`); if (el) el.focus(); }, 0);
+    if (p360.on && p360.c === c) abrir360(c);
+  }
+  const porId = id => CLIENTS.find(x => x.id === id);
+  // arrastrar y soltar
+  let arr = null;
+  sec.addEventListener("dragstart", e => { const k = e.target.closest(".pl-card"); if (!k) return; arr = k.dataset.id; k.classList.add("drag"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", arr); } catch (x) {} });
+  sec.addEventListener("dragend", e => { const k = e.target.closest(".pl-card"); if (k) k.classList.remove("drag"); sec.querySelectorAll(".pl-col.over").forEach(x => x.classList.remove("over")); arr = null; });
+  sec.addEventListener("dragover", e => { const col = e.target.closest(".pl-col"); if (!col || !arr) return; e.preventDefault(); sec.querySelectorAll(".pl-col.over").forEach(x => x !== col && x.classList.remove("over")); col.classList.add("over"); });
+  sec.addEventListener("drop", e => { const col = e.target.closest(".pl-col"); if (!col || !arr) return; e.preventDefault(); mover(porId(arr), col.dataset.st); });
+  // teclado y clic
+  sec.addEventListener("keydown", e => { const k = e.target.closest(".pl-card"); if (!k) return; const c = porId(k.dataset.id); if (!c) return;
+    const cols = [...sec.querySelectorAll(".pl-col")].map(x => x.dataset.st), i = cols.indexOf(c.stage);
+    if (e.key === "ArrowRight" && i < cols.length - 1) { e.preventDefault(); mover(c, cols[i + 1], true); }
+    if (e.key === "ArrowLeft" && i > 0) { e.preventDefault(); mover(c, cols[i - 1], true); }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const h = [...k.parentNode.querySelectorAll(".pl-card")], j = h.indexOf(k) + (e.key === "ArrowDown" ? 1 : -1); if (h[j]) h[j].focus(); }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir360(c, k); } });
+  sec.addEventListener("click", e => { const k = e.target.closest(".pl-card"); if (k) abrir360(porId(k.dataset.id), k); });
+  ["plQ", "plP", "plA", "plD"].forEach(id => $p(id).addEventListener(id === "plQ" ? "input" : "change", render));
+
+  // ---------- ficha 360 ----------
+  const bk = document.createElement("div"); bk.className = "p360-bk"; bk.innerHTML = '<aside class="p360" role="dialog" aria-modal="true" aria-labelledby="p3T"></aside>'; document.body.appendChild(bk);
+  const box = bk.firstChild, p360 = {on: false, c: null, volver: null, vid: null};
+  const fecha = d => { try { return new Date(d.length <= 10 ? d + "T12:00" : d).toLocaleDateString("es-PE", {day: "numeric", month: "short", year: "numeric"}); } catch (e) { return d; } };
+  function eventos(c) {
+    if (typeof window.vvEventos === "function") { try { return window.vvEventos(c); } catch (e) {} }
+    return (c.hist || []).map(h => ({d: h.d, t: h.t})).reverse();
+  }
+  function abrir360(c, desde) {
+    if (!c) return; p360.on = true; p360.c = c; if (desde) { p360.volver = desde; p360.vid = desde.dataset.id || null; }
+    const i = COLS.indexOf(c.stage), cv = convDe(c), ph = tel9(c.phone), ev = eventos(c).slice(0, 40);
+    box.innerHTML = `<button type="button" class="x" aria-label="Cerrar ficha">×</button><h3 id="p3T">${E(c.name)}</h3>
+      <p class="sub">${E(c.stage)} · ${E(c.proj || "Sin proyecto")}${c.demo ? " · dato de ejemplo" : ""}</p>
+      <div class="acts">${ph ? `<button type="button" class="b wa" data-x="wa">WhatsApp</button><a class="b" href="tel:+51${E(ph)}">Llamar</a>` : ""}<button type="button" class="b pri" data-x="pf">Proforma</button><button type="button" class="b" data-x="vis">Agendar visita</button>${c.stage !== "Descartado" ? `<button type="button" class="b" data-x="desc">Descartar</button>` : ""}</div>
+      <div class="steps" role="group" aria-label="Etapa">${COLS.map((s, j) => `<button type="button" data-st="${E(s)}" aria-pressed="${s === c.stage}" class="${j < i ? "done" : ""}">${E(s)}</button>`).join("")}</div>
+      <div class="facts"><div><span>Celular</span><b>${E(c.phone || "—")}</b></div><div><span>Valor</span><b>${valor(c) ? S(valor(c)) : "—"}</b></div>
+        <div><span>Origen</span><b>${E(c.src || "—")}${c.camp ? " · " + E(c.camp) : ""}</b></div><div><span>Asesor</span><b>${E(c.adv || "—")}</b></div>
+        <div><span>Cliente desde</span><b>${c.created ? E(fecha(c.created)) + ` (${dias(c.created)} d)` : "—"}</b></div><div><span>Próximo contacto</span><input type="date" id="p3N" value="${E(c.next || "")}" aria-label="Próximo contacto"></div>
+        <div><span>Probabilidad</span><b>${Math.round(prob(c.stage) * 100)} %</b></div><div><span>En esta etapa</span><b>${dias(c.stageAt || c.created)} días</b></div></div>
+      ${c.notes ? `<h4>Notas</h4><p style="white-space:pre-wrap;margin:0;font-size:.9rem">${E(c.notes)}</p>` : ""}
+      <h4>Agregar nota</h4><div class="nota"><input id="p3Nota" maxlength="300" placeholder="Llamada, acuerdo, objeción…" aria-label="Nueva nota"><button type="button" class="b pri" data-x="nota">Guardar</button></div>
+      ${cv ? `<h4>Conversación con el asesor virtual (${cv.canal === "whatsapp" ? "WhatsApp" : "web"})</h4><div class="chat">${(cv.mensajes || []).slice(-12).map(m => `<div class="cv-b ${E(m.rol)}">${E(m.texto)}<small>${m.rol === "cliente" ? "Cliente" : m.rol === "asesor" ? "Asesor" : "Asesor virtual"}</small></div>`).join("") || "<p>Sin mensajes cargados.</p>"}</div>
+        <div class="acts" style="margin-top:8px"><button type="button" class="b" data-x="chat">Abrir en la bandeja</button></div>` : ""}
+      <h4>Historial</h4><ol>${ev.map(x => `<li><b>${E(x.t)}</b><small>${E(fecha(String(x.d || "")))}${x.s ? " · " + E(x.s) : ""}</small></li>`).join("") || "<li>Sin actividad registrada todavía.</li>"}</ol>`;
+    bk.classList.add("on"); box.querySelector(".x").focus();
+  }
+  const cerrar360 = () => { bk.classList.remove("on"); p360.on = false; p360.c = null; const k = p360.vid && sec.querySelector(`.pl-card[data-id="${CSS.escape(p360.vid)}"]`); if (k) k.focus(); else if (p360.volver && document.contains(p360.volver)) p360.volver.focus(); };
+  bk.addEventListener("click", e => { if (e.target === bk || e.target.closest(".x")) return cerrar360(); const c = p360.c; if (!c) return;
+    const st = e.target.closest(".steps button"); if (st) return mover(c, st.dataset.st);
+    const b = e.target.closest("[data-x]"); if (!b) return; const a = b.dataset.x;
+    if (a === "wa" && typeof sendWa === "function") { sendWa(`Hola ${c.name.split(" ")[0]}, te saluda tu asesor de Vivaldi Inmobiliaria. ¿Pudiste revisar la información de ${c.proj}?`, c.phone); c.hist = (c.hist || []).concat([{d: new Date().toISOString(), t: "WhatsApp enviado desde la ficha 360"}]); if (typeof crmSave === "function") crmSave(); }
+    if (a === "pf") { cerrar360(); const btn = document.querySelector(`#crmList [data-id="${CSS.escape(c.id)}"] [data-a="pf"]`); if (btn) btn.click(); else document.getElementById("proforma")?.scrollIntoView({behavior: "smooth"}); }
+    if (a === "vis") { cerrar360(); const v = document.getElementById("visitas"); if (v) v.scrollIntoView({behavior: "smooth"}); const sel = document.querySelector("#visitas select"); if (sel && [...sel.options].some(o => o.value === c.id)) { sel.value = c.id; sel.dispatchEvent(new Event("change", {bubbles: true})); } }
+    if (a === "desc" && confirm(`¿Marcar a ${c.name} como descartado?`)) mover(c, "Descartado");
+    if (a === "nota") { const t = box.querySelector("#p3Nota").value.trim(); if (!t) return box.querySelector("#p3Nota").focus(); c.hist = (c.hist || []).concat([{d: new Date().toISOString(), t: "Nota: " + t}]); if (typeof crmSave === "function") crmSave(); say("Nota guardada"); abrir360(c); }
+    if (a === "chat") { const cv = convDe(c); cerrar360(); if (cv) { selConv = cv.id; renderConv(); document.getElementById("conversaciones").scrollIntoView({behavior: "smooth"}); } } });
+  bk.addEventListener("change", e => { if (e.target.id === "p3N" && p360.c) { p360.c.next = e.target.value; if (typeof crmSave === "function") crmSave(); if (typeof renderCrm === "function") renderCrm(); say("Próximo contacto actualizado"); } });
+  bk.addEventListener("keydown", e => { if (e.key === "Escape") cerrar360(); if (e.key === "Enter" && e.target.id === "p3Nota") box.querySelector('[data-x="nota"]').click();
+    if (e.key === "Tab") { const f = [...box.querySelectorAll("button,a,input")].filter(x => !x.disabled); if (!f.length) return; const a = f[0], z = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } } });
+  // la lista de clientes también abre la ficha 360
+  const poner = () => document.querySelectorAll("#crmList .crm-item[data-id] .crm-acts").forEach(a => { if (a.querySelector("[data-p360]")) return; const b = document.createElement("button"); b.type = "button"; b.dataset.p360 = "1"; b.textContent = "Ficha 360"; a.prepend(b); });
+  new MutationObserver(poner).observe(document.getElementById("crmList"), {childList: true}); poner();
+  document.getElementById("crmList").addEventListener("click", e => { const b = e.target.closest("[data-p360]"); if (b) abrir360(porId(b.closest("[data-id]").dataset.id), b); });
+
+  // ---------- bandeja del asesor virtual ----------
+  const sc = document.createElement("section"); sc.id = "conversaciones"; sc.setAttribute("aria-labelledby", "cvT");
+  sc.innerHTML = `<div class="sec-head"><div class="eyebrow">CRM · Asesor virtual 24/7</div><h2 id="cvT">Conversaciones <span id="cvEj"></span></h2>
+    <p class="lead">Lo que el asesor virtual conversa con los clientes por WhatsApp y en la web, a cualquier hora. Cuando un cliente pide una persona, quiere negociar o tiene un reclamo, la conversación llega aquí: tómala y responde; tu mensaje sale por WhatsApp.</p></div>
+    <div class="cv-tabs" id="cvTabs" role="group" aria-label="Filtrar conversaciones"></div>
+    <div class="cv-wrap"><div class="cv-list" id="cvL" role="list" aria-label="Conversaciones"></div><div class="cv-th" id="cvTh"></div></div>`;
+  sec.after(sc);
+  let filtro = "asesor", selConv = null, cargando = false;
+  const TABS = [["asesor", "Esperan a un asesor"], ["asistente", "Atiende el asesor virtual"], ["cerrada", "Cerradas"], ["todas", "Todas"]];
+  const hora = d => { try { const x = new Date(d); return x.toDateString() === new Date().toDateString() ? x.toLocaleTimeString("es-PE", {hour: "2-digit", minute: "2-digit"}) : x.toLocaleDateString("es-PE", {day: "numeric", month: "short"}); } catch (e) { return ""; } };
+  const ejemplo = () => { const h = m => new Date(Date.now() - m * 60000).toISOString();
+    return [{id: "wa:51987000111", canal: "whatsapp", celular: "987000111", nombre: "Carmen Rojas", proyecto: "La Planicie de Asia", estado: "asesor", actualizado: h(6), resumen: "Pide descuento por pago al contado", ej: true,
+        mensajes: [{rol: "cliente", texto: "Hola, vi el anuncio de La Planicie. ¿Qué lotes quedan?", fecha: h(30)}, {rol: "asistente", texto: "¡Hola Carmen! En La Planicie de Asia quedan lotes desde S/ 35,000, con cuotas sin intereses. ¿Te calculo una cuota?", fecha: h(29)},
+          {rol: "cliente", texto: "Si pago al contado, ¿me hacen descuento?", fecha: h(8)}, {rol: "asistente", texto: "Esa consulta la ve directamente un asesor de Vivaldi. Te paso con tu asesor; te escribe por aquí en breve.", fecha: h(7)}]},
+      {id: "web:ejemplo-visita-01", canal: "web", celular: "945222333", nombre: "Jorge Medina", proyecto: "Las Terrazas de Cerro Azul", estado: "asistente", actualizado: h(48), ej: true,
+        mensajes: [{rol: "cliente", texto: "¿Puedo visitar el sábado?", fecha: h(55)}, {rol: "asistente", texto: "¡Claro! Las visitas guiadas son los fines de semana. ¿Me das tu nombre y celular, y me autorizas a registrarlos para que tu asesor te confirme la hora?", fecha: h(54)},
+          {rol: "cliente", texto: "Jorge Medina, 945222333. Sí, autorizo", fecha: h(50)}, {rol: "asistente", texto: "¡Listo, Jorge! Quedó registrada tu visita del sábado. Tu asesor te confirmará la hora por WhatsApp.", fecha: h(49)}]}]; };
+  async function cargar() {
+    const N = nube();
+    if (!N) { CONV = demo() ? ejemplo() : []; return; }
+    if (cargando) return; cargando = true;
+    try { const cs = await N.api("/rest/v1/conversaciones?select=*&order=actualizado.desc&limit=100", {method: "GET"}) || [];
+      const ids = cs.slice(0, 40).map(c => c.id), ms = ids.length ? await N.api(`/rest/v1/conversacion_mensajes?select=conversacion,rol,texto,fecha&conversacion=in.(${ids.map(i => '"' + i + '"').join(",")})&order=id.asc&limit=2000`, {method: "GET"}) || [] : [];
+      cs.forEach(c => { c.mensajes = ms.filter(m => m.conversacion === c.id); }); CONV = cs; }
+    catch (e) { console.warn("conversaciones:", e.message); } finally { cargando = false; }
+  }
+  function renderConv() {
+    const N = nube(); $p("cvEj").innerHTML = !N && demo() ? '<span class="cv-ej">Ejemplo</span>' : "";
+    const cuenta = k => k === "todas" ? CONV.length : CONV.filter(c => c.estado === k).length;
+    $p("cvTabs").innerHTML = TABS.map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === filtro}">${l} (${cuenta(k)})</button>`).join("");
+    const lista = CONV.filter(c => filtro === "todas" || c.estado === filtro);
+    if (!CONV.length) { $p("cvL").innerHTML = `<div class="cv-none">${N ? "Todavía no hay conversaciones." : "Conecta la herramienta con la base de Vivaldi y activa el asesor virtual (ver «Base de datos · LEEME») para ver aquí sus conversaciones."}</div>`; $p("cvTh").innerHTML = `<div class="cv-none">El asesor virtual atiende 24/7: responde con los precios y lotes reales, calcula cuotas, registra al cliente con su permiso y te lo pasa cuando hace falta.</div>`; return; }
+    if (!lista.some(c => c.id === selConv)) selConv = (lista[0] || {}).id || null;
+    $p("cvL").innerHTML = lista.map(c => { const u = (c.mensajes || []).slice(-1)[0];
+      return `<button type="button" class="cv-it" role="listitem" data-c="${E(c.id)}" aria-current="${c.id === selConv}"><b>${E(c.nombre || (c.canal === "whatsapp" ? "+" + c.id.slice(3) : "Visitante de la web"))}<small>${E(hora(c.actualizado))}</small></b>
+        <span><i class="cv-st ${E(c.estado)}">${c.estado === "asesor" ? "Asesor" : c.estado === "asistente" ? "Virtual" : "Cerrada"}</i> ${c.canal === "whatsapp" ? "WhatsApp" : "Web"} · ${E(u ? u.texto : c.resumen || "")}</span></button>`; }).join("") || `<div class="cv-none">Nada en este filtro.</div>`;
+    const c = CONV.find(x => x.id === selConv);
+    if (!c) { $p("cvTh").innerHTML = `<div class="cv-none">Elige una conversación.</div>`; return; }
+    const cli = CLIENTS.find(x => convDe(x) === c);
+    $p("cvTh").innerHTML = `<div class="cv-top"><div><h3>${E(c.nombre || "Cliente sin nombre")}</h3><p>${c.canal === "whatsapp" ? "WhatsApp" : "Web"}${c.celular ? " · " + E(c.celular) : ""}${c.proyecto ? " · " + E(c.proyecto) : ""}${c.resumen ? " · " + E(c.resumen) : ""}</p></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${cli ? `<button type="button" class="b" data-y="ficha">Ficha 360</button>` : ""}${c.estado !== "asesor" ? `<button type="button" class="b pri" data-y="tomar">Tomar conversación</button>` : `<button type="button" class="b" data-y="devolver">Devolver al asesor virtual</button>`}${c.estado !== "cerrada" ? `<button type="button" class="b" data-y="cerrar">Cerrar</button>` : ""}</div></div>
+      <div class="cv-msgs" id="cvM" aria-live="polite">${(c.mensajes || []).map(m => `<div class="cv-b ${E(m.rol)}">${E(m.texto)}<small>${m.rol === "cliente" ? "Cliente" : m.rol === "asesor" ? "Asesor" : "Asesor virtual"} · ${E(hora(m.fecha))}</small></div>`).join("")}</div>
+      ${c.canal === "whatsapp" ? `<form class="cv-send" id="cvF"><label class="pl-sr" for="cvTx">Tu respuesta</label><textarea id="cvTx" maxlength="3000" placeholder="Escribe tu respuesta: sale por WhatsApp con el número de Vivaldi"></textarea><button class="b pri" type="submit">Enviar</button></form>`
+        : `<div class="cv-none" style="padding:12px">Conversación de la web: ${c.celular ? `escríbele por WhatsApp al ${E(c.celular)} desde su ficha.` : "el visitante no dejó su celular."}</div>`}`;
+    const m = $p("cvM"); m.scrollTop = m.scrollHeight;
+  }
+  async function estado(c, est) { const N = nube();
+    if (N) { try { await N.api("/rest/v1/rpc/conversacion_estado", {method: "POST", body: JSON.stringify({p_conv: c.id, p_estado: est})}); } catch (e) { return say("No se pudo cambiar: " + e.message); } }
+    c.estado = est; say(est === "asesor" ? "Tomaste la conversación: el asesor virtual deja de responder" : est === "asistente" ? "El asesor virtual vuelve a atender" : "Conversación cerrada"); renderConv(); render(); }
+  sc.addEventListener("click", e => { const f = e.target.closest("[data-f]"); if (f) { filtro = f.dataset.f; renderConv(); return; }
+    const it = e.target.closest("[data-c]"); if (it) { selConv = it.dataset.c; renderConv(); const tx = $p("cvTx"); if (tx && matchMedia("(pointer: fine)").matches) tx.focus(); return; }
+    const y = e.target.closest("[data-y]"); if (!y) return; const c = CONV.find(x => x.id === selConv); if (!c) return;
+    if (y.dataset.y === "tomar") estado(c, "asesor"); if (y.dataset.y === "devolver") estado(c, "asistente"); if (y.dataset.y === "cerrar") estado(c, "cerrada");
+    if (y.dataset.y === "ficha") { const cli = CLIENTS.find(x => convDe(x) === c); if (cli) abrir360(cli, y); } });
+  sc.addEventListener("submit", async e => { if (e.target.id !== "cvF") return; e.preventDefault(); const c = CONV.find(x => x.id === selConv), tx = $p("cvTx"), t = tx.value.trim(); if (!c || !t) return;
+    const N = nube(), btn = e.target.querySelector("button"); btn.disabled = true;
+    try { if (N) { const r = await N.api("/functions/v1/asistente", {method: "POST", body: JSON.stringify({accion: "escribir_asesor", conversacion: c.id, texto: t})}); if (r && r.enviado === false) say("Guardado, pero WhatsApp no lo aceptó: revisa la configuración"); }
+      else say("Ejemplo: en la versión conectada este mensaje sale por WhatsApp");
+      (c.mensajes = c.mensajes || []).push({rol: "asesor", texto: t, fecha: new Date().toISOString()}); c.estado = "asesor"; c.actualizado = new Date().toISOString(); tx.value = ""; renderConv(); render(); }
+    catch (x) { say("No se pudo enviar: " + x.message); } finally { btn.disabled = false; } });
+  sc.addEventListener("keydown", e => { if (e.target.id === "cvTx" && e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $p("cvF").requestSubmit(); } });
+
+  // ---------- actualización ----------
+  if (typeof window.renderCrm === "function") { const orig = window.renderCrm; window.renderCrm = function () { const r = orig.apply(this, arguments); try { render(); } catch (e) {} return r; }; }
+  const todo = async () => { await cargar(); render(); renderConv(); };
+  document.addEventListener("vivaldi:datos", todo); addEventListener("storage", e => { if (!e.key || e.key === "vivaldi-clientes-v1" || e.key === "vivaldi-demo") todo(); });
+  setInterval(() => { if (nube() && !document.hidden) todo(); }, 20000);
+  render(); renderConv(); todo();
+  window.vvCRM = {render, abrir360, mover, recargar: todo, get conversaciones() { return CONV; }};
+})();
+</script>
+<!--pipeline-end-->
