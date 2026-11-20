@@ -490,6 +490,7 @@ function grabarVideo() {
   toast('Grabando el recorrido completo… toca el botón otra vez para terminar antes');
   const fin = () => { if (grab && ip === PARADAS.length - 1 && !vuelo) setTimeout(() => grab && grab.rec.state === 'recording' && grab.rec.stop(), 3500); else if (grab) setTimeout(fin, 500); }; setTimeout(fin, 3000); }
 $('bVid').addEventListener('click', grabarVideo);
+$('bAjustes').addEventListener('click', () => { const on = document.body.classList.toggle('ajustes'); $('bAjustes').setAttribute('aria-expanded', on); $('bAjustes').setAttribute('aria-pressed', on); });
 
 // ---------- interfaz ----------
 function ficha() {
