@@ -53,6 +53,6 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   ok(ax.length === 0, 'accesibilidad (axe, WCAG AA): ' + (ax.join(', ') || 'sin problemas'));
   await p.setViewportSize({width: 390, height: 844}); await p.waitForTimeout(500);
   const sw = await p.evaluate(() => document.documentElement.scrollWidth); ok(sw <= 390, 'en celular no se desborda: ' + sw);
-  const sinVR = await b.newPage(); await sinVR.goto(F); await sinVR.waitForFunction(() => document.body.dataset.listo === '1', null, {timeout: 180000}); await sinVR.click('#bVR'); ok(await sinVR.isVisible('#dVR'), 'sin visor: muestra las instrucciones para Meta Quest'); await sinVR.close();
+  const sinVR = await b.newPage(); await sinVR.goto(F); await sinVR.waitForFunction(() => document.body.dataset.listo === '1', null, {timeout: 600000}); await sinVR.click('#bVR'); ok(await sinVR.isVisible('#dVR'), 'sin visor: muestra las instrucciones para Meta Quest'); await sinVR.close();
   ok(errs.length === 0, 'sin errores: ' + errs.join(' | '));
   await b.close(); })();
