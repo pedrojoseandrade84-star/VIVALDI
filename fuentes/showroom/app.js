@@ -90,6 +90,7 @@ const hojaTex = (() => { const n = 512, c = document.createElement('canvas'); c.
     for (const sg of [-1, 1]) { const gr = g.createLinearGradient(0, 0, sg * w, 0); gr.addColorStop(0, '#2a4f1c'); gr.addColorStop(1, r() > .5 ? '#6a9636' : '#577f2e'); g.fillStyle = gr;
       g.save(); g.translate(0, y); g.rotate(sg * (.55 + t * .25)); g.beginPath(); g.ellipse(sg * w / 2, 0, w / 2, 3.2 + (1 - t) * 2.4, 0, 0, 7); g.fill(); g.restore(); } }
   g.fillStyle = '#4a6a2a'; g.fillRect(-3, -n, 6, n); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; })();
+mat.terreno.color.setRGB(1.3, 1.2, 1.05); mat.afirmado.color.setRGB(1.12, 1.04, .92); mat.arena.color.setRGB(1.25, 1.17, 1.04);   // arena clara de la costa (gris beige)
 mat.hoja = new THREE.MeshStandardMaterial({map: hojaTex, alphaTest: .5, side: THREE.DoubleSide, roughness: .75});
 const abanicoTex = (() => { const n = 512, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); g.translate(n / 2, n * .92);
   for (let i = 0; i <= 46; i++) { const a = -Math.PI * .92 + i / 46 * Math.PI * .84, L = n * (.78 + .08 * Math.sin(i * 1.7)); const gr = g.createLinearGradient(0, 0, Math.cos(a) * L, Math.sin(a) * L); gr.addColorStop(0, '#3d5a2a'); gr.addColorStop(.6, i % 3 ? '#5b7d3a' : '#6e8e45'); gr.addColorStop(1, '#8a9a5a');
@@ -203,7 +204,7 @@ scene.fog = new THREE.FogExp2(0xcfd9df, .00042);
 { const mar = new THREE.Mesh(new THREE.PlaneGeometry(9000, 4400), matMar); mar.rotation.x = -Math.PI / 2; mar.position.set(0, -.6, -2350); scene.add(mar);
   const dg = new THREE.PlaneGeometry(1600, 900, 160, 80); dg.rotateX(-Math.PI / 2); const p = dg.attributes.position, uv = dg.attributes.uv;
   for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); const lj = Math.min(1, Math.max(0, (z + 170) / 380)); const cresta = Math.max(0, Math.sin(x * .006 + 1.3) * .5 + .5); p.setY(i, Math.pow(lj, 1.6) * (cresta * 70 + Math.sin(x * .021 + z * .017) * 9 + Math.cos(z * .03 + x * .004) * 7 + 12) + lj * (Math.sin(x * .09) * Math.cos(z * .07)) * 1.5); uv.setXY(i, x / 6, z / 6); }
-  dg.computeVertexNormals(); const dunas = new THREE.Mesh(dg, pbr('arena', {color: 0xb39c80}));   // lomas pardas de Asia dunas.position.set(0, -.08, 380); dunas.receiveShadow = true; scene.add(dunas); }
+  dg.computeVertexNormals(); const dunas = new THREE.Mesh(dg, pbr('arena', {color: 0xb39c80})); /* lomas pardas de Asia */ dunas.position.set(0, -.08, 380); dunas.receiveShadow = true; scene.add(dunas); }
 
 let luzActual = Q.get('luz') && LUZ[Q.get('luz')] ? Q.get('luz') : 'tarde';
 function aplicarLuz(k) { luzActual = k; const c = CIELOS[k], L = LUZ[k]; if (!c) return;
@@ -317,7 +318,7 @@ function construir() {
   caja(W, .9, .2, mat.muro, 0, 0, zb - .1); for (const s of [-1, 1]) caja(.15, 1.6, D - (zf - z1) - .2, mat.muro, s * (W / 2 - .07), 0, (z1 + zb) / 2 - .1);
   for (let i = 0; i < Math.floor(W / 1.6); i++) arbusto(-W / 2 + .8 + i * 1.6, zb + .5, .5);
   arbusto(x1 - .5, zf - .8, .6); arbusto(x1 - 1.6, zf - .7, .5); if (!angosto) { palmera(x0 - .3, zb + 1.0, 7.5); palmera(x1 + .2, zf - 1.0, 6.2, .9); } else palmera(x1 - .5, zb + 1.2, 6.5, .85);
-  for (let i = -3; i <= 3; i++) if (i) abanico(i * W * 1.5 + 2, calleZ + 6.3, 10.5 + (i % 2) * 1.5, 1);
+  for (const ax of [-W * 3.2, -W * 1.9, W * 1.9, W * 3.2, W * 4.5]) abanico(ax, calleZ + 5.4, 10.5 + (Math.round(ax) % 2) * 1.5, 1);   /* fuera del encuadre de llegada */
   // luces
   luz(cx, y1 - .45, sz - .3, 45); luz(cx, y1 - .45, dz, 35); luz(x1 - 1.6, y1 - .45, kz - 1.2, 35); luz(cx, y1 + H2 - .2, bz, 30); luz(cx, y1 + H2 - .2, (za + zc) / 2 + 2, 20);
   luz(0, 2.6, z1 + .5, 14); luz(0, .25, zb + .8, 6, 0xffc98a, 5);
