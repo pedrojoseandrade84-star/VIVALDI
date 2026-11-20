@@ -12,6 +12,10 @@ Este es tu paquete personal: tiene todo el proyecto. **No lo envíes a Vivaldi.*
 
 **Privado:** `entregables/propuesta/investigacion-mercado-y-diagnostico.md` y las presentaciones son de uso interno. Los armadores de paquetes los bloquean automáticamente.
 
+## Reunión con la gerencia y marketing
+- `entregables/presentacion/Guia-Reunion-Gerencia-y-Marketing.pdf`: guía privada con el recorrido de 15 minutos, preguntas probables, negociación y cierre.
+- La cotización vigente es **COT-2026-003** (válida hasta el 21 de diciembre de 2026). La COT-2026-002 venció el 20 de noviembre.
+
 ## Estructura
 - `entregables/`: todo lo que se entrega, listo para abrir.
 - `fuentes/`: de dónde sale cada entregable (generadores, módulos de la herramienta y pruebas). Ver `fuentes/LEEME.md`.

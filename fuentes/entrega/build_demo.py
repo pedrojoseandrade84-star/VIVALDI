@@ -21,7 +21,7 @@ for f in sorted(os.listdir(os.path.join(ENT, 'landings'))):
 EXP = sorted(f for f in os.listdir(os.path.join(ENT, 'experiencia')) if f.startswith('explorar-') and f.endswith('.html'))
 for f in EXP: cp('experiencia/' + f, 'experiencia/' + f)
 cp('simulador/Simulador-3D-Lotes-Vivaldi.html', 'simulador/Simulador-3D-Lotes-Vivaldi.html')
-cp('cotizacion/Cotizacion-Vivaldi-COT-2026-002.pdf', 'documentos/Cotizacion-Vivaldi-COT-2026-002.pdf')
+cp('cotizacion/Cotizacion-Vivaldi-COT-2026-003.pdf', 'documentos/Cotizacion-Vivaldi-COT-2026-003.pdf')
 cp('manual/Anexo-3-Guia-para-la-Gerencia.pdf', 'documentos/Guia-para-la-Gerencia.pdf')
 cp('manual/Manual-Herramienta-Ventas-Vivaldi.pdf', 'documentos/Manual-Herramienta-Ventas-Vivaldi.pdf')
 # la herramienta de la demostración abre siempre con datos de ejemplo (si el equipo aún no tiene datos propios)
@@ -49,12 +49,16 @@ CARDS = [
   'La foto del mes en un minuto: ventas, meta, cobranza, equipo e inventario, con un resumen en palabras que se envía al directorio por WhatsApp. Debajo, todo lo que un asesor necesita para vender: proforma, lotes, clientes, visitas y cobranza.',
   ['Leer el <b>Resumen del mes</b> y tocar <b>Enviar por WhatsApp</b>', 'Probar <b>Presentar en pantalla</b> para una reunión', 'Tocar una alerta de <b>Atención de la gerencia</b>: lleva a resolverla'],
   [(HERR + '#direccion', 'Abrir el tablero')], ''),
+ ('marketing', 'Marketing y campañas', 'Cada sol de publicidad, medido hasta la venta',
+  'Cuánto cuesta cada interesado, cada visita y cada cierre por canal y por campaña, con una lectura en palabras de qué conviene reforzar. Enlaces de campaña con código QR para anuncios, volantes y autos rotulados. Las páginas de cada proyecto registran cada formulario como Lead en Meta, Google y TikTok (con el permiso del visitante).',
+  ['Ver el canal resaltado con <b>Mejor costo</b> y la tabla de campañas', 'Crear un enlace con QR eligiendo <b>Auto rotulado</b>', 'Anotar una inversión y ver cómo cambian los costos'],
+  [(HERR + '#marketing', 'Abrir Marketing')], ''),
  ('buscador', 'Buscador universal', 'Todo a un atajo: Ctrl + K (⌘ + K en Mac)',
   'Desde cualquier parte de la herramienta se encuentra un cliente por nombre o celular, un lote por su código (B-4), cualquier sección o una acción como «Nueva proforma». Más rápido que los CRM habituales.',
   ['Abrir la herramienta y presionar <b>Ctrl + K</b>', 'Escribir <b>lu</b> o <b>b-3</b> y presionar Enter', 'En celular: el botón redondo de la lupa'],
   [(HERR, 'Probar el buscador')], ''),
- ('conectar', 'Conectar datos', 'Su CRM y su base de datos, conectados',
-  'El CRM o la base de datos que Vivaldi ya usa se conecta y se sincroniza solo cada 15 minutos (HubSpot, Pipedrive, Kommo, Zoho, cualquier sistema con API, PostgreSQL o MySQL): los clientes llegan a su asesor y el inventario real aparece en la web. También entra cualquier Excel o CSV, reconociendo las columnas solo, sin duplicar y con opción de deshacer.',
+ ('conectar', 'Conectar su CRM y su base de datos', 'Universal: entrada y salida automáticas',
+  'El CRM o la base de datos que Vivaldi ya usa se sincroniza solo: HubSpot, Salesforce, Dynamics 365, Zoho, Pipedrive, Kommo, Bitrix24, Odoo, Clientify, Google Sheets, Airtable, SQL Server, MySQL, PostgreSQL o cualquier sistema con API. Los clientes llegan a su asesor y el inventario real aparece en la web; y cada solicitud, venta o lote vendido vuelve a su CRM. También entra cualquier Excel o CSV, sin duplicar y con opción de deshacer.',
   ['Ver la pestaña <b>CRM o base de datos de Vivaldi</b> (ejemplo de cómo se ve funcionando)', 'Arrastrar un Excel propio de clientes o de lotes y revisar cómo entendió cada columna', 'Importar y luego <b>Deshacer</b>'],
   [(HERR + '#conectar', 'Abrir Conectar datos')], ''),
  ('portal', 'Mi Vivaldi: venta en línea', 'El cliente separa su lote sin salir de casa',
@@ -78,14 +82,14 @@ CARDS = [
   ['Describir lo que quiere el cliente y ver la propuesta', 'Probar <b>Recorrer</b> y <b>Corte</b>'],
   [('simulador/Simulador-3D-Lotes-Vivaldi.html', 'Abrir el simulador')], ''),
 ]
-RUTA = [('Tablero de dirección', HERR + '#direccion'), ('Buscador Ctrl + K', HERR), ('Página de un proyecto', 'landings/lirios.html'),
-        ('Explorador 3D', 'experiencia/explorar-portada.html'), ('Separar un lote en línea', 'web/portal.html#lotes'), ('Conectar sus datos', HERR + '#conectar')]
-DOCS = [('documentos/Cotizacion-Vivaldi-COT-2026-002.pdf', 'Cotización', 'Servicio mensual y planes de mantenimiento'),
+RUTA = [('Tablero de dirección', HERR + '#direccion'), ('Marketing y campañas', HERR + '#marketing'), ('Página de un proyecto', 'landings/lirios.html'),
+        ('Explorador 3D', 'experiencia/explorar-portada.html'), ('Separar un lote en línea', 'web/portal.html#lotes'), ('Conectar su CRM', HERR + '#conectar')]
+DOCS = [('documentos/Cotizacion-Vivaldi-COT-2026-003.pdf', 'Cotización', 'Servicio mensual y planes de mantenimiento'),
         ('documentos/Guia-para-la-Gerencia.pdf', 'Guía para la gerencia', 'El tablero, la meta, las alertas y una rutina sugerida'),
         ('documentos/Manual-Herramienta-Ventas-Vivaldi.pdf', 'Manual de la herramienta', 'Paso a paso, con capturas')]
 cards = ''
 for i, (img, t, sub, txt, prueba, botones, extra) in enumerate(CARDS):
-    wide = i == 0 or i == len(CARDS) - 1
+    wide = i == 0 or (i == len(CARDS) - 1 and (len(CARDS) - 1) % 2 == 1)
     im = f'<img src="{foto(img, 1280 if wide else 1040)}" alt="">'
     cards += f'''<article class="card{' wide' if wide else ''}">{f'<a class="shot" href="{botones[0][0]}" aria-label="{E(botones[0][1])}: {E(t)}">{im}</a>' if botones else f'<div class="shot">{im}</div>'}
 <div class="txt"><p class="k">{E(sub)}</p><h2>{E(t)}</h2><p>{E(txt)}</p><h3>Qué probar</h3><ul>{''.join(f'<li>{x}</li>' for x in prueba)}</ul>

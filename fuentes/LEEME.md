@@ -47,7 +47,7 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - Pruebas: `pruebas/base-de-datos/test7.sql` (reglas nuevas en PostgreSQL), `tasesor.js` (enlace del asesor en la web), `tgestion.js` (herramienta), `tcrm.js` (historial), `twhatsapp.mjs` (función de envío contra una API de Meta simulada) y `pruebas/landings/` (formularios, datos en vivo y visibilidad).
 
 ## Cotización y paquete de venta
-- `cotizacion/cotizacion.html` → `node cotizacion/pdf.js ../entregables/cotizacion/Cotizacion-Vivaldi-COT-2026-002.pdf`
+- `cotizacion/cotizacion.html` → `node cotizacion/pdf.js ../entregables/cotizacion/Cotizacion-Vivaldi-COT-2026-003.pdf`
 - `entrega/build_paquete.py <destino>` arma `Vivaldi-Sistema-Comercial.zip` con el índice de entrega en PDF. Excluye la presentación, el guion, la propuesta anterior y el documento interno de investigación.
 
 ## Mi Vivaldi (portal de compradores y asesores)
@@ -94,3 +94,9 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 - La pestaña «CRM o base de datos de Vivaldi» de `conectar.html` la configura (solo jefatura).
 - Pruebas: `pruebas/base-de-datos/tconector.mjs` (función, con CRM simulado y base PostgreSQL de origen), `tconector2.mjs` (Salesforce, Dynamics, Bitrix24, Odoo, Airtable, Clientify, Sheets, GraphQL, SQL Server y envíos de salida) y `tconector_ui.mjs` (de punta a punta desde la herramienta).
 - Salida: tablas `webhooks_salida` y `webhooks_cola` (sección 10 del esquema); los disparadores encolan y la misma función entrega.
+
+## Marketing y medición
+- `marketing.html`: módulo Marketing y campañas de la herramienta (costos por canal y campaña, inversión por mes en `vivaldi-marketing-v1`, enlaces con UTM y QR). Prueba: `pruebas/base-de-datos/tmarketing.js`.
+- Medición de anuncios en las páginas de proyecto: identificadores en `landings/proyectos.json` → `marketing` (`meta_pixel`, `ga4`, `google_ads`, `tiktok_pixel`). Vacíos no cargan nada; con identificadores se pide permiso al visitante. El formulario registra Lead y WhatsApp registra Contacto. Prueba: `pruebas/landings/tpixel.js`.
+- `presentacion/guia_reunion.html` → `node presentacion/guia_reunion_pdf.js ../entregables/presentacion/Guia-Reunion-Gerencia-y-Marketing.pdf` (uso personal).
+

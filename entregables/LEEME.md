@@ -9,7 +9,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | web/ | portal.html (Mi Vivaldi) | Venta en línea: el cliente elige su lote y pide la separación; el comprador entra con su correo y ve sus cuotas; el asesor entra con su usuario, separa lotes y da acceso a sus compradores. Sin conexión a la base funciona en modo demostración |
 | experiencia/ | explorar-portada.html, explorar-planicie.html, explorar-terrazas.html, explorar-esmeralda.html, explorar-lirios.html | Explorador 3D de cada proyecto (La Portada del Sol, La Planicie, Las Terrazas, La Esmeralda y Lirios): el cliente pasa el mouse por las casas del condominio, ve el estado y precio de cada lote, entra a la casa cortada en 3D (piso 1 y 2) y recorre sala, comedor, dormitorio y terraza. Se publican en /proyectos/explorar-<proyecto>.html |
 | software/ | planicie-herramienta-whatsapp.html (≈2.5 MB) | Herramienta comercial para los asesores, versión liviana |
-| software/ | planicie-herramienta-final.html (≈3.6 MB) | Herramienta comercial, máxima calidad. Interfaz tipo app con barra lateral, buscador universal (Ctrl/⌘ + K) y **Conectar datos** (importa clientes y lotes de cualquier Excel, CSV o Google Sheets, y recibe interesados de otros sistemas) |
+| software/ | planicie-herramienta-final.html (≈3.6 MB) | Herramienta comercial, máxima calidad. Interfaz tipo app con barra lateral, buscador universal (Ctrl/⌘ + K) y **Conectar datos**: importa de cualquier Excel, CSV o Google Sheets y conecta el CRM o la base de datos de Vivaldi (16 fuentes, entrada y salida). **Marketing y campañas**: costo por interesado y por cierre por canal y campaña, y enlaces con QR |
 | base-de-datos/ | esquema-supabase.sql y LEEME.md | Base de datos de la empresa: instalación, usuarios, seguridad, enlaces de asesor, proyectos y mensajes automáticos |
 | base-de-datos/ | funciones/enviar-whatsapp, activar-envios.sql, plantillas-whatsapp.md | Envío automático por WhatsApp (API oficial de Meta): función, activación y las 8 plantillas para aprobar |
 | landings/ | 7 landings por proyecto y extranjeros.html | Una página por proyecto con sus etapas, galería, cuota y visita; página bilingüe para clientes del extranjero. Ver LEEME |
@@ -20,8 +20,8 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | crecimiento/ | Plan-Contenidos-Redes-Vivaldi.pdf | Plan de contenidos de 30 días para redes sociales |
 | auditoria/ | Informe-Auditoria-Tecnica-Vivaldi.pdf | Auditoría técnica de simulador, herramienta, web e integración: hallazgos, correcciones, pruebas y pendientes |
 | automatizacion/ | Plan-Automatizacion-Vivaldi.pdf | Plan de automatización de procesos comerciales y de cobranza, por fases |
-| cotizacion/ | Cotizacion-Vivaldi-COT-2026-002.pdf | Cotización mensual: S/ 2,000 al mes (negociable) con todo incluido, sin instalación; el sistema pasa a Vivaldi a las 18 mensualidades; mantenimiento desde S/ 490 |
-| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Versión anterior, reemplazada por la cotización COT-2026-002. No se envía |
+| cotizacion/ | Cotizacion-Vivaldi-COT-2026-003.pdf | Cotización mensual: S/ 2,000 al mes (negociable) con todo incluido, sin instalación; el sistema pasa a Vivaldi a las 18 mensualidades; mantenimiento desde S/ 490 |
+| propuesta/ | Propuesta-Vivaldi-PV-2026-001.pdf | Versión anterior, reemplazada por la cotización COT-2026-003. No se envía |
 | propuesta/ | Asesoria-Comercial-Vivaldi.pdf | Asesoría comercial: diagnóstico, redes sociales, riesgos y plan de mejora |
 | presentacion/ | Presentacion-Vivaldi-TV.html | Presentación para proyectar en televisor (26 diapositivas, con 4 videos reales del funcionamiento). Abrir en el navegador, tecla F para pantalla completa, flechas o toque para avanzar. Funciona sin internet |
 | presentacion/ | Presentacion-Propuesta-Integral-Vivaldi.pdf | La misma presentación en PDF, para enviar o imprimir |
@@ -32,7 +32,7 @@ Diseño y desarrollo: Pedrojose Andrade Paredes. Versión final, noviembre 2026.
 | manual/ | Anexo-Manual-Funciones-Crecimiento-Vivaldi.pdf | Anexo: prioridad de contacto, seguimiento, registro desde la web, embudo y pronóstico |
 | manual/ | Anexo-2-Manual-Funciones-Nuevas-Mi-Vivaldi.pdf | Anexo 2: borrar clientes, historial del cliente, enlaces de venta, proyectos, mensajes automáticos, Tablero de dirección y Mi Vivaldi (asesores y clientes) |
 | manual/ | Anexo-3-Guia-para-la-Gerencia.pdf | Anexo 3 (guía para la gerencia): leer el Tablero de dirección, resumen y cierre del mes, meta, alertas, rutina sugerida y lotes guardados por el cliente en el explorador 3D |
-| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato de servicio mensual con referencia a la cotización COT-2026-002; revisar con un abogado antes de firmar |
+| contrato/ | Contrato-Locacion-Servicios-Vivaldi.pdf y contrato-editable.html | Modelo de contrato de servicio mensual con referencia a la cotización COT-2026-003; revisar con un abogado antes de firmar |
 | rotulado/ | PDF de diseños y archivos para imprenta | Rotulado de la flota: camionetas, van y sedanes |
 
 ## Web

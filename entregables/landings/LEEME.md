@@ -52,3 +52,7 @@ En computadora y celular (Chromium): sin errores, sin desplazamiento lateral y s
 - **Etapas:** las líneas se llenan al llegar a la sección y la etapa en curso tiene un punto que late.
 - **Cuota:** el monto se anima al mover la inicial o el plazo.
 - Quien tiene activado "reducir movimiento" en su equipo ve todo sin animaciones.
+
+## Medición de anuncios
+Las páginas están listas para Meta Pixel, Google Analytics 4, Google Ads y TikTok Pixel. Basta con poner los identificadores en `fuentes/landings/proyectos.json` (sección `marketing`) y regenerar. Mientras estén vacíos no se carga nada. Con identificadores, la página pide permiso al visitante (Ley 29733) antes de cargar cualquier medición; si no acepta, no se carga y no se vuelve a preguntar. Cada formulario enviado se registra como **Lead** y cada clic en WhatsApp como **Contacto**, en las tres plataformas.
+
