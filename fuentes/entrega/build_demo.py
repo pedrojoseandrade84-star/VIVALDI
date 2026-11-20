@@ -19,7 +19,7 @@ cp('web/Vivaldi-web-final.html', 'web/Vivaldi-web-final.html'); cp('web/portal.h
 for f in sorted(os.listdir(os.path.join(ENT, 'landings'))):
     if f.endswith('.html'): cp('landings/' + f, 'landings/' + f)
 EXP = sorted(f for f in os.listdir(os.path.join(ENT, 'experiencia')) if f.startswith('explorar-') and f.endswith('.html'))
-for f in EXP: cp('experiencia/' + f, 'experiencia/' + f)
+for f in EXP + ['showroom.html']: cp('experiencia/' + f, 'experiencia/' + f)
 cp('simulador/Simulador-3D-Lotes-Vivaldi.html', 'simulador/Simulador-3D-Lotes-Vivaldi.html')
 cp('cotizacion/Cotizacion-Vivaldi-COT-2026-003.pdf', 'documentos/Cotizacion-Vivaldi-COT-2026-003.pdf')
 cp('manual/Anexo-3-Guia-para-la-Gerencia.pdf', 'documentos/Guia-para-la-Gerencia.pdf')
