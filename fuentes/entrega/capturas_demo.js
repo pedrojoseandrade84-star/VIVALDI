@@ -3,6 +3,8 @@ const {chromium} = require('playwright'); const path = require('path'); const fs
 const OUT = process.argv[2] || path.join(__dirname, 'capturas'), E = '/home/user/VIVALDI/entregables/';
 fs.mkdirSync(OUT, {recursive: true});
 const SHOTS = [
+  ['showroom', 'experiencia/showroom.html?captura&parada=1&luz=atardecer', async p => { await p.waitForFunction(() => document.body.dataset.listo === '1', null, {timeout: 240000}); await p.waitForTimeout(3000); }, 1000],
+  ['crm', 'software/planicie-herramienta-final.html?demo=1#pipeline', async p => { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('pipeline').scrollIntoView(); }); }, 3200],
   ['web', 'web/Vivaldi-web-final.html', null, 2500],
   ['landing', 'landings/lirios.html', null, 2600],
   ['explorador', 'experiencia/explorar-portada.html', null, 2500],
@@ -13,7 +15,7 @@ const SHOTS = [
   ['conectar', 'software/planicie-herramienta-final.html?demo=1#conectar', async p => { await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('conectar').scrollIntoView(); }); await p.click('#conectar [data-t="crm"]'); await p.waitForTimeout(400); await p.evaluate(() => document.querySelector('#cnCrm .cn-card:nth-child(2)').scrollIntoView({block: 'center'})); }, 3200],
   ['simulador', 'simulador/Simulador-3D-Lotes-Vivaldi.html', null, 7000]
 ];
-(async () => { const b = await chromium.launch(); const errs = [];
+(async () => { const b = await chromium.launch({args: ['--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']}); const errs = [];
   for (const [name, url, act, wait] of SHOTS) {
     const c = await b.newContext({viewport: {width: 1440, height: 900}, deviceScaleFactor: 1}); const p = await c.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message)); await c.route(/^https?:/, r => r.abort());
     await p.goto('file://' + E + url); await p.waitForTimeout(wait);

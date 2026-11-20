@@ -45,6 +45,14 @@ EXPL = [(f[9:-5], nomb(f[9:-5])) for f in EXP]
 LAND = [(f[:-5], nomb(f[:-5]) if f[:-5] in PRJ else 'Clientes del extranjero (ES / EN)') for f in sorted(os.listdir(os.path.join(raiz, 'landings')))]
 chips = lambda items, pre: ''.join(f'<a class="chip" href="{pre}{a}.html">{E(b)}</a>' for a, b in items)
 CARDS = [
+ ('showroom', 'Showroom virtual 3D y realidad virtual', 'La casa de playa sobre su lote, como en la vida real',
+  'Recorrido fotorrealista de una casa modelo sobre el lote real de cada proyecto (6 × 15, 10 × 20 o 10 × 25 m), en el entorno de Asia y Cerro Azul: cielos reales de tarde, atardecer y noche, muebles 3D, piscina y vista al mar. Recorrido guiado, modo caminar, «Foto realista» por trazado de rayos y visita con visor Meta Quest.',
+  ['Tocar <b>Recorrido</b> y dejar que avance solo', 'Cambiar la luz a <b>Atardecer</b> y luego a <b>Noche</b>', 'Tocar <b>Foto realista</b> y esperar a que la imagen se vuelva nítida'],
+  [('experiencia/showroom.html', 'Abrir el showroom')], ''),
+ ('crm', 'CRM propio y asesor virtual 24/7', 'Ventas por etapa y clientes atendidos a cualquier hora',
+  'Tablero de ventas por etapas con arrastrar y soltar, valor en cartera y pronóstico; ficha 360 de cada cliente con su historial. El asesor virtual atiende por WhatsApp y en la web las 24 horas, registra al cliente con su permiso y pasa a un asesor la conversación cuando hace falta.',
+  ['Abrir <b>CRM → Tablero de ventas</b> y arrastrar una tarjeta', 'Abrir una tarjeta: <b>ficha 360</b>', 'Ver <b>Conversaciones 24/7</b> y responder la de ejemplo'],
+  [(HERR + '#pipeline', 'Abrir el CRM')], ''),
  ('herramienta', 'Herramienta de ventas y Tablero de dirección', 'Para la gerencia y los asesores',
   'La foto del mes en un minuto: ventas, meta, cobranza, equipo e inventario, con un resumen en palabras que se envía al directorio por WhatsApp. Debajo, todo lo que un asesor necesita para vender: proforma, lotes, clientes, visitas y cobranza.',
   ['Leer el <b>Resumen del mes</b> y tocar <b>Enviar por WhatsApp</b>', 'Probar <b>Presentar en pantalla</b> para una reunión', 'Tocar una alerta de <b>Atención de la gerencia</b>: lleva a resolverla'],
@@ -82,7 +90,7 @@ CARDS = [
   ['Describir lo que quiere el cliente y ver la propuesta', 'Probar <b>Recorrer</b> y <b>Corte</b>'],
   [('simulador/Simulador-3D-Lotes-Vivaldi.html', 'Abrir el simulador')], ''),
 ]
-RUTA = [('Tablero de dirección', HERR + '#direccion'), ('Marketing y campañas', HERR + '#marketing'), ('Página de un proyecto', 'landings/lirios.html'),
+RUTA = [('Showroom virtual 3D', 'experiencia/showroom.html'), ('Tablero de dirección', HERR + '#direccion'), ('CRM: tablero de ventas', HERR + '#pipeline'), ('Marketing y campañas', HERR + '#marketing'), ('Página de un proyecto', 'landings/lirios.html'),
         ('Explorador 3D', 'experiencia/explorar-portada.html'), ('Separar un lote en línea', 'web/portal.html#lotes'), ('Conectar su CRM', HERR + '#conectar')]
 DOCS = [('documentos/Cotizacion-Vivaldi-COT-2026-003.pdf', 'Cotización', 'Servicio mensual y planes de mantenimiento'),
         ('documentos/Guia-para-la-Gerencia.pdf', 'Guía para la gerencia', 'El tablero, la meta, las alertas y una rutina sugerida'),

@@ -1,0 +1,43 @@
+{
+ "fuente": "Poly Haven (polyhaven.com), licencia CC0",
+ "cielos": {
+  "tarde": [
+   "qwantani_late_afternoon_puresky",
+   "1k"
+  ],
+  "atardecer": [
+   "qwantani_sunset_puresky",
+   "1k"
+  ],
+  "noche": [
+   "qwantani_night_puresky",
+   "1k"
+  ]
+ },
+ "texturas": {
+  "piso": "laminate_floor_02",
+  "deck": "wood_floor_deck",
+  "revest": "brown_planks_05",
+  "muro": "painted_plaster_wall",
+  "pasto": "leafy_grass",
+  "arena": "coast_sand_01",
+  "asfalto": "asphalt_02",
+  "vereda": "rectangular_paving",
+  "marmol": "marble_01",
+  "tela": "rough_linen",
+  "piedra": "concrete_floor_02"
+ },
+ "muebles": [
+  "sofa_03",
+  "modern_coffee_table_01",
+  "dining_chair_02",
+  "round_wooden_table_01",
+  "mid_century_lounge_chair",
+  "potted_plant_02",
+  "modern_ceiling_lamp_01",
+  "outdoor_table_chair_set_01",
+  "side_table_01",
+  "shrub_02",
+  "throw_pillows_01"
+ ]
+}

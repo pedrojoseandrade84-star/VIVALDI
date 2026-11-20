@@ -214,6 +214,25 @@ Cada envío es un JSON `{evento, id, fecha, origen, datos}`. Si falla, se reinte
 3. Ejecutar `activar-conector.sql` (programa la tarea con pg_cron; la misma tarea hace la entrada y la salida).
 4. En la herramienta, con usuario de jefatura: **Conectar datos → CRM o base de datos de Vivaldi**: elegir el sistema, **Probar conexión** (muestra cuántos registros lee y cómo entendió cada columna), ajustar y **Guardar**. Desde ahí se ve cuándo sincronizó, cuántos trajo, y se puede pausar o sincronizar al momento.
 
+## Asesor virtual 24/7 (WhatsApp y web)
+
+Atiende a cualquier hora por WhatsApp y en el chat de la web: responde con los proyectos y precios reales, consulta en vivo qué lotes quedan, calcula cuotas sin intereses, registra al cliente **solo con su permiso** (Ley 29733) para que le llegue a su asesor con el día de visita, y pasa la conversación a una persona cuando el cliente lo pide, quiere negociar, tiene un reclamo o pregunta por su contrato. Nunca inventa precios, disponibilidad ni descuentos. Usa el modelo Claude Opus 5.5 de Anthropic; si el modelo no puede responder, la misma llamada lo reintenta con otro modelo y, si aun así no hay respuesta, la conversación pasa a un asesor.
+
+En la herramienta, **CRM → Conversaciones 24/7** muestra cada conversación: el asesor la toma, responde (su mensaje sale por WhatsApp con el número de Vivaldi) o la devuelve al asesor virtual. Mientras un asesor la atiende, el asesor virtual no interviene.
+
+### Activarlo (una vez)
+
+1. Ejecutar de nuevo `esquema-supabase.sql` (sección 11: conversaciones).
+2. Publicar la función: `supabase functions deploy asistente --no-verify-jwt` (Meta y la web llaman sin sesión; la función verifica la firma de Meta y limita a 40 mensajes por cliente al día).
+3. Secretos (Edge Functions → Secrets): `ANTHROPIC_API_KEY` (cuenta de Anthropic de la empresa), `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_APP_SECRET` y `WHATSAPP_VERIFY_TOKEN` (una frase cualquiera). Opcional: `ASISTENTE_LIMITE_DIA`.
+4. En Meta (WhatsApp Cloud API → Configuración → Webhook): URL `https://<proyecto>.supabase.co/functions/v1/asistente`, el mismo `WHATSAPP_VERIFY_TOKEN`, y suscribir el campo **messages**.
+5. El chat de la web se conecta solo cuando la web tiene configurada la base (los mismos datos de la sección «Conectar la herramienta»); sin servidor sigue respondiendo con la información de la página.
+6. La base de conocimiento (proyectos, precios desde, financiamiento) se actualiza sola con `python3 fuentes/regenerar.py`.
+
+**Costo.** Se paga por uso a Anthropic (por cantidad de texto procesado) y Meta cobra por conversación de WhatsApp según su tarifa para Perú. Revisar precios vigentes en https://www.anthropic.com/pricing y https://developers.facebook.com/docs/whatsapp/pricing.
+
+**Probado** con una base PostgreSQL de prueba y un sustituto de la API de Anthropic (33 comprobaciones: forma del pedido, herramientas, permiso del cliente, paso a asesor, firma de Meta, mensajes repetidos, límite diario y respuesta desde la bandeja). La llamada real a Anthropic y a Meta se verifica al activarlo con las claves de la empresa.
+
 ## Consultar y descargar la información
 
 - En Supabase, **Table Editor → registros** muestra todos los registros; se puede filtrar por `coleccion` (clientes, proformas, separaciones, cobranza, visitas, lotes) y exportar a CSV.
