@@ -92,4 +92,5 @@ Se ejecutan con Node y Playwright (Chromium). Las rutas apuntan a la carpeta del
 ## Conector con el CRM o la base de datos de Vivaldi
 - `entregables/base-de-datos/funciones/conector/index.ts`: función del servidor (Supabase) que lee HubSpot, Pipedrive, Kommo, Zoho, cualquier API JSON, PostgreSQL o MySQL y guarda clientes o lotes con `conector_guardar` (sección 9 del esquema). Activación: `entregables/base-de-datos/activar-conector.sql`.
 - La pestaña «CRM o base de datos de Vivaldi» de `conectar.html` la configura (solo jefatura).
-- Pruebas: `pruebas/base-de-datos/tconector.mjs` (función, con CRM simulado y base PostgreSQL de origen) y `tconector_ui.mjs` (de punta a punta desde la herramienta).
+- Pruebas: `pruebas/base-de-datos/tconector.mjs` (función, con CRM simulado y base PostgreSQL de origen), `tconector2.mjs` (Salesforce, Dynamics, Bitrix24, Odoo, Airtable, Clientify, Sheets, GraphQL, SQL Server y envíos de salida) y `tconector_ui.mjs` (de punta a punta desde la herramienta).
+- Salida: tablas `webhooks_salida` y `webhooks_cola` (sección 10 del esquema); los disparadores encolan y la misma función entrega.

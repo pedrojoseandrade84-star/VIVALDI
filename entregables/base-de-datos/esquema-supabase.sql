@@ -698,3 +698,139 @@ begin
   return jsonb_build_object('nuevos', nuevos, 'actualizados', actualizados, 'omitidos', omitidos);
 end $$;
 revoke execute on function public.conectores_pendientes(bigint), public.conector_resultado(bigint, text, text), public.conector_guardar(bigint, jsonb) from public, anon, authenticated;
+
+-- 9b. Más fuentes para el conector (CRM, hojas, CSV y bases de datos)
+alter table public.conectores drop constraint if exists conectores_tipo_check;
+alter table public.conectores add constraint conectores_tipo_check check (tipo in ('api', 'hubspot', 'pipedrive', 'kommo', 'zoho', 'salesforce', 'dynamics', 'bitrix24', 'odoo', 'airtable',
+  'clientify', 'sheets', 'csv', 'postgres', 'mysql', 'sqlserver'));
+
+-- 10. Envío automático al CRM de Vivaldi (o a Zapier, Make, n8n): solicitudes de la web, clientes, etapas, lotes y ventas
+create table if not exists public.webhooks_salida (
+  id         bigserial primary key,
+  nombre     text not null check (char_length(nombre) between 2 and 80),
+  url        text not null check (url ~ '^(https://|http://127\.0\.0\.1[:/])' and char_length(url) <= 500),
+  eventos    text[] not null default array['solicitud'] check (eventos <@ array['solicitud', 'cliente_nuevo', 'cliente_etapa', 'lote_estado', 'venta']::text[]),
+  secreto    text check (secreto is null or secreto ~ '^[A-Z][A-Z0-9_]{2,60}$'),
+  activo     boolean not null default true,
+  ultimo     timestamptz,
+  resultado  text,
+  creado     timestamptz not null default now()
+);
+create table if not exists public.webhooks_cola (
+  id           bigserial primary key,
+  webhook      bigint not null references public.webhooks_salida (id) on delete cascade,
+  evento       text not null,
+  datos        jsonb not null,
+  estado       text not null default 'pendiente' check (estado in ('pendiente', 'enviado', 'error')),
+  intentos     int not null default 0,
+  enviar_desde timestamptz not null default now(),
+  error        text,
+  creado       timestamptz not null default now(),
+  enviado      timestamptz
+);
+create index if not exists webhooks_cola_pend_idx on public.webhooks_cola (estado, enviar_desde);
+alter table public.webhooks_salida enable row level security;
+alter table public.webhooks_cola enable row level security;
+drop policy if exists "jefatura webhooks" on public.webhooks_salida;
+create policy "jefatura webhooks" on public.webhooks_salida for all to authenticated using (public.es_jefatura()) with check (public.es_jefatura());
+drop policy if exists "jefatura ve la cola" on public.webhooks_cola;
+create policy "jefatura ve la cola" on public.webhooks_cola for select to authenticated using (public.es_jefatura());
+
+create or replace function public.webhook_encolar(p_evento text, p_datos jsonb) returns void
+language sql security definer set search_path = public as $$
+  insert into public.webhooks_cola (webhook, evento, datos)
+  select w.id, p_evento, jsonb_strip_nulls(p_datos) from public.webhooks_salida w where w.activo and p_evento = any (w.eventos)
+$$;
+revoke execute on function public.webhook_encolar(text, jsonb) from public, anon, authenticated;
+
+create or replace function public.webhooks_solicitudes() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  perform public.webhook_encolar('solicitud', jsonb_build_object('id', new.id, 'fecha', new.fecha, 'nombre', new.nombre, 'celular', new.celular, 'dni', new.dni, 'correo', new.correo,
+    'proyecto', new.proyecto, 'tipo', new.tipo, 'lote', new.lote, 'plazo', new.plazo, 'pago', new.pago, 'visita', new.visita, 'mensaje', new.mensaje,
+    'origen', new.origen, 'campana', new.campana, 'asesor_codigo', new.asesor_codigo, 'pais', new.pais, 'acepta_promos', new.acepta_promos));
+  return new;
+end $$;
+drop trigger if exists solicitudes_webhooks on public.solicitudes;
+create trigger solicitudes_webhooks after insert on public.solicitudes for each row execute function public.webhooks_solicitudes();
+
+create or replace function public.webhooks_registros() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare c jsonb := new.contenido; a text;
+begin
+  if new.eliminado or coalesce(c->>'demo', 'false') = 'true' then return new; end if;
+  select nombre into a from public.perfiles where id = new.asesor;
+  if new.coleccion = 'clientes' then
+    -- lo que vino del CRM de Vivaldi no se le vuelve a enviar
+    if tg_op = 'INSERT' and coalesce(c->>'ext_conector', '') = '' then
+      perform public.webhook_encolar('cliente_nuevo', jsonb_build_object('id', new.id, 'nombre', c->>'name', 'celular', c->>'phone', 'proyecto', c->>'proj', 'etapa', c->>'stage',
+        'origen', c->>'src', 'presupuesto', c->'budget', 'asesor', a, 'fecha', c->>'created'));
+    elsif tg_op = 'UPDATE' and coalesce(c->>'stage', '') <> coalesce(old.contenido->>'stage', '') then
+      perform public.webhook_encolar('cliente_etapa', jsonb_build_object('id', new.id, 'nombre', c->>'name', 'celular', c->>'phone', 'proyecto', c->>'proj',
+        'etapa_anterior', old.contenido->>'stage', 'etapa', c->>'stage', 'asesor', a, 'crm_id', nullif(split_part(coalesce(c->>'ext_conector', ''), ':', 2), '')));
+    end if;
+  elsif new.coleccion = 'lotes' and tg_op = 'UPDATE' and coalesce(c->>'st', '') <> coalesce(old.contenido->>'st', '') then
+    perform public.webhook_encolar('lote_estado', jsonb_build_object('id', new.id, 'proyecto', c->>'proj', 'manzana', c->>'mz', 'lote', c->>'lt', 'estado_anterior', old.contenido->>'st',
+      'estado', c->>'st', 'precio', c->'price', 'area', c->'area'));
+  elsif new.coleccion = 'cobranza' and tg_op = 'INSERT' then
+    perform public.webhook_encolar('venta', jsonb_build_object('id', new.id, 'cliente', c->>'name', 'celular', c->>'phone', 'proyecto', c->>'projName', 'lote', c->>'lot',
+      'fecha', c->>'at', 'asesor', a, 'cuotas', jsonb_array_length(coalesce(c->'sched', '[]'::jsonb))));
+  end if;
+  return new;
+end $$;
+drop trigger if exists registros_webhooks on public.registros;
+create trigger registros_webhooks after insert or update on public.registros for each row execute function public.webhooks_registros();
+
+-- para la herramienta (solo jefatura)
+create or replace function public.webhooks_lista() returns table (id bigint, nombre text, url text, eventos text[], secreto text, activo boolean, ultimo timestamptz, resultado text, pendientes bigint, errores bigint)
+language sql stable security definer set search_path = public as $$
+  select w.id, w.nombre, w.url, w.eventos, w.secreto, w.activo, w.ultimo, w.resultado,
+         (select count(*) from public.webhooks_cola q where q.webhook = w.id and q.estado = 'pendiente'),
+         (select count(*) from public.webhooks_cola q where q.webhook = w.id and q.estado = 'error')
+  from public.webhooks_salida w where public.es_jefatura() order by w.id
+$$;
+create or replace function public.guardar_webhook(p jsonb) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare v_id bigint;
+begin
+  if not public.es_jefatura() then raise exception 'Solo la jefatura configura los envíos'; end if;
+  if coalesce(p->>'id', '') ~ '^[0-9]+$' then
+    update public.webhooks_salida set nombre = coalesce(p->>'nombre', nombre), url = coalesce(p->>'url', url),
+      eventos = coalesce((select array_agg(x) from jsonb_array_elements_text(p->'eventos') x), eventos), secreto = case when p ? 'secreto' then nullif(p->>'secreto', '') else secreto end,
+      activo = coalesce((p->>'activo')::boolean, activo) where id = (p->>'id')::bigint returning id into v_id;
+  else
+    insert into public.webhooks_salida (nombre, url, eventos, secreto) values (p->>'nombre', p->>'url',
+      coalesce((select array_agg(x) from jsonb_array_elements_text(p->'eventos') x), array['solicitud']), nullif(p->>'secreto', '')) returning id into v_id;
+  end if;
+  return v_id;
+end $$;
+create or replace function public.borrar_webhook(p_id bigint) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin if not public.es_jefatura() then raise exception 'Solo la jefatura configura los envíos'; end if; delete from public.webhooks_salida where id = p_id; return found; end $$;
+create or replace function public.probar_webhook(p_id bigint) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.es_jefatura() then raise exception 'Solo la jefatura configura los envíos'; end if;
+  insert into public.webhooks_cola (webhook, evento, datos) values (p_id, 'prueba', jsonb_build_object('mensaje', 'Prueba de conexión desde el sistema comercial Vivaldi', 'fecha', now()));
+  return true;
+end $$;
+revoke execute on function public.webhooks_lista(), public.guardar_webhook(jsonb), public.borrar_webhook(bigint), public.probar_webhook(bigint) from public, anon;
+grant execute on function public.webhooks_lista(), public.guardar_webhook(jsonb), public.borrar_webhook(bigint), public.probar_webhook(bigint) to authenticated;
+
+-- para la función del servidor: toma envíos pendientes y marca el resultado (reintenta hasta 5 veces, cada vez más espaciado)
+create or replace function public.webhooks_tomar(n int default 50) returns table (id bigint, evento text, datos jsonb, url text, secreto text, intentos int, creado timestamptz)
+language sql security definer set search_path = public as $$
+  with t as (select q.id from public.webhooks_cola q join public.webhooks_salida w on w.id = q.webhook and w.activo
+             where q.estado = 'pendiente' and q.enviar_desde <= now() order by q.id limit n for update of q skip locked)
+  update public.webhooks_cola q set intentos = q.intentos + 1, enviar_desde = now() + make_interval(mins => 5 * (q.intentos + 1) * (q.intentos + 1))
+  from t, public.webhooks_salida w where q.id = t.id and w.id = q.webhook
+  returning q.id, q.evento, q.datos, w.url, w.secreto, q.intentos, q.creado
+$$;
+create or replace function public.webhook_marcar(p_id bigint, p_ok boolean, p_error text) returns void
+language sql security definer set search_path = public as $$
+  update public.webhooks_cola set estado = case when p_ok then 'enviado' when intentos >= 5 then 'error' else 'pendiente' end,
+    error = left(p_error, 300), enviado = case when p_ok then now() end where id = p_id;
+  update public.webhooks_salida w set ultimo = now(), resultado = case when p_ok then 'Último envío correcto' else 'Último envío con error: ' || left(p_error, 200) end
+  from public.webhooks_cola q where q.id = p_id and w.id = q.webhook;
+$$;
+revoke execute on function public.webhooks_tomar(int), public.webhook_marcar(bigint, boolean, text) from public, anon, authenticated;

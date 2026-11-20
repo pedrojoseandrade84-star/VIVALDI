@@ -46,11 +46,18 @@ ok(cl.includes('Elena Campos|Nuevo|La Portada del Sol') && !cl.some(x => x.start
 // botones de la lista
 await jefa.click('#cnCL [data-cp]'); await jefa.waitForTimeout(800); ok(/en pausa/.test(await jefa.textContent('#cnCL')), 'se puede pausar');
 await jefa.click('#cnCL [data-cs]'); await jefa.waitForTimeout(1500); ok(/0 nuevos/.test(await jefa.textContent('#cnCL')), '«Sincronizar ahora» funciona y no duplica');
+// envío de salida al CRM: se configura desde la herramienta y la prueba llega al receptor
+const LLEGO = []; const rec = http.createServer((req, res) => { let b = ''; req.on('data', d => b += d); req.on('end', () => { LLEGO.push({h: req.headers, b}); res.end('{}'); }); }).listen(54406);
+await jefa.fill('#cnWU', 'http://127.0.0.1:54406/recibe'); await jefa.check('[data-ev="venta"]'); await jefa.click('#cnWGo'); await jefa.waitForTimeout(800);
+ok(/Solicitudes de la web/.test(await jefa.textContent('#cnWL')) && /Ventas registradas/.test(await jefa.textContent('#cnWL')), 'la jefatura guarda el envío al CRM con sus eventos');
+await jefa.click('#cnWL [data-wt]'); await jefa.waitForTimeout(1500);
+ok(LLEGO.length === 1 && JSON.parse(LLEGO[0].b).evento === 'prueba' && /correcto/.test(await jefa.textContent('#cnWL')), '«Enviar prueba» llega al receptor y queda «Último envío correcto»');
+rec.close();
 const AX = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf55e/scratchpad/npmdl/axe/package/axe.min.js';
 try { await jefa.addScriptTag({path: AX}); const v = await jefa.evaluate(async () => (await axe.run('#conectar')).violations.map(x => x.id + ':' + x.nodes.length)); ok(!v.length, 'accesibilidad de la pestaña: ' + JSON.stringify(v)); } catch (e) {}
 // demostración sin base de datos: ejemplo rotulado
 const c3 = await b.newContext({viewport: {width: 1366, height: 900}}); const d = await c3.newPage(); await d.route(/^https?:/, r => r.request().url().startsWith(W) ? r.continue() : r.abort());
 await d.goto(W + '/herramienta.html?demo=1'); await d.waitForTimeout(2500); await d.evaluate(() => document.getElementById('conectar').scrollIntoView()); await d.click('#conectar [data-t="crm"]'); await d.waitForTimeout(400);
-ok((await d.$$('#cnCrm .cn-ej')).length === 2, 'en la demostración se ve un ejemplo rotulado como «Ejemplo»');
+ok((await d.$$('#cnCrm .cn-ej')).length === 3, 'en la demostración se ve un ejemplo rotulado como «Ejemplo»');
 ok(!errs.length, 'sin errores ' + JSON.stringify(errs));
 await b.close(); crm.close(); web.close();
