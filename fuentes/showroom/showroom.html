@@ -69,9 +69,9 @@ button,select,a{font:inherit;color:inherit}
 .seg{display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:12px;padding:4px}.seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:none;cursor:pointer;font-weight:800;font-size:.8rem;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:#fff;color:var(--deep)}
 .ib.hd{width:auto;padding:0 14px;gap:8px;display:flex;align-items:center;color:var(--sun);font-weight:800;font-size:.84rem}.ib.hd[aria-pressed="true"]{background:#fff;color:var(--deep)}
-.foto{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(460px,calc(100vw - 32px));padding:16px 18px;z-index:6;display:none}.foto.on{display:block}
-.foto b{font-size:.95rem}.foto .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:10px 0 12px;overflow:hidden}.foto .bar i{display:block;height:100%;width:0;background:var(--sun);transition:width .3s}
-.foto .acts{display:flex;gap:8px}.foto small{display:block;margin-top:10px;color:var(--muted);font-size:.76rem;line-height:1.45}
+.fotop{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(460px,calc(100vw - 32px));padding:16px 18px;z-index:6;display:none}.fotop.on{display:block}
+.fotop b{font-size:.95rem}.fotop .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:10px 0 12px;overflow:hidden}.fotop .bar i{display:block;height:100%;width:0;background:var(--sun);transition:width .3s}
+.fotop .acts{display:flex;gap:8px}.fotop small{display:block;margin-top:10px;color:var(--muted);font-size:.76rem;line-height:1.45}
 body.foto .info,body.foto .dock,body.foto .time,body.foto .cap,body.foto .proj{display:none}
 @media (max-width:820px){.ib.hd span{display:none}.ib.hd{width:46px;padding:0;justify-content:center}}
 .ib.rtxb b{font-size:.78rem;letter-spacing:.06em;padding:2px 6px;border-radius:6px;background:#76b900;color:#0b1a05}.ib.rtxb[aria-pressed="true"]{box-shadow:0 0 0 2px #76b900 inset}
@@ -111,7 +111,7 @@ body.xr .top,body.xr .info,body.xr .dock,body.xr .time,body.xr .cap{display:none
 <body>
 <canvas id="c" tabindex="0" aria-label="Escena 3D: casa modelo sobre un lote de Vivaldi. Usa el recorrido guiado o los botones para moverte."></canvas>
 <div class="load" id="load" role="status"><div><b>Vivaldi</b><span id="loadT">Preparando el showroom virtual…</span><i></i></div></div>
-<div class="foto gl" id="foto" role="status" aria-live="polite"><b id="fotoT">Calculando la luz real…</b><div class="bar"><i id="fotoBar"></i></div><div class="acts"><button class="btn pri" type="button" id="fotoG">Guardar foto</button><button class="btn" type="button" id="fotoX">Volver</button></div><small>La luz rebota como en la vida real: sombras suaves, reflejos y luz natural. Mientras más espera, más nítida queda.</small></div>
+<div class="fotop gl" id="foto" role="status" aria-live="polite"><b id="fotoT">Calculando la luz real…</b><div class="bar"><i id="fotoBar"></i></div><div class="acts"><button class="btn pri" type="button" id="fotoG">Guardar foto</button><button class="btn" type="button" id="fotoX">Volver</button></div><small>La luz rebota como en la vida real: sombras suaves, reflejos y luz natural. Mientras más espera, más nítida queda.</small></div>
 
 <header class="top">
   <div class="brand gl"><b>VIVALDI</b><span>Showroom<br>virtual</span></div>
