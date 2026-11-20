@@ -78,9 +78,7 @@ def clasico(src, deps_tok):
     src = re.sub(r'^[ \t]*export\s*\{([^}]*)\}\s*;?', lista, src, flags=re.M)
     def decl(m):
         kw, name = m.group(1), m.group(2)
-        if kw in ('const', 'let', 'var'):
-            for n in re.findall(r'([\w$]+)\s*=', m.group(0) + m.group(3)) [:1]: getters.append(f'"{n}": () => {n}')
-        else: getters.append(f'"{name}": () => {name}')
+        getters.append(f'"{name}": () => {name}')
         return m.group(0)[m.group(0).index(kw):]
     src = re.sub(r'^[ \t]*export\s+(const|let|var|function\*?|async\s+function|class)\s+([\w$]+)(.?)', decl, src, flags=re.M)
     src = re.sub(r'^[ \t]*export\s+default\s+(function\*?|class)\s+([\w$]+)', lambda m: (getters.append(f'"default": () => {m.group(2)}') or '') + f'{m.group(1)} {m.group(2)}', src, flags=re.M)

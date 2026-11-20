@@ -94625,7 +94625,7 @@ Lensflare.Geometry = ( function () {
 
 };
 __m[40] = function(__e){ "use strict";
-
+__def(__e, {"CENTER": () => CENTER, "AVERAGE": () => AVERAGE, "SAH": () => SAH, "NOT_INTERSECTED": () => NOT_INTERSECTED, "INTERSECTED": () => INTERSECTED, "CONTAINED": () => CONTAINED, "STOP_TRAVERSAL": () => STOP_TRAVERSAL, "PRIMITIVE_INTERSECT_COST": () => PRIMITIVE_INTERSECT_COST, "TRAVERSAL_COST": () => TRAVERSAL_COST, "BYTES_PER_NODE": () => BYTES_PER_NODE, "UINT32_PER_NODE": () => UINT32_PER_NODE, "IS_LEAFNODE_FLAG": () => IS_LEAFNODE_FLAG, "LEAFNODE_MASK_32": () => LEAFNODE_MASK_32, "FLOAT32_EPSILON": () => FLOAT32_EPSILON, "SKIP_GENERATION": () => SKIP_GENERATION, "DEFAULT_OPTIONS": () => DEFAULT_OPTIONS});
 // Split strategy constants
 
 /**
@@ -95503,7 +95503,7 @@ class PrimitivePool {
 
 };
 __m[60] = function(__e){ "use strict";
-
+__def(__e, {"BufferStack": () => BufferStack});
 class _BufferStack {
 
 	constructor() {
@@ -96091,7 +96091,7 @@ function _traverse(
 
 };
 __m[55] = function(__e){ "use strict";
-
+__def(__e, {"BVHTraversalHelper": () => BVHTraversalHelper});
 const COUNT = __r(51).COUNT; const IS_LEAF = __r(51).IS_LEAF; const LEFT_NODE = __r(51).LEFT_NODE; const OFFSET = __r(51).OFFSET; const RIGHT_NODE = __r(51).RIGHT_NODE; const SPLIT_AXIS = __r(51).SPLIT_AXIS;
 
 const BVHTraversalHelper = new ( class {
@@ -97067,7 +97067,7 @@ class GeometryBVH extends BVH {
 
 };
 __m[78] = function(__e){ "use strict";
-__def(__e, {"SeparatingAxisBounds": () => SeparatingAxisBounds});
+__def(__e, {"SeparatingAxisBounds": () => SeparatingAxisBounds, "areIntersecting": () => areIntersecting});
 const Vector3 = __r(0).Vector3;
 
 class SeparatingAxisBounds {
@@ -97198,7 +97198,7 @@ const areIntersecting = ( function () {
 
 };
 __m[79] = function(__e){ "use strict";
-
+__def(__e, {"closestPointLineToLine": () => closestPointLineToLine, "closestPointsSegmentToSegment": () => closestPointsSegmentToSegment, "sphereIntersectTriangle": () => sphereIntersectTriangle});
 const Vector3 = __r(0).Vector3; const Vector2 = __r(0).Vector2; const Plane = __r(0).Plane; const Line3 = __r(0).Line3;
 
 const closestPointLineToLine = ( function () {
@@ -98790,7 +98790,7 @@ OrientedBox.prototype.distanceToBox = ( function () {
 
 };
 __m[63] = function(__e){ "use strict";
-
+__def(__e, {"ExtendedTrianglePool": () => ExtendedTrianglePool});
 const ExtendedTriangle = __r(44).ExtendedTriangle;
 const PrimitivePool = __r(59).PrimitivePool;
 
@@ -106172,7 +106172,7 @@ class StaticGeometryGenerator {
 
 };
 __m[82] = function(__e){ "use strict";
-
+__def(__e, {"common_functions": () => common_functions});
 /**
  * Set of shader functions used for interacting with the packed BVH in a shader and sampling
  * VertexAttributeTextures. Provides common utility functions including `texelFetch1D`. See
@@ -106270,7 +106270,7 @@ void ndcToCameraRay(
 
 };
 __m[83] = function(__e){ "use strict";
-
+__def(__e, {"bvh_distance_functions": () => bvh_distance_functions});
 // Distance to Point
 
 /**
@@ -106483,7 +106483,7 @@ float _bvhClosestPointToPoint(
 
 };
 __m[84] = function(__e){ "use strict";
-
+__def(__e, {"bvh_ray_functions": () => bvh_ray_functions});
 /**
  * Set of shader functions used for interacting with the packed BVH in a shader and sampling
  * VertexAttributeTextures. Provides ray intersection functions. See
@@ -106711,7 +106711,7 @@ bool _bvhIntersectFirstHit(
 
 };
 __m[85] = function(__e){ "use strict";
-
+__def(__e, {"bvh_struct_definitions": () => bvh_struct_definitions});
 // Note that a struct cannot be used for the hit record including faceIndices, faceNormal, barycoord,
 // side, and dist because on some mobile GPUS (such as Adreno) numbers are afforded less precision specifically
 // when in a struct leading to inaccurate hit results. See KhronosGroup/WebGL#3351 for more details.
@@ -106748,7 +106748,7 @@ __star(__e, 82); __star(__e, 83); __star(__e, 84); __star(__e, 85);
 
 };
 __m[29] = function(__e){ "use strict";
-__def(__e, {"CENTER": () => __r(40).CENTER, "AVERAGE": () => __r(40).AVERAGE, "SAH": () => __r(40).SAH, "NOT_INTERSECTED": () => __r(40).NOT_INTERSECTED, "INTERSECTED": () => __r(40).INTERSECTED, "CONTAINED": () => __r(40).CONTAINED, "STOP_TRAVERSAL": () => __r(40).STOP_TRAVERSAL, "SKIP_GENERATION": () => __r(40).SKIP_GENERATION, "getBVHExtremes": () => __r(41).getBVHExtremes, "estimateMemoryInBytes": () => __r(41).estimateMemoryInBytes, "getJSONStructure": () => __r(41).getJSONStructure, "validateBounds": () => __r(41).validateBounds, "getTriangleHitPointInfo": () => __r(43).getTriangleHitPointInfo, "BVHShaderGLSL": () => __r(49)});__star(__e, 32); __star(__e, 33); __star(__e, 34); __star(__e, 35); __star(__e, 36); __star(__e, 37); __star(__e, 38); __star(__e, 39); __star(__e, 42); __star(__e, 44); __star(__e, 45); __star(__e, 46); __star(__e, 47); __star(__e, 48);
+__def(__e, {"CENTER": () => __r(40).CENTER, "AVERAGE": () => __r(40).AVERAGE, "SAH": () => __r(40).SAH, "NOT_INTERSECTED": () => __r(40).NOT_INTERSECTED, "INTERSECTED": () => __r(40).INTERSECTED, "CONTAINED": () => __r(40).CONTAINED, "STOP_TRAVERSAL": () => __r(40).STOP_TRAVERSAL, "SKIP_GENERATION": () => __r(40).SKIP_GENERATION, "getBVHExtremes": () => __r(41).getBVHExtremes, "estimateMemoryInBytes": () => __r(41).estimateMemoryInBytes, "getJSONStructure": () => __r(41).getJSONStructure, "validateBounds": () => __r(41).validateBounds, "getTriangleHitPointInfo": () => __r(43).getTriangleHitPointInfo, "BVHShaderGLSL": () => __r(49), "shaderStructs": () => shaderStructs, "shaderDistanceFunction": () => shaderDistanceFunction, "shaderIntersectFunction": () => shaderIntersectFunction});__star(__e, 32); __star(__e, 33); __star(__e, 34); __star(__e, 35); __star(__e, 36); __star(__e, 37); __star(__e, 38); __star(__e, 39); __star(__e, 42); __star(__e, 44); __star(__e, 45); __star(__e, 46); __star(__e, 47); __star(__e, 48);
 
 
 
@@ -107756,7 +107756,7 @@ class BakedGeometry extends BufferGeometry {
 
 };
 __m[30] = function(__e){ "use strict";
-__def(__e, {"StaticGeometryGenerator": () => StaticGeometryGenerator});
+__def(__e, {"NO_CHANGE": () => NO_CHANGE, "GEOMETRY_ADJUSTED": () => GEOMETRY_ADJUSTED, "GEOMETRY_REBUILT": () => GEOMETRY_REBUILT, "StaticGeometryGenerator": () => StaticGeometryGenerator});
 const BufferAttribute = __r(0).BufferAttribute; const BufferGeometry = __r(0).BufferGeometry; const Mesh = __r(0).Mesh; const MeshBasicMaterial = __r(0).MeshBasicMaterial;
 const mergeGeometries = __r(86).mergeGeometries;
 const setCommonAttributes = __r(31).setCommonAttributes;
@@ -108489,7 +108489,7 @@ class BlendMaterial extends MaterialBase {
 
 };
 __m[96] = function(__e){ "use strict";
-
+__def(__e, {"sobol_common": () => sobol_common, "sobol_point_generation": () => sobol_point_generation, "sobol_functions": () => sobol_functions});
 // References
 // - https://jcgt.org/published/0009/04/01/
 // - Code from https://www.shadertoy.com/view/WtGyDm
@@ -109818,7 +109818,7 @@ function getLights( scene ) {
 
 };
 __m[101] = function(__e){ "use strict";
-__def(__e, {"MaterialsTexture": () => MaterialsTexture});
+__def(__e, {"MATERIAL_PIXELS": () => MATERIAL_PIXELS, "MaterialsTexture": () => MaterialsTexture});
 const DataTexture = __r(0).DataTexture; const RGBAFormat = __r(0).RGBAFormat; const ClampToEdgeWrapping = __r(0).ClampToEdgeWrapping; const FloatType = __r(0).FloatType; const FrontSide = __r(0).FrontSide; const BackSide = __r(0).BackSide; const DoubleSide = __r(0).DoubleSide; const NearestFilter = __r(0).NearestFilter;
 const getTextureHash = __r(26).getTextureHash;
 const bufferToHash = __r(91).bufferToHash;
@@ -111173,7 +111173,7 @@ class BlueNoiseTexture extends DataTexture {
 
 };
 __m[120] = function(__e){ "use strict";
-
+__def(__e, {"camera_struct": () => camera_struct});
 const camera_struct = /* glsl */`
 
 	struct PhysicalCamera {
@@ -111190,7 +111190,7 @@ const camera_struct = /* glsl */`
 
 };
 __m[121] = function(__e){ "use strict";
-
+__def(__e, {"equirect_struct": () => equirect_struct});
 const equirect_struct = /* glsl */`
 
 	struct EquirectHdrInfo {
@@ -111207,7 +111207,7 @@ const equirect_struct = /* glsl */`
 
 };
 __m[122] = function(__e){ "use strict";
-
+__def(__e, {"lights_struct": () => lights_struct});
 const lights_struct = /* glsl */`
 
 	#define RECT_AREA_LIGHT_TYPE 0
@@ -111298,7 +111298,7 @@ const lights_struct = /* glsl */`
 
 };
 __m[123] = function(__e){ "use strict";
-
+__def(__e, {"material_struct": () => material_struct});
 const material_struct = /* glsl */ `
 
 	struct Material {
@@ -111512,7 +111512,7 @@ const material_struct = /* glsl */ `
 
 };
 __m[124] = function(__e){ "use strict";
-
+__def(__e, {"surface_record_struct": () => surface_record_struct});
 const surface_record_struct = /* glsl */`
 
 	struct SurfaceRecord {
@@ -111588,7 +111588,7 @@ __star(__e, 120); __star(__e, 121); __star(__e, 122); __star(__e, 123); __star(_
 
 };
 __m[125] = function(__e){ "use strict";
-
+__def(__e, {"equirect_functions": () => equirect_functions});
 const equirect_functions = /* glsl */`
 
 	// samples the the given environment map in the given direction
@@ -111660,7 +111660,7 @@ const equirect_functions = /* glsl */`
 
 };
 __m[126] = function(__e){ "use strict";
-
+__def(__e, {"light_sampling_functions": () => light_sampling_functions});
 const light_sampling_functions = /* glsl */`
 
 	float getSpotAttenuation( const in float coneCosine, const in float penumbraCosine, const in float angleCosine ) {
@@ -111880,7 +111880,7 @@ const light_sampling_functions = /* glsl */`
 
 };
 __m[127] = function(__e){ "use strict";
-
+__def(__e, {"shape_sampling_functions": () => shape_sampling_functions});
 const shape_sampling_functions = /* glsl */`
 
 	vec3 sampleHemisphere( vec3 n, vec2 uv ) {
@@ -111977,7 +111977,7 @@ __star(__e, 125); __star(__e, 126); __star(__e, 127);
 
 };
 __m[128] = function(__e){ "use strict";
-
+__def(__e, {"fresnel_functions": () => fresnel_functions});
 const fresnel_functions = /* glsl */`
 
 	bool totalInternalReflection( float cosTheta, float eta ) {
@@ -112085,7 +112085,7 @@ const fresnel_functions = /* glsl */`
 
 };
 __m[129] = function(__e){ "use strict";
-
+__def(__e, {"math_functions": () => math_functions});
 const math_functions = /* glsl */`
 
 	// Fast arccos approximation used to remove banding artifacts caused by numerical errors in acos.
@@ -112170,7 +112170,7 @@ const math_functions = /* glsl */`
 
 };
 __m[130] = function(__e){ "use strict";
-
+__def(__e, {"shape_intersection_functions": () => shape_intersection_functions});
 const shape_intersection_functions = /* glsl */`
 
 	// Finds the point where the ray intersects the plane defined by u and v and checks if this point
@@ -112236,7 +112236,7 @@ const shape_intersection_functions = /* glsl */`
 
 };
 __m[131] = function(__e){ "use strict";
-
+__def(__e, {"texture_sample_functions": () => texture_sample_functions});
 
 const texture_sample_functions = /*glsl */`
 
@@ -112265,7 +112265,7 @@ const texture_sample_functions = /*glsl */`
 
 };
 __m[132] = function(__e){ "use strict";
-
+__def(__e, {"util_functions": () => util_functions});
 const util_functions = /* glsl */`
 
 	// TODO: possibly this should be renamed something related to material or path tracing logic
@@ -112394,7 +112394,7 @@ __star(__e, 128); __star(__e, 129); __star(__e, 130); __star(__e, 131); __star(_
 
 };
 __m[133] = function(__e){ "use strict";
-
+__def(__e, {"pcg_functions": () => pcg_functions});
 const pcg_functions = /* glsl */`
 
 	// https://www.shadertoy.com/view/wltcRS
@@ -112455,7 +112455,7 @@ const pcg_functions = /* glsl */`
 
 };
 __m[134] = function(__e){ "use strict";
-
+__def(__e, {"stratified_functions": () => stratified_functions});
 const stratified_functions = /* glsl */`
 
 	uniform sampler2D stratifiedTexture;
@@ -112516,7 +112516,7 @@ __star(__e, 133); __star(__e, 96); __star(__e, 134);
 
 };
 __m[135] = function(__e){ "use strict";
-
+__def(__e, {"bsdf_functions": () => bsdf_functions});
 /*
 wi     : incident vector or light vector (pointing toward the light)
 wo     : outgoing vector or view vector (pointing towards the camera)
@@ -112969,7 +112969,7 @@ const bsdf_functions = /* glsl */`
 
 };
 __m[136] = function(__e){ "use strict";
-
+__def(__e, {"fog_functions": () => fog_functions});
 const fog_functions = /* glsl */`
 
 	// returns the hit distance given the material density
@@ -112995,7 +112995,7 @@ const fog_functions = /* glsl */`
 
 };
 __m[137] = function(__e){ "use strict";
-
+__def(__e, {"ggx_functions": () => ggx_functions});
 const ggx_functions = /* glsl */`
 
 	// The GGX functions provide sampling and distribution information for normals as output so
@@ -113101,7 +113101,7 @@ const ggx_functions = /* glsl */`
 
 };
 __m[138] = function(__e){ "use strict";
-
+__def(__e, {"iridescence_functions": () => iridescence_functions});
 const iridescence_functions = /* glsl */`
 
 	// XYZ to sRGB color space
@@ -113240,7 +113240,7 @@ const iridescence_functions = /* glsl */`
 
 };
 __m[139] = function(__e){ "use strict";
-
+__def(__e, {"sheen_functions": () => sheen_functions});
 const sheen_functions = /* glsl */`
 
 	// See equation (2) in http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
@@ -113351,7 +113351,7 @@ __star(__e, 135); __star(__e, 136); __star(__e, 137); __star(__e, 138); __star(_
 
 };
 __m[140] = function(__e){ "use strict";
-
+__def(__e, {"inside_fog_volume_function": () => inside_fog_volume_function});
 const inside_fog_volume_function = /* glsl */`
 
 #ifndef FOG_CHECK_ITERATIONS
@@ -113417,7 +113417,7 @@ bool bvhIntersectFogVolumeHit(
 
 };
 __m[141] = function(__e){ "use strict";
-
+__def(__e, {"ray_any_hit_function": () => ray_any_hit_function});
 const ray_any_hit_function = /* glsl */`
 
 	bool bvhIntersectAnyHit(
@@ -113503,7 +113503,7 @@ __star(__e, 140); __star(__e, 141);
 
 };
 __m[142] = function(__e){ "use strict";
-
+__def(__e, {"attenuate_hit_function": () => attenuate_hit_function});
 const attenuate_hit_function = /* glsl */`
 
 	// step through multiple surface hits and accumulate color attenuation based on transmissive surfaces
@@ -113686,7 +113686,7 @@ const attenuate_hit_function = /* glsl */`
 
 };
 __m[143] = function(__e){ "use strict";
-
+__def(__e, {"camera_util_functions": () => camera_util_functions});
 const camera_util_functions = /* glsl */`
 
 	vec3 ndcToRayOrigin( vec2 coord ) {
@@ -113774,7 +113774,7 @@ const camera_util_functions = /* glsl */`
 
 };
 __m[144] = function(__e){ "use strict";
-
+__def(__e, {"direct_light_contribution_function": () => direct_light_contribution_function});
 const direct_light_contribution_function = /*glsl*/`
 
 	vec3 directLightContribution( vec3 worldWo, SurfaceRecord surf, RenderState state, vec3 rayOrigin ) {
@@ -113875,7 +113875,7 @@ const direct_light_contribution_function = /*glsl*/`
 
 };
 __m[145] = function(__e){ "use strict";
-
+__def(__e, {"get_surface_record_function": () => get_surface_record_function});
 
 const get_surface_record_function = /* glsl */`
 
@@ -114204,7 +114204,7 @@ const get_surface_record_function = /* glsl */`
 
 };
 __m[146] = function(__e){ "use strict";
-
+__def(__e, {"render_structs": () => render_structs});
 const render_structs = /* glsl */`
 
 	struct Ray {
@@ -114258,7 +114258,7 @@ const render_structs = /* glsl */`
 
 };
 __m[147] = function(__e){ "use strict";
-
+__def(__e, {"trace_scene_function": () => trace_scene_function});
 const trace_scene_function = /* glsl */`
 
 	#define NO_HIT 0
