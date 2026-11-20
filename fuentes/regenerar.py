@@ -7,7 +7,7 @@
 import json, os, subprocess, sys
 D = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(D)
 run = lambda *a: subprocess.run([sys.executable, *a], check=True)
-run(D + '/landings/build.py'); run(D + '/portal/build_portal.py'); run(D + '/mejoras_web.py'); run(D + '/parche_proyectos.py')
+run(D + '/landings/build.py'); run(D + '/portal/build_portal.py'); run(D + '/mejoras_web.py'); run(D + '/parche_proyectos.py'); run(D + '/asistente/build.py')
 
 data = json.load(open(D + '/landings/proyectos.json', encoding='utf-8')); data.pop('_nota', None)
 MODS = {'growth-sync': open(D + '/sync.html', encoding='utf-8').read().strip(),

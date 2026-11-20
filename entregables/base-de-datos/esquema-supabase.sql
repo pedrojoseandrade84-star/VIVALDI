@@ -834,3 +834,133 @@ language sql security definer set search_path = public as $$
   from public.webhooks_cola q where q.id = p_id and w.id = q.webhook;
 $$;
 revoke execute on function public.webhooks_tomar(int), public.webhook_marcar(bigint, boolean, text) from public, anon, authenticated;
+
+-- 11. Asistente virtual 24/7 (web y WhatsApp): conversaciones, derivación al asesor y bandeja en la herramienta
+create table if not exists public.conversaciones (
+  id           text primary key check (id ~ '^(web|wa):[A-Za-z0-9_-]{6,64}$'),
+  canal        text not null check (canal in ('web', 'whatsapp')),
+  celular      text check (celular is null or celular ~ '^(9[0-9]{8}|\+?[1-9][0-9]{7,14})$'),
+  nombre       text check (char_length(nombre) <= 120),
+  proyecto     text check (char_length(proyecto) <= 120),
+  estado       text not null default 'asistente' check (estado in ('asistente', 'asesor', 'cerrada')),
+  solicitud    bigint references public.solicitudes (id) on delete set null,
+  resumen      text check (char_length(resumen) <= 1000),
+  dia          date not null default (now() at time zone 'America/Lima')::date,
+  mensajes_dia int not null default 0,
+  creado       timestamptz not null default now(),
+  actualizado  timestamptz not null default now()
+);
+create table if not exists public.conversacion_mensajes (
+  id           bigserial primary key,
+  conversacion text not null references public.conversaciones (id) on delete cascade,
+  rol          text not null check (rol in ('cliente', 'asistente', 'asesor')),
+  texto        text not null check (char_length(texto) between 1 and 4000),
+  autor        uuid references auth.users (id),
+  fecha        timestamptz not null default now()
+);
+create index if not exists conversacion_mensajes_conv_idx on public.conversacion_mensajes (conversacion, id);
+-- identificador del mensaje en WhatsApp: si Meta reenvía el mismo mensaje no se contesta dos veces
+alter table public.conversacion_mensajes add column if not exists ref text;
+create unique index if not exists conversacion_mensajes_ref_idx on public.conversacion_mensajes (ref);
+create index if not exists conversaciones_act_idx on public.conversaciones (actualizado desc);
+alter table public.conversaciones enable row level security;
+alter table public.conversacion_mensajes enable row level security;
+drop policy if exists "equipo ve conversaciones" on public.conversaciones;
+create policy "equipo ve conversaciones" on public.conversaciones for select to authenticated using (public.es_activo());
+drop policy if exists "equipo ve mensajes de conversaciones" on public.conversacion_mensajes;
+create policy "equipo ve mensajes de conversaciones" on public.conversacion_mensajes for select to authenticated using (public.es_activo());
+
+-- lo que viene del asistente ya está conversando: no se le envía la bienvenida automática (sí el aviso al asesor)
+create or replace function public.solicitudes_mensajes() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare a record;
+begin
+  select nombre, celular into a from public.perfiles where id = new.asesor;
+  if new.origen not like 'Asistente%' then
+    perform public.encolar(new.celular, 'bienvenida_cliente',
+      jsonb_build_array(split_part(new.nombre, ' ', 1), coalesce(nullif(new.proyecto, ''), 'nuestros proyectos'), coalesce(a.nombre, 'un asesor de Vivaldi')),
+      'Cliente nuevo de la web', 'sol:' || new.id || ':bienvenida');
+  end if;
+  if a.celular is not null then
+    perform public.encolar(a.celular, 'aviso_asesor', jsonb_build_array(a.nombre, new.nombre, new.celular, coalesce(nullif(new.proyecto, ''), 'sin proyecto'), coalesce(nullif(new.visita, ''), 'sin visita')),
+      'Cliente nuevo asignado', 'sol:' || new.id || ':asesor');
+  end if;
+  return null;
+end $$;
+
+-- a) para la función del asistente (solo con la clave de servicio)
+create or replace function public.asistente_turno(p_conv text, p_canal text, p_celular text, p_texto text, p_limite int default 40, p_ref text default null) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare c public.conversaciones; hoy date := (now() at time zone 'America/Lima')::date; hist jsonb;
+begin
+  insert into public.conversaciones (id, canal, celular) values (p_conv, p_canal, nullif(p_celular, '')) on conflict (id) do nothing;
+  select * into c from public.conversaciones where id = p_conv for update;
+  if c.dia <> hoy then c.dia := hoy; c.mensajes_dia := 0; end if;
+  if c.mensajes_dia >= p_limite then
+    update public.conversaciones set dia = c.dia, actualizado = now() where id = p_conv;
+    return jsonb_build_object('estado', c.estado, 'limite', true, 'historial', '[]'::jsonb);
+  end if;
+  if p_ref is not null and exists (select 1 from public.conversacion_mensajes where ref = p_ref) then
+    return jsonb_build_object('estado', c.estado, 'duplicado', true, 'historial', '[]'::jsonb);
+  end if;
+  insert into public.conversacion_mensajes (conversacion, rol, texto, ref) values (p_conv, 'cliente', left(p_texto, 4000), p_ref);
+  update public.conversaciones set dia = c.dia, mensajes_dia = c.mensajes_dia + 1, actualizado = now() where id = p_conv;
+  select coalesce(jsonb_agg(jsonb_build_object('rol', m.rol, 'texto', m.texto) order by m.id), '[]'::jsonb) into hist
+  from (select * from public.conversacion_mensajes where conversacion = p_conv order by id desc limit 24) m;
+  return jsonb_build_object('estado', c.estado, 'limite', false, 'historial', hist, 'nombre', c.nombre, 'proyecto', c.proyecto, 'solicitud', c.solicitud);
+end $$;
+create or replace function public.asistente_responder(p_conv text, p_texto text) returns void
+language sql security definer set search_path = public as $$
+  insert into public.conversacion_mensajes (conversacion, rol, texto) values (p_conv, 'asistente', left(p_texto, 4000));
+  update public.conversaciones set actualizado = now() where id = p_conv;
+$$;
+-- registra al cliente (crea la solicitud que el sistema asigna al asesor) y, si se pide, pasa la conversación al asesor
+create or replace function public.asistente_registrar(p_conv text, p_nombre text, p_celular text, p_proyecto text, p_tipo text, p_visita text, p_resumen text, p_derivar boolean, p_origen text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare c public.conversaciones; sid bigint; tel text := regexp_replace(coalesce(p_celular, ''), '\D', '', 'g');
+begin
+  select * into c from public.conversaciones where id = p_conv for update;
+  if not found then raise exception 'Conversación % no existe', p_conv; end if;
+  if tel ~ '^519[0-9]{8}$' then tel := substr(tel, 3); end if;
+  if c.solicitud is null then
+    if tel !~ '^9[0-9]{8}$' or char_length(coalesce(p_nombre, '')) < 3 then
+      if p_derivar then   -- sin datos de contacto igual pasa a una persona: la ve en la bandeja de conversaciones
+        update public.conversaciones set estado = 'asesor', resumen = coalesce(left(p_resumen, 1000), resumen), actualizado = now() where id = p_conv;
+        return jsonb_build_object('ok', true, 'solicitud', null, 'derivada', true, 'nota', 'Sin datos de contacto: el asesor responde en este mismo chat');
+      end if;
+      return jsonb_build_object('ok', false, 'motivo', 'Faltan el nombre completo o un celular peruano de 9 dígitos que empiece con 9');
+    end if;
+    insert into public.solicitudes (nombre, celular, proyecto, visita, mensaje, origen, tipo)
+    values (left(p_nombre, 120), tel, nullif(left(p_proyecto, 120), ''), nullif(left(p_visita, 80), ''),
+            left('Conversación con el asistente virtual (' || p_origen || '). ' || coalesce(p_resumen, ''), 1000), left('Asistente ' || p_origen, 60), 'consulta')
+    returning id into sid;
+  else sid := c.solicitud;
+  end if;
+  update public.conversaciones set solicitud = sid, nombre = coalesce(left(p_nombre, 120), nombre), proyecto = coalesce(nullif(left(p_proyecto, 120), ''), proyecto),
+    celular = coalesce(nullif(tel, ''), celular), resumen = coalesce(left(p_resumen, 1000), resumen), estado = case when p_derivar then 'asesor' else estado end, actualizado = now()
+  where id = p_conv;
+  return jsonb_build_object('ok', true, 'solicitud', sid, 'derivada', p_derivar);
+end $$;
+revoke execute on function public.asistente_turno(text, text, text, text, int, text), public.asistente_responder(text, text),
+  public.asistente_registrar(text, text, text, text, text, text, text, boolean, text) from public, anon, authenticated;
+
+-- b) para la herramienta: el asesor toma o devuelve la conversación y escribe (la función envía su mensaje por WhatsApp)
+create or replace function public.conversacion_estado(p_conv text, p_estado text) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.es_activo() then raise exception 'No autorizado'; end if;
+  if p_estado not in ('asistente', 'asesor', 'cerrada') then raise exception 'Estado no válido'; end if;
+  update public.conversaciones set estado = p_estado, actualizado = now() where id = p_conv; return found;
+end $$;
+create or replace function public.conversacion_escribir(p_conv text, p_texto text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare c public.conversaciones;
+begin
+  if not public.es_activo() then raise exception 'No autorizado'; end if;
+  select * into c from public.conversaciones where id = p_conv; if not found then raise exception 'Conversación no encontrada'; end if;
+  insert into public.conversacion_mensajes (conversacion, rol, texto, autor) values (p_conv, 'asesor', left(p_texto, 4000), auth.uid());
+  update public.conversaciones set estado = 'asesor', actualizado = now() where id = p_conv;
+  return jsonb_build_object('canal', c.canal, 'celular', c.celular);
+end $$;
+revoke execute on function public.conversacion_estado(text, text), public.conversacion_escribir(text, text) from public, anon;
+grant execute on function public.conversacion_estado(text, text), public.conversacion_escribir(text, text) to authenticated;

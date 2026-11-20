@@ -6,4 +6,5 @@ grep -q '127.0.0.1:54321' "$D/web_db.html" || { echo "no se pudo conectar la web
 cp "$E/software/planicie-herramienta-final.html" "$D/tool_db.html"
 cp "$E/base-de-datos/funciones/enviar-whatsapp/index.ts" "$D/fn.mts"
 cp "$E/base-de-datos/funciones/conector/index.ts" "$D/conector.mts"
+cp "$E/base-de-datos/funciones/asistente/index.ts" "$D/asistente.mts"
 echo "archivos de prueba listos"

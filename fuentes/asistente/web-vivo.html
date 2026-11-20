@@ -1,0 +1,37 @@
+<!--asistente-vivo-start-->
+<script id="asistente-vivo">
+/* Asesor virtual 24/7: cuando la base de Vivaldi está configurada (VV_BASE), el chat de la web conversa con el asesor virtual del servidor
+   (consulta lotes en vivo, calcula cuotas, registra al cliente con su permiso y lo pasa a un asesor). Sin servidor, responde como antes con
+   los datos de la página. Diseño y desarrollo: Pedrojose Andrade Paredes */
+(() => {
+  const form = document.getElementById("aiForm"), q = document.getElementById("aiQ"), chips = document.getElementById("aiChips"), log = document.getElementById("aiLog");
+  if (!form || !log) return;
+  const base = () => (window.VV_BASE && VV_BASE.url && VV_BASE.key) ? VV_BASE : null;
+  const conv = () => { let id = ""; try { id = localStorage.getItem("vv-conv") || ""; } catch (e) {}
+    if (!/^web:[A-Za-z0-9_-]{8,64}$/.test(id)) { const r = new Uint8Array(12); crypto.getRandomValues(r); id = "web:" + [...r].map(b => b.toString(36).padStart(2, "0")).join("");
+      try { localStorage.setItem("vv-conv", id); } catch (e) {} } return id; };
+  const esc = t => t.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+  // texto del asesor virtual → HTML seguro: negritas, listas, saltos de línea y enlaces
+  const fmt = t => esc(t).replace(/\*\*(.+?)\*\*|\*(\S[^*\n]*?)\*/g, (m, a, b) => "<b>" + (a || b) + "</b>")
+    .replace(/(https:\/\/[^\s<)]+)/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https:\/\/(www\.)?/, "").slice(0, 48)}</a>`)
+    .replace(/^\s*[-•]\s+(.+)$/gm, "<li>$1</li>").replace(/(<li>.*<\/li>\n?)+/g, m => "<ul>" + m.replace(/\n/g, "") + "</ul>").replace(/\n/g, "<br>");
+  const add = (html, who) => { const m = document.createElement("div"); m.className = "ai-m " + who; m.innerHTML = html; log.append(m); log.scrollTop = log.scrollHeight; return m; };
+  let ocupado = false;
+  async function preguntar(texto) {
+    const B = base(); texto = texto.trim(); if (!texto || ocupado) return; ocupado = true;
+    add(esc(texto), "me"); const dots = add('<span class="ai-typing" aria-label="Escribiendo"><i></i><i></i><i></i></span>', "bot");
+    try {
+      const r = await fetch(B.url.replace(/\/$/, "") + "/functions/v1/asistente", {method: "POST", headers: {apikey: B.key, Authorization: "Bearer " + B.key, "Content-Type": "application/json"},
+        body: JSON.stringify({conversacion: conv(), mensaje: texto.slice(0, 1000)})});
+      const j = await r.json(); dots.remove();
+      add(fmt(j.respuesta || "Un asesor de Vivaldi te escribirá por WhatsApp.") + (j.estado === "asesor" ? '<div class="acts"><a class="wa-go" href="https://wa.me/51922549723" target="_blank" rel="noopener">Seguir por WhatsApp</a></div>' : ""), "bot");
+    } catch (e) { dots.remove(); add('Ahora no puedo responder. Un asesor te atiende por WhatsApp.<div class="acts"><a class="wa-go" href="https://wa.me/51922549723" target="_blank" rel="noopener">Hablar con un asesor</a></div>', "bot"); }
+    ocupado = false;
+  }
+  // se adelanta al chat de la página solo si hay servidor; si no, deja que responda como siempre
+  form.addEventListener("submit", e => { if (!base()) return; e.preventDefault(); e.stopImmediatePropagation(); preguntar(q.value); q.value = ""; }, true);
+  if (chips) chips.addEventListener("click", e => { const b = e.target.closest("button"); if (!b || !base()) return; e.stopImmediatePropagation(); preguntar(b.textContent); }, true);
+  window.VV_ASISTENTE_VIVO = {preguntar, fmt};
+})();
+</script>
+<!--asistente-vivo-end-->
