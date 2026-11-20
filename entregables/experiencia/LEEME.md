@@ -37,3 +37,18 @@ Para cada proyecto: `node fuentes/experiencia/capturas_explorador.js fuentes/exp
 ## Resolución
 
 Las vistas del condominio, los cortes y los ambientes están renderizadas por el simulador en 4K (3840 × 2160 px), con detalle real, no ampliadas. Por eso cada explorador pesa entre 5 y 8 MB.
+
+## Showroom virtual (showroom.html)
+
+Recorrido en 3D de una casa modelo de referencia sobre el lote real de cada proyecto (6 × 15, 10 × 20 o 10 × 25 m), en un entorno basado en fotos reales de Asia y Cerro Azul: lotes sobre arena, cerco de concreto, lomas, playa y mar de Humboldt.
+
+- **Motor:** three.js actual con cielos HDR reales de tarde, atardecer y noche, materiales PBR, muebles 3D escaneados, oclusión ambiental, pasto 3D con viento y corrección de color.
+- **RTX:** trazado de rayos en vivo. Al detener la cámara, la luz, las sombras y los reflejos se calculan como en la realidad.
+- **Foto realista:** imagen por trazado de rayos, que se puede descargar.
+- **Recorrido guiado** de 8 paradas, modo **Caminar** (con choques contra los muros) y vista del **Lote** en planta.
+- **Tu casa:** estilo Mediterráneo, Contemporáneo o Tropical, con el botón «Enviar mi casa al asesor» por WhatsApp.
+- **Realidad virtual:** con Meta Quest, abriendo la página en el navegador del visor. Se apunta al piso y se presiona el gatillo para moverse, la palanca sirve para girar y el botón lateral lleva a la siguiente parada.
+
+Funciona sin internet (un solo archivo de unos 27 MB). Para equipos modestos se puede abrir con `?ligero` al final de la dirección. Se puede abrir directo en un proyecto con `?proyecto=lirios`. La casa y el entorno son ilustrativos: Vivaldi vende lotes y la construcción es libre.
+
+Texturas, cielos y muebles: Poly Haven, con licencia CC0 (uso comercial libre). Para regenerarlo: `python3 fuentes/showroom/build.py`.
