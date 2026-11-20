@@ -70,7 +70,7 @@ const mat = {
   roble: pbr('deck', {color: 0xf0d9bd, roughness: .8}), negro: M({color: 0x1d1f22, metalness: .5, roughness: .4}), blanco: M({color: 0xf4f2ee, roughness: .35}),
   tronco: M({color: 0x7f6a52, roughness: .95}), foco: M({color: 0xfff1d6, emissive: 0xffd9a0, emissiveIntensity: 0}), tv: M({color: 0x0c0d0f, metalness: .3, roughness: .12}),
   vecino: pbr('muro', {color: 0xf0ece4}), vecinoV: M({color: 0x2c3a44, metalness: .4, roughness: .12}), estaca: M({color: 0xd9572b, roughness: .7}),
-  techo: pbr('piedra', {color: 0xc9c5be}), concreto: pbr('piedra', {color: 0xbab6ae}), terreno: pbr('arena', {color: 0xd8c7a8}), afirmado: pbr('arena', {color: 0xb7a283, normalScale: new THREE.Vector2(.5, .5)}), adoquin: pbr('vereda', {color: 0xb9b3aa}), solar: M({color: 0x18263d, metalness: .6, roughness: .18}),
+  techo: pbr('piedra', {color: 0xc9c5be}), concreto: pbr('piedra', {color: 0xd6d2ca}), terreno: pbr('arena', {color: 0xffffff}), afirmado: pbr('arena', {color: 0xe6d9c2, normalScale: new THREE.Vector2(.5, .5)}), adoquin: pbr('vereda', {color: 0xb9b3aa}), solar: M({color: 0x18263d, metalness: .6, roughness: .18}),
   linea: new THREE.LineDashedMaterial({color: 0xffffff, dashSize: .5, gapSize: .3, transparent: true, opacity: .9})
 };
 // hoja de palmera (lienzo) con transparencia
@@ -97,7 +97,7 @@ function mueble(nombre, x, y, z, rot = 0, parte = null, escala = 1) { const base
 
 // cielos HDR: cada uno se carga, se ubica su sol y se gira para que el sol caiga sobre el mar (oeste)
 const CIELOS = {}; const hdr = new HDRLoader();
-const LUZ = {tarde: {obj: [.62, -.78], exp: +(Q.get('exp') || .5), sol: 3.6, noche: 0}, atardecer: {obj: [.3, -.95], exp: +(Q.get('exp') || .55), sol: 2.6, noche: .55}, noche: {obj: [.5, -.86], exp: +(Q.get('exp') || 1), sol: .05, noche: 1}};
+const LUZ = {tarde: {obj: [.62, -.78], exp: +(Q.get('exp') || .66), sol: 3.6, noche: 0}, atardecer: {obj: [.3, -.95], exp: +(Q.get('exp') || .62), sol: 2.6, noche: .55}, noche: {obj: [.5, -.86], exp: +(Q.get('exp') || 1), sol: .05, noche: 1}};
 async function cargarCielos() { for (const k of ['tarde', 'atardecer', 'noche']) { const t = await new Promise(ok => hdr.load(URLS[`cielo-${k}.hdr`], ok)); t.mapping = THREE.EquirectangularReflectionMapping;
   const {width: w, height: h, data} = t.image, half = data instanceof Uint16Array, f = half ? THREE.DataUtils.fromHalfFloat : x => x; let mx = -1, mi = 0;
   const top = [0, 0, 0], hor = [0, 0, 0]; let nt = 0, nh = 0;
@@ -181,7 +181,7 @@ scene.fog = new THREE.Fog(0xcfd9df, 900, 5200);
 
 let luzActual = Q.get('luz') && LUZ[Q.get('luz')] ? Q.get('luz') : 'tarde';
 function aplicarLuz(k) { luzActual = k; const c = CIELOS[k], L = LUZ[k]; if (!c) return;
-  scene.background = c.tex; scene.environment = c.env; scene.backgroundRotation.set(0, c.rot, 0); scene.environmentRotation.set(0, c.rot, 0); scene.backgroundIntensity = 1; scene.environmentIntensity = k === 'noche' ? 1.4 : 1;
+  scene.background = c.tex; scene.environment = c.env; scene.backgroundRotation.set(0, c.rot, 0); scene.environmentRotation.set(0, c.rot, 0); scene.backgroundIntensity = 1; scene.environmentIntensity = k === 'noche' ? 1.4 : 1.25;
   const sd = c.sol.clone(); if (sd.y < .06) sd.y = .06; sd.normalize(); sol.position.copy(sd).multiplyScalar(140); sol.intensity = L.sol;
   sol.color.setRGB(1, k === 'atardecer' ? .78 : .95, k === 'atardecer' ? .55 : .88); if (k === 'noche') sol.color.setRGB(.6, .7, 1);
   renderer.toneMappingExposure = L.exp;
