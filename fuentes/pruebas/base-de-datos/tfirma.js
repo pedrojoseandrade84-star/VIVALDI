@@ -10,4 +10,6 @@ const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); if (!c) process
   await p.click('#fmOk'); await p.waitForTimeout(300);
   ok(await p.$eval('#sepDoc .firma-cli img', e => e.src.startsWith('data:image/png') && e.naturalWidth > 0).catch(() => false) && /Firmado digitalmente el/.test(await p.textContent('#sepDoc')), 'la firma aparece en la constancia con fecha y hora');
   ok(await p.textContent('#sepFirma') === 'Volver a firmar', 'se puede volver a firmar');
+  await p.goto('file:///home/user/VIVALDI/entregables/software/planicie-herramienta-final.html?demo=1#proforma'); await p.waitForTimeout(2500);
+  ok(/showroom\.html\?proyecto=/.test(await p.evaluate(() => (document.querySelector('#pfDoc .doc-3d') || {dataset: {}}).dataset.u || '')), 'la proforma trae un QR para recorrer la casa en 3D');
   ok(errs.length === 0, 'sin errores: ' + errs.join(' | ')); await b.close(); })();

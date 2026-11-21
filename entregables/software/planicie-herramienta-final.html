@@ -6672,6 +6672,19 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
   window.vvFirma = {abrir, poner};
 })();
 </script>
+<script id="pf-3d">
+/* Proforma con QR al showroom 3D: el cliente escanea y recorre en su celular la casa modelo sobre un lote del proyecto. */
+(() => {
+  const doc = document.getElementById("pfDoc"); if (!doc || typeof qrSvg !== "function") return;
+  const ID = [["planicie", /planicie/i], ["terrazas", /terrazas/i], ["portada", /portada/i], ["lirios", /lirios/i], ["esmeralda", /esmeralda/i]];
+  function poner() { const ya = doc.querySelector(".doc-3d"); const txt = doc.textContent || ""; const m = ID.find(([, r]) => r.test(txt)); if (!m) { if (ya) ya.remove(); return; }
+    const url = "https://vivaldiinmobiliaria.com/proyectos/showroom.html?proyecto=" + m[0]; if (ya && ya.dataset.u === url) return; if (ya) ya.remove();
+    const svg = qrSvg(url); if (!svg) return; const el = document.createElement("div"); el.className = "doc-qr doc-3d"; el.dataset.u = url;
+    el.innerHTML = svg + "<p><b>Recorre tu futura casa en 3D</b>Escanea con la cámara: verás una casa modelo sobre un lote de este proyecto, con vista al mar, en tu celular o con lentes de realidad virtual.</p>";
+    doc.appendChild(el); }
+  new MutationObserver(() => { clearTimeout(poner.t); poner.t = setTimeout(poner, 50); }).observe(doc, {childList: true, subtree: true, characterData: true}); poner();
+})();
+</script>
 <!--firma-end-->
 <!--pipeline-start-->
 <style>
@@ -6705,6 +6718,7 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
 #pipeline .pl-card .t{display:flex;gap:5px;flex-wrap:wrap}
 #pipeline .pl-tag{font-size:.68rem;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 #pipeline .pl-tag.old{background:#FBE9E6;border-color:#F0C4BC;color:#8A2A1B}#pipeline .pl-tag.hoy{background:var(--sun-soft);border-color:transparent}
+#pipeline .pl-tag.tmp.cal{background:#FDE6DF;color:#8A2A1B;border-color:#F3BBAA}#pipeline .pl-tag.tmp.tib{background:#FFF2D6;color:#6B4A00;border-color:#F0D9A0}#pipeline .pl-tag.tmp.fri{background:#E5EEF6;color:#1D4466;border-color:#C5D7E8}
 #pipeline .pl-tag.bot{background:var(--sea-soft);border-color:transparent}
 #pipeline .pl-empty{font-size:.82rem;color:var(--muted);text-align:center;padding:18px 8px;border:1.5px dashed var(--line);border-radius:12px}
 #pipeline .pl-help{font-size:.82rem;color:var(--muted);margin:8px 0 0}
@@ -6802,19 +6816,30 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
     <div class="pl-seg" id="plSeg" aria-labelledby="plSegT"></div>
     <div class="pl-tools"><label class="pl-sr" for="plQ">Buscar en el tablero</label><input id="plQ" type="search" placeholder="Buscar por nombre, celular o proyecto" autocomplete="off">
       <label class="pl-sr" for="plP">Proyecto</label><select id="plP"></select><label class="pl-sr" for="plA">Asesor</label><select id="plA"></select>
-      <label class="chk"><input type="checkbox" id="plD"> Ver descartados</label></div>
+      <label class="chk"><input type="checkbox" id="plC"> Solo calientes</label><label class="chk"><input type="checkbox" id="plD"> Ver descartados</label></div>
     <div class="pl-board" id="plB" role="list" aria-label="Etapas de venta"></div>
     <p class="pl-help">Atajos: <b>Enter</b> abre la ficha · <b>← →</b> cambia de etapa · los cambios quedan en el historial del cliente y se sincronizan con la base.</p>
     <div class="pl-sr" aria-live="polite" id="plLive"></div>`;
   const ancla = document.getElementById("clientes"); ancla.parentNode.insertBefore(sec, ancla);
   const $p = id => document.getElementById(id);
-  const filtros = () => ({q: $p("plQ").value.trim().toLowerCase(), p: $p("plP").value, a: $p("plA").value, d: $p("plD").checked});
+  const filtros = () => ({q: $p("plQ").value.trim().toLowerCase(), p: $p("plP").value, a: $p("plA").value, d: $p("plD").checked, c: $p("plC").checked});
   function opciones() {
     const keep = (el, html) => { const v = el.value; el.innerHTML = html; if ([...el.options].some(o => o.value === v)) el.value = v; };
     const pr = [...new Set(CLIENTS.map(c => c.proj).filter(Boolean))].sort(), ad = [...new Set(CLIENTS.map(c => c.adv).filter(Boolean))].sort();
     keep($p("plP"), `<option value="">Todos los proyectos</option>` + pr.map(p => `<option>${E(p)}</option>`).join(""));
     keep($p("plA"), `<option value="">Todo el equipo</option>` + ad.map(p => `<option>${E(p)}</option>`).join(""));
   }
+  // temperatura del cliente: qué tan cerca está de comprar (0–100) y por qué
+  function temperatura(c) { const R = [], st = c.stage; let t = {"Nuevo": 15, "Contactado": 30, "Visita agendada": 55, "Separado": 80, "Vendido": 100}[st];
+    if (t === undefined) return null; if (st === "Vendido") return {t: 100, n: "Comprador", cls: "cal", R: ["Ya compró"]};
+    const dm = dias(c.stageAt || c.created), hoyS = hoy();
+    if (dm <= 3) { t += 12; R.push("avanzó hace poco"); } else if (dm > 14) { t -= 18; R.push(`${dm} días sin avanzar`); }
+    if (c.next && c.next < hoyS) { t -= 12; R.push("contacto atrasado"); } else if (c.next) R.push("seguimiento programado");
+    if (/refer|recomend/i.test(c.src || "")) { t += 10; R.push("llegó por recomendación"); }
+    if (convDe(c)) { t += 8; R.push("conversó con el asesor virtual"); }
+    if (c.budget) { t += 5; R.push("tiene presupuesto definido"); }
+    if ((c.hist || []).filter(h => /Nota|WhatsApp/i.test(h.t)).length >= 2) { t += 6; R.push("varios contactos registrados"); }
+    t = Math.max(1, Math.min(99, t)); return {t, n: t >= 60 ? "Caliente" : t >= 35 ? "Tibio" : "Frío", cls: t >= 60 ? "cal" : t >= 35 ? "tib" : "fri", R}; }
   const convDe = c => CONV.find(v => (c.phone && tel9(v.celular) === tel9(c.phone) && tel9(c.phone).length === 9) || (v.solicitud && c.sol && +v.solicitud === +c.sol));
   // ---------- seguimiento automático: quién se está enfriando y qué escribirle ----------
   const PLAZO = {"Nuevo": 1, "Contactado": 3, "Visita agendada": 2, "Separado": 5};
@@ -6837,19 +6862,19 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
     if (b.dataset.s === "ver") abrir360(c, b); }, true);
   function render() { try { seguimiento(); } catch (e) {}
     opciones(); const f = filtros(), t = hoy();
-    const lista = CLIENTS.filter(c => (!f.p || c.proj === f.p) && (!f.a || c.adv === f.a) && (!f.q || `${c.name} ${c.phone} ${c.proj}`.toLowerCase().includes(f.q)));
+    const lista = CLIENTS.filter(c => (!f.p || c.proj === f.p) && (!f.a || c.adv === f.a) && (!f.q || `${c.name} ${c.phone} ${c.proj}`.toLowerCase().includes(f.q)) && (!f.c || ((temperatura(c) || {}).t || 0) >= 60));
     const act = lista.filter(c => COLS.slice(0, 4).includes(c.stage)), cart = act.reduce((s, c) => s + valor(c), 0), pron = act.reduce((s, c) => s + valor(c) * prob(c.stage), 0);
     const quietos = act.filter(c => dias(c.stageAt || c.created) > 7).length, espera = CONV.filter(v => v.estado === "asesor").length;
     $p("plK").innerHTML = [["Oportunidades activas", act.length, `${lista.filter(c => c.stage === "Vendido").length} vendidas`], ["Valor en cartera", S(cart), "precio de lista de lo activo"],
       ["Pronóstico ponderado", S(pron), "según la probabilidad de cada etapa"], [espera ? "Esperan a un asesor" : "Sin movimiento +7 días", espera ? espera : quietos, espera ? "conversaciones del asesor virtual" : "oportunidades por reactivar", espera || quietos ? "hot" : ""]]
       .map(([l, n, s, cls]) => `<div class="pl-k ${cls || ""}"><span>${l}</span><b>${n}</b><small>${s}</small></div>`).join("");
     const cols = f.d ? [...COLS, "Descartado"] : COLS, tot = Math.max(1, lista.filter(c => COLS.includes(c.stage)).length);
-    $p("plB").innerHTML = cols.map((st, i) => { const cs = lista.filter(c => c.stage === st).sort((a, b) => (a.next || "9999").localeCompare(b.next || "9999")), suma = cs.reduce((s, c) => s + valor(c), 0), col = COLOR[i] || "#9AA7B2";
+    $p("plB").innerHTML = cols.map((st, i) => { const cs = lista.filter(c => c.stage === st).sort((a, b) => ((temperatura(b) || {}).t || 0) - ((temperatura(a) || {}).t || 0)), suma = cs.reduce((s, c) => s + valor(c), 0), col = COLOR[i] || "#9AA7B2";
       return `<div class="pl-col" role="listitem" data-st="${E(st)}" style="--c:${col}"><div class="pl-ch"><b>${E(st)} <i>${cs.length}</i></b><small>${S(suma)}${st !== "Vendido" && st !== "Descartado" ? ` · ${Math.round(prob(st) * 100)} %` : ""}</small><div class="bar"><i style="width:${Math.round(cs.length / tot * 100)}%"></i></div></div>
         <ul class="pl-list" aria-label="${E(st)}">${cs.map(c => { const d = dias(c.stageAt || c.created), late = c.next && c.next < t && st !== "Vendido", due = c.next === t, cv = convDe(c);
           return `<li class="pl-card" tabindex="0" draggable="true" data-id="${E(c.id)}" aria-label="${E(c.name)}, ${E(st)}${c.proj ? ", " + E(c.proj) : ""}. Enter para abrir, flechas para mover.">
             <div class="n">${E(c.name)}<span>${valor(c) ? S(valor(c)) : ""}</span></div><div class="m">${E(c.proj || "Sin proyecto")}${c.adv ? " · " + E(ini(c.adv)) : ""}${c.src ? " · " + E(c.src) : ""}</div>
-            <div class="t">${d > 7 && COLS.slice(0, 4).includes(st) ? `<span class="pl-tag old">${d} días sin avanzar</span>` : `<span class="pl-tag">${d} d en etapa</span>`}${late ? `<span class="pl-tag old">Contactar: atrasado</span>` : due ? `<span class="pl-tag hoy">Contactar hoy</span>` : ""}${cv ? `<span class="pl-tag bot">${cv.estado === "asesor" ? "Te espera en el chat" : "Habló con el asesor virtual"}</span>` : ""}${c.demo ? `<span class="pl-tag">Ejemplo</span>` : ""}</div></li>`; }).join("") || `<li class="pl-empty">Arrastra aquí</li>`}</ul></div>`; }).join("");
+            <div class="t">${(() => { const T = temperatura(c); return T && st !== "Vendido" ? `<span class="pl-tag tmp ${T.cls}" title="${E(T.R.join(", "))}">${T.n} ${T.t}</span>` : ""; })()}${d > 7 && COLS.slice(0, 4).includes(st) ? `<span class="pl-tag old">${d} días sin avanzar</span>` : `<span class="pl-tag">${d} d en etapa</span>`}${late ? `<span class="pl-tag old">Contactar: atrasado</span>` : due ? `<span class="pl-tag hoy">Contactar hoy</span>` : ""}${cv ? `<span class="pl-tag bot">${cv.estado === "asesor" ? "Te espera en el chat" : "Habló con el asesor virtual"}</span>` : ""}${c.demo ? `<span class="pl-tag">Ejemplo</span>` : ""}</div></li>`; }).join("") || `<li class="pl-empty">Arrastra aquí</li>`}</ul></div>`; }).join("");
   }
   function mover(c, st, foco) {
     if (!c || c.stage === st) return; const antes = c.stage; c.stage = st; c.stageAt = hoy(); if (typeof crmSave === "function") crmSave();
@@ -6873,7 +6898,7 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
     if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const h = [...k.parentNode.querySelectorAll(".pl-card")], j = h.indexOf(k) + (e.key === "ArrowDown" ? 1 : -1); if (h[j]) h[j].focus(); }
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir360(c, k); } });
   sec.addEventListener("click", e => { const k = e.target.closest(".pl-card"); if (k) abrir360(porId(k.dataset.id), k); });
-  ["plQ", "plP", "plA", "plD"].forEach(id => $p(id).addEventListener(id === "plQ" ? "input" : "change", render));
+  ["plQ", "plP", "plA", "plD", "plC"].forEach(id => $p(id).addEventListener(id === "plQ" ? "input" : "change", render));
 
   // ---------- ficha 360 ----------
   const bk = document.createElement("div"); bk.className = "p360-bk"; bk.innerHTML = '<aside class="p360" role="dialog" aria-modal="true" aria-labelledby="p3T"></aside>'; document.body.appendChild(bk);
@@ -6893,7 +6918,7 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
       <div class="facts"><div><span>Celular</span><b>${E(c.phone || "—")}</b></div><div><span>Valor</span><b>${valor(c) ? S(valor(c)) : "—"}</b></div>
         <div><span>Origen</span><b>${E(c.src || "—")}${c.camp ? " · " + E(c.camp) : ""}</b></div><div><span>Asesor</span><b>${E(c.adv || "—")}</b></div>
         <div><span>Cliente desde</span><b>${c.created ? E(fecha(c.created)) + ` (${dias(c.created)} d)` : "—"}</b></div><div><span>Próximo contacto</span><input type="date" id="p3N" value="${E(c.next || "")}" aria-label="Próximo contacto"></div>
-        <div><span>Probabilidad</span><b>${Math.round(prob(c.stage) * 100)} %</b></div><div><span>En esta etapa</span><b>${dias(c.stageAt || c.created)} días</b></div></div>
+        <div><span>Temperatura</span><b>${(() => { const T = temperatura(c); return T ? `${T.n} · ${T.t}/100` : "—"; })()}</b><small style="display:block;color:var(--muted);font-size:.74rem;margin-top:2px">${E(((temperatura(c) || {}).R || []).join(" · "))}</small></div><div><span>En esta etapa</span><b>${dias(c.stageAt || c.created)} días</b></div></div>
       ${c.notes ? `<h4>Notas</h4><p style="white-space:pre-wrap;margin:0;font-size:.9rem">${E(c.notes)}</p>` : ""}
       <h4>Agregar nota</h4><div class="nota"><input id="p3Nota" maxlength="300" placeholder="Llamada, acuerdo, objeción…" aria-label="Nueva nota"><button type="button" class="b pri" data-x="nota">Guardar</button></div>
       ${cv ? `<h4>Conversación con el asesor virtual (${cv.canal === "whatsapp" ? "WhatsApp" : "web"})</h4><div class="chat">${(cv.mensajes || []).slice(-12).map(m => `<div class="cv-b ${E(m.rol)}">${E(m.texto)}<small>${m.rol === "cliente" ? "Cliente" : m.rol === "asesor" ? "Asesor" : "Asesor virtual"}</small></div>`).join("") || "<p>Sin mensajes cargados.</p>"}</div>
@@ -6992,7 +7017,7 @@ Prefer: return=minimal</pre><h3 style="margin-top:14px">Cuerpo (JSON)</h3><pre>$
   document.addEventListener("vivaldi:datos", todo); addEventListener("storage", e => { if (!e.key || e.key === "vivaldi-clientes-v1" || e.key === "vivaldi-demo") todo(); });
   setInterval(() => { if (nube() && !document.hidden) todo(); }, 20000);
   render(); renderConv(); todo();
-  window.vvCRM = {render, abrir360, mover, recargar: todo, get conversaciones() { return CONV; }};
+  window.vvCRM = {temperatura, render, abrir360, mover, recargar: todo, get conversaciones() { return CONV; }};
 })();
 </script>
 <!--pipeline-end-->

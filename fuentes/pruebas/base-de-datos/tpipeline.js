@@ -39,6 +39,13 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   const seg = await p.$$eval('#plSeg li', a => a.length); ok(seg > 0 && /A quién escribir hoy/.test(await p.textContent('#plSeg')), 'seguimiento: lista a quién escribir hoy (' + seg + ')');
   const sid = await p.$eval('#plSeg li', e => e.dataset.id); await p.click(`#plSeg li[data-id="${sid}"] [data-s="ok"]`); await p.waitForTimeout(200);
   ok(await p.evaluate(i => { const c = CLIENTS.find(x => x.id === i); return c.next > new Date().toISOString().slice(0, 10); }, sid), '«Hecho» reprograma el próximo contacto');
+  // temperatura del cliente
+  const tm = await p.$$eval('#plB .pl-tag.tmp', a => a.map(x => x.textContent)); ok(tm.length > 3 && tm.every(t => /^(Caliente|Tibio|Frío) \d+$/.test(t)), 'temperatura de cada cliente en el tablero: ' + tm.slice(0, 4).join(', '));
+  await p.check('#plC'); const cal = await p.$$eval('#plB .pl-tag.tmp', a => a.map(x => x.textContent)); ok(cal.every(t => /^Caliente/.test(t)), '«Solo calientes» filtra el tablero (' + cal.length + ')'); await p.uncheck('#plC');
+  // reporte semanal y pedido de reseñas
+  const sem = await p.evaluate(() => window.vvSemana && vvSemana()); ok(/Resumen de la semana/.test(sem || '') && /Interesados nuevos/.test(sem) && /Ventas/.test(sem), 'reporte semanal listo para WhatsApp');
+  const vend = await p.evaluate(() => (CLIENTS.find(c => c.stage === 'Vendido') || {}).id);
+  if (vend) { await p.evaluate(i => vvCRM.abrir360(CLIENTS.find(c => c.id === i)), vend); ok(await p.isVisible('.p360 [data-x="resena"]'), 'clientes que compraron: botón «Pedir reseña»'); await p.keyboard.press('Escape'); }
   // filtros
   await p.fill('#plQ', 'zzzz-no-existe'); await p.waitForTimeout(100); ok(await p.$$eval('#plB .pl-card', a => a.length) === 0, 'la búsqueda filtra el tablero'); await p.fill('#plQ', '');
   // lista de clientes → ficha 360

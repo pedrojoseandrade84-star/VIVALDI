@@ -116510,6 +116510,11 @@ function grabarVideo() {
   toast('Grabando el recorrido completo… toca el botón otra vez para terminar antes');
   const fin = () => { if (grab && ip === PARADAS.length - 1 && !vuelo) setTimeout(() => grab && grab.rec.state === 'recording' && grab.rec.stop(), 3500); else if (grab) setTimeout(fin, 500); }; setTimeout(fin, 3000); }
 $('bVid').addEventListener('click', grabarVideo);
+// continuar en el celular: QR con el proyecto, el estilo y la luz elegidos (dirección pública del showroom)
+$('bQR').addEventListener('click', () => { const u = `https://vivaldiinmobiliaria.com/proyectos/showroom.html?proyecto=${P.id}&estilo=${estilo}&luz=${luzActual}`;
+  let svg = ''; try { const q = qrcode(0, 'M'); q.addData(u); q.make(); const n = q.getModuleCount(), m = 2; let d = ''; for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+    svg = `<svg viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" width="216" height="216" role="img" aria-label="Código QR del showroom" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#0B2236"/></svg>`; } catch (e) {}
+  $('qrBox').innerHTML = svg; $('qrUrl').textContent = u; $('dQR').showModal(); });
 $('bAjustes').addEventListener('click', () => { const on = document.body.classList.toggle('ajustes'); $('bAjustes').setAttribute('aria-expanded', on); $('bAjustes').setAttribute('aria-pressed', on); });
 
 // ---------- interfaz ----------

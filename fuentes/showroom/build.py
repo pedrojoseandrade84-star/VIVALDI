@@ -13,7 +13,8 @@ mods = json.load(open(os.path.join(D, 'vendor', 'modulos.json'), encoding='utf-8
 rec = {f: base64.b64encode(open(os.path.join(R, f), 'rb').read()).decode() for f in sorted(os.listdir(R)) if f.endswith(('.hdr', '.jpg', '.glb'))}
 js = lambda o: json.dumps(o, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 motor = open(os.path.join(D, 'vendor', 'motor.js'), encoding='utf-8').read().replace('</script', '<\\/script')
-rep = {'/*FUENTES*/': fuentes, '/*DATOS*/null': js(datos), '/*REC*/null': js(rec), '/*MOTOR*/': motor}
+qr = open(os.path.join(D, 'vendor', 'qrcode.js'), encoding='utf-8').read()
+rep = {'/*QR*/': qr, '/*FUENTES*/': fuentes, '/*DATOS*/null': js(datos), '/*REC*/null': js(rec), '/*MOTOR*/': motor}
 for k, v in rep.items():
     assert s.count(k) == 1, k
     s = s.replace(k, v)

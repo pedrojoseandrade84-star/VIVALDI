@@ -85,7 +85,7 @@ body.foto .info,body.foto .dock,body.foto .time,body.foto .cap,body.foto .proj{d
   .top{flex-wrap:wrap;gap:8px;left:10px;right:10px}
   .proj{order:3;max-width:none;width:100%;flex:1 1 100%}
   .tr{gap:6px}.ib{width:42px;height:42px;border-radius:12px}.ib.rtxb{width:auto;padding:0 8px}.ib.hd{width:42px}
-  #bFull{display:none}
+  #bFull,#bQR{display:none}
   .dock{left:8px;right:8px;transform:none;max-width:none;justify-content:space-between;gap:2px;padding:5px}
   .dock button{min-width:0;flex:1 1 0;padding:6px 4px;font-size:.66rem}.dock .sep{display:none}
   .dock button.solo-movil{display:flex}
@@ -137,6 +137,7 @@ body.xr .top,body.xr .info,body.xr .dock,body.xr .time,body.xr .cap{display:none
     <button class="ib gl hd" id="bHD" type="button" aria-pressed="false" title="Foto realista (trazado de rayos)"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/><path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span>Foto realista</span></button>
     <button class="ib gl" id="bVid" type="button" aria-pressed="false" aria-label="Grabar un video del recorrido para redes" title="Grabar video del recorrido"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg></button>
     <button class="ib gl" id="bFoto" type="button" aria-label="Guardar una foto de esta vista" title="Guardar foto"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+    <button class="ib gl" id="bQR" type="button" aria-label="Continuar en tu celular (código QR)" title="Continuar en tu celular"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></svg></button>
     <button class="ib gl" id="bFull" type="button" aria-label="Pantalla completa" title="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
 </header>
@@ -168,6 +169,9 @@ body.xr .top,body.xr .info,body.xr .dock,body.xr .time,body.xr .cap{display:none
 
 <div class="hint gl" id="hint"></div><div class="mira" id="mira"></div>
 <div class="toast gl" id="toast" role="status"></div>
+<dialog id="dQR" aria-labelledby="dQRt"><h2 id="dQRt">Continúa en tu celular</h2><p>Escanea con la cámara: se abre este mismo proyecto, con el estilo de casa y la luz que elegiste. También sirve para entrar con lentes de realidad virtual.</p>
+  <div id="qrBox" style="background:#fff;border-radius:14px;padding:12px;width:240px;height:240px;margin:6px auto 12px"></div><p id="qrUrl" style="font-size:.78rem;word-break:break-all;text-align:center"></p>
+  <form method="dialog"><button class="btn pri" type="submit">Listo</button></form></dialog>
 <dialog id="dVR" aria-labelledby="dVRt"><h2 id="dVRt">Visítala en realidad virtual</h2>
   <p id="dVRp">Este navegador no ofrece realidad virtual. Para entrar a la casa con un visor:</p>
   <ol><li>Ponte el visor (Meta Quest 2, 3 o Pro) y abre el <b>navegador de Meta Quest</b>.</li><li>Entra a esta misma página.</li><li>Toca <b>Realidad virtual</b>. Apunta al piso y presiona el gatillo para moverte; usa la palanca para girar y el botón lateral para ir a la siguiente parada.</li></ol>
@@ -180,6 +184,7 @@ body.xr .top,body.xr .info,body.xr .dock,body.xr .time,body.xr .cap{display:none
 window.addEventListener("error", e => { const t = document.getElementById("loadT"); if (t && !document.body.dataset.listo) t.textContent = "No se pudo iniciar el showroom en este equipo (" + (e.message || "error") + "). Prueba con el navegador actualizado o agrega ?ligero a la dirección."; });
 (() => { const c = document.createElement("canvas"); if (!c.getContext("webgl2")) document.getElementById("loadT").textContent = "Este navegador no tiene WebGL 2 activado. Actualiza Safari o Chrome para ver el showroom 3D."; })();
 </script>
+<script>/*QR*/</script>
 <script>/*MOTOR*/</script>
 </body>
 </html>

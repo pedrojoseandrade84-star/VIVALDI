@@ -42,4 +42,17 @@
   window.vvFirma = {abrir, poner};
 })();
 </script>
+<script id="pf-3d">
+/* Proforma con QR al showroom 3D: el cliente escanea y recorre en su celular la casa modelo sobre un lote del proyecto. */
+(() => {
+  const doc = document.getElementById("pfDoc"); if (!doc || typeof qrSvg !== "function") return;
+  const ID = [["planicie", /planicie/i], ["terrazas", /terrazas/i], ["portada", /portada/i], ["lirios", /lirios/i], ["esmeralda", /esmeralda/i]];
+  function poner() { const ya = doc.querySelector(".doc-3d"); const txt = doc.textContent || ""; const m = ID.find(([, r]) => r.test(txt)); if (!m) { if (ya) ya.remove(); return; }
+    const url = "https://vivaldiinmobiliaria.com/proyectos/showroom.html?proyecto=" + m[0]; if (ya && ya.dataset.u === url) return; if (ya) ya.remove();
+    const svg = qrSvg(url); if (!svg) return; const el = document.createElement("div"); el.className = "doc-qr doc-3d"; el.dataset.u = url;
+    el.innerHTML = svg + "<p><b>Recorre tu futura casa en 3D</b>Escanea con la cámara: verás una casa modelo sobre un lote de este proyecto, con vista al mar, en tu celular o con lentes de realidad virtual.</p>";
+    doc.appendChild(el); }
+  new MutationObserver(() => { clearTimeout(poner.t); poner.t = setTimeout(poner, 50); }).observe(doc, {childList: true, subtree: true, characterData: true}); poner();
+})();
+</script>
 <!--firma-end-->

@@ -37,6 +37,10 @@ const AXE = '/tmp/claude-0/-home-user-VIVALDI/7bd92c7c-6d6a-5e61-b705-7cd0107bf5
   await p.click('#luz [data-l="tarde"]');
   // casa a elección
   await p.click('#estilo [data-e="contemporanea"]'); ok(await p.evaluate(() => VVS.estilo) === 'contemporanea' && /estilo=contemporanea/.test(p.url()), 'casa a elección: cambia el estilo y queda en el enlace');
+  // continuar en el celular (QR) y video del recorrido
+  await p.evaluate(() => document.getElementById('bQR').click()); await p.waitForTimeout(300);
+  ok(await p.isVisible('#dQR') && await p.$$eval('#qrBox svg path', a => a.length) === 1 && /proyecto=lirios/.test(await p.textContent('#qrUrl')), 'QR «Continúa en tu celular» con el proyecto elegido'); await p.evaluate(() => document.getElementById('dQR').close());
+  ok(await p.evaluate(() => typeof VVS.grabarVideo === 'function' && !!document.getElementById('bVid')), 'botón para grabar el video del recorrido');
   // foto realista por trazado de rayos
   await p.click('#bHD'); ok(await p.waitForSelector('#foto', {state: 'visible', timeout: 60000}).then(() => true).catch(() => false), 'Foto realista: muestra el progreso');
   await p.waitForFunction(() => VVS.pt && VVS.pt.samples >= 1, null, {timeout: 240000}).catch(() => {}); ok(await p.evaluate(() => VVS.pt && VVS.pt.samples >= 1), 'el trazado de rayos calcula muestras de luz física');
